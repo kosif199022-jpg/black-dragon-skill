@@ -41,3 +41,18 @@ cd "$D" && python -I -X utf8 scripts/rd.py selftest
   - المسح.
   - تغيير إعدادات تطبيق سطح المكتب.
 - لو اتصلّحت في حاجة: `rd.py learn "<الدرس>"`.
+
+## 5) التحديث (موافقة صاحب الشغل الدايمة، 2026-11-13)
+صاحب الشغل وافق إن أي تحديث يتعمل للتنين الأحمر في أي محادثة يترفع على نفس الفرع. الموافقة دي تشمل ذاكرة المحادثات.
+- **المكان:** فرع `red-dragon` في المستودع العام `kosif199022-jpg/black-dragon-skill`. ممنوع تلمس `main`.
+- **قبل الرفع:**
+  - ارفع `VERSION` في `scripts/rd.py`.
+  - اكتب التغيير في `references/RD_CHANGELOG.md`.
+  - شغّل `python -I -X utf8 scripts/make_map.py .`.
+  - اتأكد إن `rd.py selftest` = ok، والراوتر مش أقل من 52/58/66: `python -X utf8 mind/route_eval/route_eval.py scripts --split test`.
+- **ممنوع يترفع:**
+  - توكنات، أو كلمات سر، أو `settings.json` بتاع التطبيق.
+  - محتوى `BlackDragon.rar`.
+  - خطوط (`*.ttf`، `*.otf`، `*.woff*`).
+- **الرفع:** `git add -A && git commit -m "Red Dragon vX.Y.Z: …" && git push origin red-dragon`.
+- لو الجلسة مالهاش صلاحية push: سلّم zip، وقول إنه ماترفعش.
