@@ -1,4 +1,4 @@
-# Playbooks التنين الأحمر — v2.6.0
+# Playbooks التنين الأحمر — v2.8.1
 
 متولّد من `mind/playbooks.json` بأمر `rd.py docs`. عدّل الـ JSON وولّد تاني.
 
@@ -474,3 +474,18 @@
 - **مهارات:** draw-math · physics-math · animation-principles
 - **✅ بوابة التسليم:** كل رقم في التسليم طالع من أمر اتشغّل فعلًا، مش من الذاكرة
 - **⚠ فخاخ:** fov في three.js رأسي: في 9:16 الأفقي أضيق بكتير (36° رأسي ≈ 20.7° أفقي) · نسب Drillis & Contini تقريبية (±5%)
+
+## روتوسكوب وذاكرة الشخصية: تتبّع شخصية من فيديو فريم بفريم، رسمها متجهي SVG، وحفظها عشان تتحرك بأوامر (`character-memory`)
+*rotoscope and character memory: track a character through a video frame by frame, redraw it as vector SVG, keep it to animate by command* · المجال: video
+
+1. rd.py character doctor (numpy، opencv، scikit-image، cairosvg، ffmpeg) — كله محلي، مفيش شبكة ولا GPU.
+2. الحدود: شخصية واحدة، ألوان مسطحة، خط خارجي غامق واحد، من قدّام، خلفية ثابتة. غير كده: قول قبل ما تبدأ.
+3. rd.py character extract VIDEO WORK ← analyze WORK ← redraw WORK (SVG لكل فريم + فيديو مقارنة + أرقام) ← memory WORK.
+4. اقرا الأرقام قبل ما تكمّل: IoU القناع ≥ 0.995، PSNR ≥ 27 dB، والتعبيرات المرصودة غير المولّدة.
+5. rd.py character animate MEMORY "<أمر: تمشي/تضحك/تقعد/روح للناحية التانية>" OUT ، وexport للـ SVG والهيكل.
+6. التجربة الكاملة على شخصية أصلية: rd.py character demo OUT ثم python tests/test_charmem.py OUT.
+7. بديل متثبت (dragon-character-memory، فيه مثال nabd): python -X utf8 engine/skills/dragon-character-memory/scripts/dcm.py extract|analyze|redraw|memory|rebuild|animate ، وبعد أي مشهد جديد: python -X utf8 engine/skills/dragon-character-memory/scripts/dcm.py identity character_memory.json OUT/new_scene.mp4 ← نفس الشخصية؟ اقرا engine/skills/dragon-character-memory/SKILL.md.
+- **مهارات:** red-dragon · dragon-character-memory · motion-cartoon · blender-character-rigging · animation-principles · dragon-genius
+- **🔒 بموافقة:** أي فيديو لشخصية مش بتاعة صاحب الشغل أو محمية بحقوق (نستخدم شخصيات أصلية) · أي توليد مدفوع · استخدام شخصية مش بتاعته · تنزيل XMem أو SAM لشخصيات مش مسطحة
+- **✅ بوابة التسليم:** مصدر وثقة لكل معلومة في character_memory.json · المولّد معلّم generated مع derived_from · الاختبارات: الإطارات والتوقيت، إعادة الرسم، النقل، التعديل · redraw: SSIM ≥ 0.99 وتطابق السيلويت ≥ 0.98 · rebuild من الذاكرة: تطابق السيلويت ≥ 0.85 · identity: same_character = true · كل حركة مُقدَّرة مكتوبة في التقرير
+- **⚠ فخاخ:** cv2.imread مابيفتحش مسار عربي على ويندوز: np.fromfile + imdecode · خلفية بالوسيط بتتلوّث لو الشخصية واقفة نص الفيلم: السيلويت من الخط الخارجي · رأس عليها كاب مدوّرة: 'فوق' = أقرب محور للرأسي، مش الأطول · كونتور البكسل + تكبير = 23 dB؛ المربعات الزاحفة = 29 dB · خلفية لونها قريب من لون في الشخصية بتضيّع الجزء ده · الجفن المقفول أرفع من 2 بكسل: الرمشة بتترصد وشكلها مُقدَّر · ميل الرأس وهو متغطي بيتستكمل

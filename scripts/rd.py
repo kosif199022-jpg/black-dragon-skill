@@ -5,8 +5,11 @@
   python scripts/rd.py understand "<نص>"     fix wrong-keyboard and voice-typing slips
   python scripts/rd.py brief "<الطلب>"       short mission brief as JSON (used by the desktop app)
   python scripts/rd.py plan "<الطلب>"        mission plan: playbook + steps for this place + gates + lessons
-  python scripts/rd.py route|map|show        find / list / open a playbook or a power
-  python scripts/rd.py learn|recall|outcome|retro|memory   self-learning
+                                             (--prev "<الرسالة اللي قبلها>"; default: the chat topic brief() kept for 45 min)
+  python scripts/rd.py route|map|show        find / list / open a playbook or a power (route: confidence + the 3 nearest past requests)
+  python scripts/rd.py learn|recall|outcome|retro|memory   self-learning (outcome … ok also keeps the request as a routing example)
+  python scripts/rd.py teach "<الطلب>" ID|none   a request went to the wrong playbook: remember the right one
+  python scripts/rd.py selftest [--quick]    registries + tests + the blind routing gate (mind/route_eval/floor.json, ~12 s more)
   python scripts/rd.py skills find "<كلمات>"  search the bundled library of 200 famous Claude skills (list / show NAME / install NAME)
   python scripts/rd.py re TARGET             what a file / folder / URL is, and the analysis road
   python scripts/rd.py repo PATH             dossier of a source repository (read-only)
@@ -20,7 +23,7 @@ It reads and advises; it never installs, publishes, spends or deletes."""
 import argparse, datetime, hashlib, json, math, os, re, shutil, subprocess, sys
 from pathlib import Path
 
-VERSION = "2.7.1"
+VERSION = "2.8.2"
 ROOT = Path(__file__).resolve().parent.parent
 ENGINE = ROOT / "engine"
 MIND = ROOT / "mind"
@@ -101,6 +104,7 @@ def playbooks():
     d = jload(MIND / "playbooks.json", {"playbooks": []})
     for p in d["playbooks"]:
         p["_tok"] = set(tokens(p.get("triggers", "") + " " + p["ar"] + " " + p.get("en", "")))
+        p["_ph"] = [norm(x).strip() for x in p.get("phrases", []) if len(norm(x).strip()) >= 4]     # v2.8: whole phrases = a bonus
     return d["playbooks"]
 
 
@@ -256,44 +260,239 @@ INTENT = [  # (pattern on the normalized text, playbook id, bonus): few, general
     (r"(طور|طوير|تطوير|ارفع|زود)\S*.{0,60}(التنين|نفسك|ذكاءك|ذكائك|قدراتك)", "self-improve", 5.0),
     (r"(فين|وين)\s+(الملف|الفيديو|الفديو|المهاره|النسخه|الناتج)|^(خلصت|عملت ايه|وصلت لفين)", "status", 5.0),
     (r"(اصنع|اعمل|ابني|سوي|انشئ)\S*\s+(لي\s+|لكلاود\s+)?مهار", "build-skill", 4.0),
+    # v2.8, from the blind-labelled dev half: status questions, the owner's own app, and growing the dragon itself
+    (r"^\W*(هل\s+)?(خلصت|خلصتي|خلصتو|انتهيت)\W*$|خلصت\s+ولا|ولا\s+لسه|^\W*هل\s+(صنعت|عملت|انتهيت|خلصت)|باقي\s+(لك|ليك)\s|قدامك\s+قد\s+ايه"
+     r"|(فين|وين)\s+(مكان|الرابط|اللينك|مكانها|مكانه)|^\W*(ما|ايه)\s+(التطوير|اللي)\s+(الذي\s+|اللي\s+)?(قمت|عملته|عملت)|^\W*هل\s+(هو|هي)\s+شغال", "status", 5.0),
+    (r"(التطبيق|البرنامج|النسخه)\S*\s.{0,30}(مش شغال|لا يعمل|ما يعمل|واقف|ما اتحدث|مااتحدث|ماتحدث|بايظ|بيقفل|فيه مشكله|في مشكله)"
+     r"|^\W*(حدث|خدث)\s+(التطبيق|البرنامج|النسخه)|مشكله\s+التحديث|^\W*اضف\s+(فيه\s+|للتطبيق\s+|للبرنامج\s+)?(امكانيه|خاصيه|ميزه|زرار|زر)", "app-dev", 4.0),
+    (r"ملف\s+(ال)?تعليمات|كل\s+(قدراتك|امكانياتك)|(حمل|نزل|ثبت)\S*\s.{0,40}(تساعد|تفيد)\S*\s+(claude|كلاود|التنين|نفسك)", "self-improve", 4.0),
 ]
 URL_ONLY = [(r"github\.com/", "re-repo"), (r"(tiktok\.com|youtu\.?be|instagram\.com|facebook\.com|x\.com/|twitter\.com)", "download")]
-NONE_RX = (r"^\W*(ازيك|ازيكم|اهلا|مرحبا|السلام عليكم|صباح الخير|مساء الخير|من انت|مين انت|انت مين|شكرا|تمام|موافق|ماشي|اوك|ok|كمل|اكمل|يلا)\W*$")
+# v2.8: chat that is never a task, and short replies that only continue the previous message
+GREET_RX = (r"^\W*(ازيك|ازيكم|اهلا|مرحبا|السلام عليكم|صباح الخير|مساء الخير|من انت|مين انت|انت مين|شكرا|تمام|بالعربي|لا\W*كفايه|كفايه)\W*$")
+NONE_EXTRA = r"^\W*(قول|قل|رد|اكتب)\W+(تم|كلمه واحده|بكلمه)|^\W*تم تسجيل الدخول|^\W*(رد|جاوب)\W+.{0,20}بكلمه"
+CONT_RX = (r"^\W*(موافق|ماشي|اوك|ok|كمل|اكمل|يلا|ابدا|نعم|ايوه|اه|جرب|حلها|اصلح وكمل|كمل وصلح|نفذ|ثبتها|ثباها)\W*$")
+NONE_RX = (r"^\W*(ازيك|ازيكم|اهلا|مرحبا|السلام عليكم|صباح الخير|مساء الخير|من انت|مين انت|انت مين|شكرا|تمام|موافق|ماشي|اوك|ok|كمل|اكمل|يلا)\W*$")  # v2.7, kept for older callers
+# v2.8: a greeting with only small talk around it («ازيك يا تنين عامل ايه», «شكرا يا باشا») is chat too, and
+# «تمام يا تنين كمل» is a follow-up: the small-talk words are taken off before CONT_RX is tried.
+CHAT_HEAD = set(norm(w) for w in "ازيك ازيكم ازيكو اهلا هلا مرحبا هاي السلام صباح مساء شكرا متشكر متشكرين تسلم ميرسي تمام hi hello hey thanks thx".split())
+CHAT_WORDS = CHAT_HEAD | set(norm(w) for w in "عليكم الخير النور الفل الورد عامل عامله عاملين اخبارك اخباركم الاخبار اخبار كيفك كيف حالك حالكم الحال "
+                                              "ايه يا تنين التنين الاحمر الاسود دراجون كلود حبيبي حبيب باشا معلم يسطا صاحبي جدا اوي خالص كتير بجد والله "
+                                              "الحمد لله كده خلاص الف مليون you how are".split())
+NO_CARRY = {"none", "status"}       # v2.8: a status question asks about the work, it is not a topic the next message inherits
 
 
-def route(q, limit=5):
+def _chat_rest(t):
+    """(is it only chat, the words left after the small talk is taken off)."""
+    w = re.findall(r"[\w؀-ۿ]+", t)
+    rest = [x for x in w if x not in CHAT_WORDS]
+    return bool(w) and not rest and any(x in CHAT_HEAD for x in w), rest
+# tuned on the dev half of two blind sets (mind/route_eval): examples vote, the previous message helps weak or short requests
+EX_W, EX_K, EX_FLOOR, EX_P = 6.0, 5, 0.3, 2.0
+CTX_HI, CTX_LO, CTX_CONT, WEAK = 0.5, 0.1, 1.0, 6.0
+PH_W = 3.0
+CONF_HI, CONF_MID = (6.0, 0.35), (3.0, 0.05)       # dev half: high 92% right, mid 79%, low 67%
+EX_EXCLUDE = set()          # example keys hidden from the memory (the evaluation hides the requests it grades)
+_ex = {}
+_tr = {}
+
+
+def ex_key(q):
+    return hashlib.sha1(" ".join(tokens(understand(q)["text"])).encode("utf-8")).hexdigest()[:12]
+
+
+def _ex_terms(text):
+    return [_stem(w) for w in tokens(text) if w not in QSTOP and not w.isdigit()]
+
+
+def _ex_vec(terms, idf, unk):
+    tf = {}
+    for t in terms:
+        tf[t] = tf.get(t, 0) + 1
+    v = {t: (1 + math.log(c)) * idf.get(t, unk) for t, c in tf.items()}
+    z = math.sqrt(sum(x * x for x in v.values())) or 1.0
+    return {t: x / z for t, x in v.items()}
+
+
+def examples():
+    """Past requests with the road that was right for them: the bundled blind-labelled set + what this machine was taught."""
+    files = (MIND / "route_examples.jsonl", MEM / "route_examples.jsonl")
+    sig = tuple(f.stat().st_mtime if f.is_file() else 0 for f in files)
+    if _ex.get("sig") == sig:
+        return _ex
+    rows = []
+    for f in files:
+        if not f.is_file():
+            continue
+        for ln in f.read_text(encoding="utf-8").splitlines():
+            try:
+                r = json.loads(ln)
+            except Exception:
+                continue
+            if r.get("q") and r.get("pb"):
+                r.setdefault("key", ex_key(r["q"]))
+                r["_t"] = _ex_terms(r["q"])
+                rows.append(r)
+    df = {}
+    for r in rows:
+        for t in set(r["_t"]):
+            df[t] = df.get(t, 0) + 1
+    n = len(rows)
+    idf = {t: math.log((n + 1) / (c + 0.5)) for t, c in df.items()}
+    unk = math.log(n + 2) if n else 1.0
+    for r in rows:
+        r["_v"] = _ex_vec(r["_t"], idf, unk)
+    _ex.clear()
+    _ex.update(sig=sig, rows=rows, idf=idf, unk=unk)
+    return _ex
+
+
+def ex_near(text, k=None, floor=None):
+    """[(cosine, example)] of the most similar past requests (IDF-weighted stems), best first."""
+    E = examples()
+    qv = _ex_vec(_ex_terms(text), E["idf"], E["unk"]) if E["rows"] else {}
+    if not qv:
+        return []
+    fl = EX_FLOOR if floor is None else floor
+    out = []
+    for r in E["rows"]:
+        if r["key"] in EX_EXCLUDE:
+            continue
+        s = min(1.0, round(sum(w * r["_v"].get(t, 0.0) for t, w in qv.items()), 6))     # a word-for-word copy is exactly 1.0, not 0.99999
+        if s >= fl:
+            out.append((s, r))
+    out.sort(key=lambda x: -x[0])
+    return out[: k or EX_K]
+
+
+def translit():
+    """Arabic spellings of English tool words (بلندر → blender), so either spelling meets the triggers."""
+    if "m" not in _tr:
+        m = {}
+        for k, v in (jload(MIND / "translit.json", {}) or {}).items():
+            if not k.startswith("_"):
+                kt, vt = tokens(k), tokens(v)
+                if kt and vt:
+                    m[kt[0]] = vt
+        _tr["m"] = m
+    return _tr["m"]
+
+
+def _pb_scores(q, pbs):
+    """Raw score per playbook id for one message, and its kind: url | greet | cont | text."""
     t = norm(q).strip()
     bare = re.sub(r"[a-z]:\\\S*|https?://\S+|\(مرفقات:[^)]*\)", " ", t)
-    oc = outcomes()
-    pbs = playbooks()
-    qt = tokens(q)                      # powers keep the plain match below
     if len(tokens(bare)) == 0 and re.search(r"https?://", t):     # a bare link: the site says what to do with it
         pid = next((p for rx, p in URL_ONLY if re.search(rx, t)), None)
-        pb = [(4.0, p) for p in pbs if p["id"] == pid]
-    elif re.match(NONE_RX, t) or len(tokens(bare)) == 0:
-        pb = []
-    else:
-        qp = [w for w in qt if w not in QSTOP]
-        idf = _route_idf(pbs)
-
-        def sc(p):
-            tot = 0.0
-            for w in qp:
-                best = 0.0
+        return ({pid: 4.0} if pid else {}), "url"
+    chat, rest = _chat_rest(t)
+    if re.match(GREET_RX, t) or re.search(NONE_EXTRA, t) or chat:
+        return {}, "greet"
+    if re.match(CONT_RX, t) or len(tokens(bare)) == 0 or (0 < len(rest) <= 2 and re.match(CONT_RX, " ".join(rest))):   # «كمل», «تمام يا تنين كمل», or only a path / a wrapper
+        return {}, "cont"
+    tr = translit()
+    qp = [w for w in tokens(q) if w not in QSTOP]
+    idf = _route_idf(pbs)
+    out = {}
+    for p in pbs:
+        tot = 0.0
+        for w in qp:
+            best = 0.0
+            for v in [w] + tr.get(w, []):
                 for k in p["_tok"]:
-                    m = _tmatch(w, k)
+                    m = _tmatch(v, k)
                     if m:
                         best = max(best, m * idf.get(k, 1.0))
-                tot += best
-            for rx, pid, bonus in INTENT:
-                if pid == p["id"] and re.search(rx, t):
-                    tot += bonus
-            return tot
-        pb = [(sc(p) * (0.7 + 0.6 * trust(p["id"], oc)), p) for p in pbs]
-    pb = sorted([x for x in pb if x[0] > 0], key=lambda x: -x[0])[:limit]
+            tot += best
+        for rx, pid, bonus in INTENT:
+            if pid == p["id"] and re.search(rx, t):
+                tot += bonus
+        tot += PH_W * sum(1 for ph in p.get("_ph", ()) if ph in t)
+        if tot > 0:
+            out[p["id"]] = tot
+    for s, r in ex_near(t):
+        out[r["pb"]] = out.get(r["pb"], 0.0) + EX_W * s ** EX_P      # EX_P > 1: a near-copy counts, a loose likeness barely does
+    return out, "text"
+
+
+def route(q, limit=5, prev=None):
+    """(playbooks, powers) ranked for one request. prev = the owner's previous message: it carries short follow-ups
+    («كمل», «حلها», «فين الملف») and tips weak requests, and barely moves a clear one."""
+    oc = outcomes()
+    pbs = playbooks()
+    s, kind = _pb_scores(q, pbs)
+    if prev and kind in ("cont", "text"):
+        sp = dict(prev) if isinstance(prev, dict) else _pb_scores(prev, pbs)[0]     # a dict = the decayed topic of the chat so far
+        top = max((v for k, v in s.items() if k != "none"), default=0.0)
+        lam = CTX_CONT if kind == "cont" else (CTX_HI if top < WEAK else CTX_LO)
+        for k, v in sp.items():
+            if k not in NO_CARRY:
+                s[k] = s.get(k, 0.0) + lam * v
+    nonev = s.pop("none", 0.0)
+    pb = sorted([(s[p["id"]] * (0.7 + 0.6 * trust(p["id"], oc)), p) for p in pbs if s.get(p["id"], 0) > 0], key=lambda x: -x[0])
+    if pb and nonev >= pb[0][0]:                    # the most similar past messages were plain chat
+        pb = []
+    pb = pb[:limit]
+    qt = tokens(q)                      # powers keep the plain match below
     pw = [(score(qt, p["_tok"]), p) for p in powers()]
     pw = sorted([x for x in pw if x[0] > 0], key=lambda x: (-x[0], COST_RANK.get(x[1].get("cost"), 9)))[:limit + 2]
     return pb, pw
+
+
+def confidence(pb):
+    """high | mid | low | none, from the top score and its lead over the runner-up (calibrated on the dev half)."""
+    if not pb or pb[0][0] < 2:
+        return "none"
+    s1, s2 = pb[0][0], (pb[1][0] if len(pb) > 1 else 0.0)
+    gap = (s1 - s2) / s1
+    if s1 >= CONF_HI[0] and gap >= CONF_HI[1]:
+        return "high"
+    if s1 >= CONF_MID[0] and gap >= CONF_MID[1]:
+        return "mid"
+    return "low"
+
+
+CONF_AR = {"high": "عالية", "mid": "متوسطة", "low": "ضعيفة", "none": "مفيش"}
+# the topic of the chat so far: every message adds its scores, older ones fade (0.7 per message). Dev half: 73% → 83% acceptable.
+TOPIC_DECAY, TOPIC_CAP, TOPIC_TTL = 0.7, 20.0, 45 * 60
+
+
+def topic_update(topic, s):
+    s = {k: v for k, v in (s or {}).items() if k not in NO_CARRY and v > 0}
+    m = max(s.values(), default=0.0)
+    if m > TOPIC_CAP:
+        s = {k: v * TOPIC_CAP / m for k, v in s.items()}
+    t = {k: TOPIC_DECAY * (topic or {}).get(k, 0.0) + s.get(k, 0.0) for k in set(topic or {}) | set(s)}
+    return {k: round(v, 3) for k, v in t.items() if v > 0.05}
+
+
+def last_turn(max_age=TOPIC_TTL):
+    """What brief() saw last on this machine (the chat topic), or None when it is older than max_age seconds."""
+    lt = jload(MEM / "last_turn.json", None)
+    if not isinstance(lt, dict) or datetime.datetime.now().timestamp() - lt.get("t", 0) > max_age:
+        return None
+    return lt
+
+
+def _topic_for(text, lt):
+    """The topic before this message: a re-brief of the same message reuses the topic it had."""
+    if not lt:
+        return None
+    return lt.get("before") if lt.get("q") == text else lt.get("topic")
+
+
+def add_example(q, pid, src):
+    """Remember «a request like this one → this playbook» on this machine (MEM/route_examples.jsonl)."""
+    q = " ".join(understand(q)["text"].split())[:500]
+    if not [w for w in tokens(q) if w not in QSTOP]:
+        return None
+    k = ex_key(q)
+    if any(r["key"] == k and r["pb"] == pid for r in examples()["rows"]):
+        return None
+    row = {"q": q, "pb": pid, "src": src, "key": k, "date": datetime.date.today().isoformat()}
+    with mem_file("route_examples.jsonl").open("a", encoding="utf-8") as f:
+        f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    return row
 
 
 def here_steps(p, where):
@@ -307,16 +506,18 @@ def here_steps(p, where):
     return out
 
 
-def plan(q, as_json=False):
+def plan(q, as_json=False, prev=None):
     where = place()
     u = understand(q)
     q = u["text"]
-    pb, pw = route(q)
+    before = _pb_scores(understand(prev)["text"], playbooks())[0] if prev else _topic_for(q, last_turn())     # read-only: plan never moves the topic
+    pb, pw = route(q, prev=before or None)
+    conf = confidence(pb)
     ls = recall(q, domain=pb[0][1].get("domain") if pb else None)
     if as_json:
         print(json.dumps({"place": where, "playbooks": [{k: v for k, v in p.items() if not k.startswith("_")} | {"score": round(s, 2)} for s, p in pb],
                           "powers": [{"id": p["id"], "ar": p.get("ar"), "cost": p.get("cost"), "score": s} for s, p in pw],
-                          "lessons": ls}, ensure_ascii=False, indent=1))
+                          "lessons": ls, "confidence": conf, "used_context": bool(before)}, ensure_ascii=False, indent=1))
         return
     P = print
     P(f"🐉 التنين الأحمر v{VERSION} · المكان: {where}")
@@ -328,7 +529,8 @@ def plan(q, as_json=False):
     if not pb:
         P("\n② مفيش playbook مطابق. استخدم: rd.py map ، أو المحرك: rd.py x find \"<الطلب>\" ، وبعد ما تخلص: rd.py learn …")
     for i, (s, p) in enumerate(pb[:2]):
-        P(f"\n{'②' if i == 0 else '②ب (بديل)'} الطريق: {p['ar']}  [{p['id']}]  ثقة {trust(p['id'], outcomes()):.0%}")
+        P(f"\n{'②' if i == 0 else '②ب (بديل)'} الطريق: {p['ar']}  [{p['id']}]  نجاح سابق {trust(p['id'], outcomes()):.0%}"
+          + (f" · ثقة الاختيار: {CONF_AR[conf]}" + (" (بالسياق)" if before else "") if i == 0 else ""))
         if i:
             continue
         for n, st in enumerate(here_steps(p, where), 1):
@@ -583,9 +785,13 @@ LAYOUT["b"] = "لا"
 DICTATION = jload(MIND / "dictation.json", {}) or {}
 
 
+_TAG = re.compile(r"^\[[A-Z][A-Z0-9_\-]{2,}\]$")
+
+
 def _garbled(run):
     """A run of Latin tokens that is not English: keys like ; ' , inside words, or almost no vowels."""
-    toks = run.split()
+    toks = [t for t in run.split() if not _TAG.match(t)]    # v2.8: [ERROR] / [OPTIONS] are tags, not «ج…د» typed on the wrong keyboard
+    run = " ".join(toks)
     letters = [c for c in run.lower() if c.isalpha()]
     if len(letters) < 5 or re.search(r"https?://|[\\/]\w+[\\/]|\.\w{2,4}\b|--\w|^\s*(pip|npm|npx|git|cd|python|curl)\b", run):
         return False
@@ -599,6 +805,127 @@ def _garbled(run):
 
 ENGLISH = set("the a an and or to of in on for with is are it this that you me my i we be do not no yes can will have has from at by as if so but ok okay please make create build run test install update fix "
               "open file files app video image skill skills dragon black white red claude code github repo link download upload render blender chrome windows".split())
+
+
+# ------------------------------------------------------------------ v2.8: the fixed text the app wraps around a request
+# ---------------------------------------------------------------- بلوكات النظام
+# بلوك بين أقواس مربعة في أول الرسالة، ورأسه لازم يكون من الأسماء المعروفة دي
+# (أي قوس مربع تاني زي [OPTIONS] أو [ملف مرفق ...] مابيتلمسش).
+_BLOCK_HEADS = (
+    ("agents_team", r"فريق الوكلاء"),
+    ("workdir", r"مجلد الشغل"),
+    ("mind", r"عقل التنين(?: الأحمر| الأسود)?"),
+    ("analysis_tools", r"أدوات التحليل المختارة"),
+    ("cc_test_block", r"اختبار(?: ربط)? من Claude Code"),
+    ("live_msg", r"رسالة جديدة من المستخدم"),
+    ("device_control", r"التحكم في الجهاز"),
+    ("chats_update", r"تحديث من كل المحادثات"),
+)
+_BLOCK_HEAD_RE = re.compile(
+    r"\[\s*(?:" + "|".join("(?P<%s>%s)" % (n, p) for n, p in _BLOCK_HEADS) + ")"
+)
+_BLOCK_NAMES = frozenset(n for n, _ in _BLOCK_HEADS)
+# قفلة احتياطية لو الأقواس الداخلية مش متوازنة: أول «]» في آخر سطر.
+_EOL_CLOSE_RE = re.compile(r"\][ \t]*(?:\r?\n|\Z)")
+# «[أدوات التحليل المختارة] ... الملاحظة دي.»: الكلام بعد القوس جزء من الغلاف.
+_TOOLS_NOTE_END_RE = re.compile(r"الملاحظة دي[ \t]*[.。!]?")
+_LINE_END_RE = re.compile(r"[^\n]*(?:\n|\Z)")
+# ملخص المحادثات اللي بييجي بعد «[تحديث من كل المحادثات: ...]».
+_DIGEST_RE = re.compile(
+    r"(?:[ \t]*(?:###[ \t]*«|النص الكامل:|🧑|🤖|🐉)[^\n]*(?:\n|\Z)|[ \t]*\r?\n)+"
+)
+
+# ------------------------------------------------------------ بادئات قبل الطلب
+_PREFIXES = (
+    ("skills_all", re.compile(
+        r"استخدم كل المهارات المتثبتة\s*(?:\(\s*\d+\s*مهارة\s*\))?\s*مع بعض\s*:\s*"
+        r"(?:اختار منها[^\n]*?في إيه\s*\.\s*)?(?:الطلب\s*:\s*)?")),
+    ("skills_set", re.compile(
+        r"استخدم المهارات دي مع بعض\s*(?:\(\s*\d+\s*\))?\s*:\s*"
+        r"(?:«[^»\n]*»\s*[،,]?\s*)+\.?\s*"
+        r"(?:حم\u0651?لها[^\n]*?في إيه\s*\.\s*)?(?:الطلب\s*:\s*)?")),
+    ("skill_one", re.compile(r"استخدم مهارة\s*«[^»\n]+»\s*:\s*")),
+    ("cc_test", re.compile(
+        r"اختبار(?: ربط)? من Claude Code[^:\n(\[]{0,40}(?:\([^)\n]*\))?\s*:\s*")),
+)
+
+# --------------------------------------------------------------- لواحق بعد الطلب
+# رسايل الخطأ بتاعة الواجهة بتبدأ بعلامة ✕، وكل اللي بعدها (حتى زرار «نسخ») مش طلب.
+_ERROR_TAIL_RE = re.compile(r"\s*✕.*\Z", re.S)
+# الجملة الثابتة بعد «[ملف مرفق ...]»: القوس والمسار بيفضلوا والجملة بتتشال.
+_ATTACH_HINT_RE = re.compile(
+    r"(\[ملف مرفق[^\]\n]*\])[ \t]*استخدم المسار ده في الأدوات[ \t]*\([^)\n]*\)[ \t]*\.?")
+
+
+def _block_end(t):
+    """t بيبدأ بـ «[». بيرجّع موضع ما بعد القوس اللي بيقفله، أو -1 لو البلوك مقطوع."""
+    depth = 0
+    for i, ch in enumerate(t):
+        if ch == "[":
+            depth += 1
+        elif ch == "]":
+            depth -= 1
+            if depth == 0:
+                return i + 1
+    m = _EOL_CLOSE_RE.search(t)
+    return m.start() + 1 if m else -1
+
+
+def strip_wrappers(text):
+    """بيرجّع (النص من غير الأغلفة، أسماء الأنماط اللي اتشالت بالترتيب)."""
+    if not isinstance(text, str) or not text:
+        return text, []
+    names = []
+
+    def add(n):
+        if n not in names:
+            names.append(n)
+
+    s = text
+    while True:
+        t = s.lstrip()
+        m = _BLOCK_HEAD_RE.match(t)
+        if m:
+            name = m.lastgroup
+            add(name)
+            end = _block_end(t)
+            if end < 0:  # بلوك نظام مقطوع (الرسالة اتقصّت): مفيش طلب باين
+                s = ""
+                break
+            s = t[end:]
+            if name == "analysis_tools":
+                m2 = _TOOLS_NOTE_END_RE.search(s) or _LINE_END_RE.match(s)
+                s = s[m2.end():]
+            elif name == "chats_update":
+                m2 = _DIGEST_RE.match(s)
+                if m2:
+                    s = s[m2.end():]
+            continue
+        for name, rx in _PREFIXES:
+            m = rx.match(t)
+            if m:
+                add(name)
+                s = t[m.end():]
+                break
+        else:
+            break
+
+    s, n = _ATTACH_HINT_RE.subn(r"\1", s)
+    if n:
+        add("attach_hint")
+    m = _ERROR_TAIL_RE.search(s)
+    if m:
+        add("error_tail")
+        s = s[:m.start()]
+
+    if not names:
+        return text, []
+    clean = s.strip()
+    if not clean:
+        if _BLOCK_NAMES.intersection(names):
+            return "", names
+        return text, []
+    return clean, names
 
 
 def fix_layout(text):
@@ -627,22 +954,70 @@ def fix_dictation(text):
 
 
 def understand(text):
-    t1, lay = fix_layout(" ".join(str(text).split()))
+    clean, wraps = strip_wrappers(str(text))          # v2.8: agents-team / work-folder / skills prefixes / error tails are not the request
+    t1, lay = fix_layout(" ".join(clean.split()))
     t2, hits = fix_dictation(t1)
-    return {"text": t2, "layout_fixed": lay, "words_fixed": hits, "changed": lay or bool(hits)}
+    return {"text": t2, "layout_fixed": lay, "words_fixed": hits, "changed": lay or bool(hits), "wrappers": wraps}
 
 
-def brief(text, limit=1400):
-    """A short mission brief for a host app to put in front of the model. Pure function, no I/O beyond the mind files."""
+BRIEF_MIN_HITS = 2      # v2.8.1: a repo / library skill joins the brief only when 2+ different words of the request match it
+
+
+def _hits(q, bag):
+    """How many different words of the request match a row. An Arabic word counts once, however many English words it widens to."""
+    n = 0
+    for t in {w for w in tokens(q) if w not in QSTOP}:
+        vs = [t] + [x for k, v in LIB_AR.items() if match(t, norm(k)) for x in v.split()]
+        if any(match(x, k) for x in vs for k in bag):
+            n += 1
+    return n
+
+
+def _named(q, name):
+    """The request names this repo / skill itself («استخدم REA», «playwright»): then one word is enough."""
+    head = re.split(r"[-_.]", name.lower().split("/")[-1])[0]
+    return len(head) >= 3 and head in set(tokens(q))
+
+
+def _relevant(q, r, name):
+    return _named(q, name) or _hits(q, r["_tok"]) >= BRIEF_MIN_HITS
+
+
+def _clip(s, n):
+    """Cut at the last whole word before n characters (never in the middle of a word)."""
+    s = " ".join(str(s).split())
+    if len(s) <= n:
+        return s
+    cut = s[:n]
+    sp = cut.rfind(" ")
+    return (cut[:sp] if sp > n * 0.6 else cut).rstrip(" ،,.:;←-") + "…"
+
+
+def brief(text, limit=1400, prev=None):
+    """A short mission brief for a host app to put in front of the model. Reads the mind files; writes only MEM/last_turn.json
+    (the chat topic, so «كمل» / «حلها» / «فين الملف» are read in the light of what came before). prev: str or topic dict."""
     u = understand(text)
-    pb, pw = route(u["text"])
+    lt = last_turn() if prev is None else None
+    before = prev if isinstance(prev, dict) else (_pb_scores(prev, playbooks())[0] if prev else _topic_for(u["text"], lt))
+    pb, pw = route(u["text"], prev=before or None)
+    conf = confidence(pb)
+    s_now, kind = _pb_scores(u["text"], playbooks())
+    try:                                            # best effort: a read-only disk never stops the brief
+        qp = [w for w in tokens(u["text"]) if w not in QSTOP]
+        task_q = u["text"] if kind == "text" and len(qp) >= 4 and conf != "none" else (lt or {}).get("task_q", "")
+        mem_file("last_turn.json").write_text(json.dumps({"t": datetime.datetime.now().timestamp(), "q": u["text"][:1500], "before": before or {},
+                                                           "topic": topic_update(before, s_now), "pb": pb[0][1]["id"] if pb and pb[0][0] >= 2 else None,
+                                                           "task_q": task_q[:1500]}, ensure_ascii=False), encoding="utf-8")
+    except Exception:
+        pass
     where = place()
     L = []
     if u["changed"]:
         L.append("الطلب بعد فك الكتابة: «" + u["text"][:300] + "»" + (" (كان مكتوب والكيبورد إنجليزي)" if u["layout_fixed"] else "") + (" · تصحيح: " + "، ".join(u["words_fixed"]) if u["words_fixed"] else ""))
     if pb and pb[0][0] >= 2:
         p = pb[0][1]
-        L.append(f"الطريق المقترح: {p['ar']} [{p['id']}]")
+        alt = pb[1][1] if len(pb) > 1 and conf in ("low", "mid") and pb[1][0] >= 2 else None
+        L.append(f"الطريق المقترح: {p['ar']} [{p['id']}] · ثقة {CONF_AR[conf]}" + (f" · بديل قريب: {alt['ar']} [{alt['id']}]" if alt else ""))
         L += [f" {n}. {s}" for n, s in enumerate(here_steps(p, where)[:6], 1)]
         if p.get("skills"):
             L.append(" مهارات: " + "، ".join(p["skills"][:5]))
@@ -650,20 +1025,22 @@ def brief(text, limit=1400):
             L.append(" 🔒 بموافقة: " + " · ".join(p["ask"]))
         if p.get("gates"):
             L.append(" ✅ قبل التسليم: " + " · ".join(p["gates"][:4]))
-    tr = repos_find(u["text"], 2)
+    chat = kind in ("greet", "cont")    # v2.8.1: «ازيك يا تنين» / «شكرا» / «كمل» get no repos, skills or lessons searched from their own words
+    tr = [] if chat else [r for r in repos_find(u["text"], 6) if _relevant(u["text"], r, r["repo"])][:2]
     if tr:
         L.append("من أشهر 500 مستودع GitHub (فهرس بس، مفيش حاجة متنزّلة): " + " ⏐ ".join(f"{r['repo']} ★{r['stars']:,} ({WIN_AR.get(str(r.get('windows_ok')), '')})" for r in tr))
-    ih = inst_find(u["text"], 3)
+    ih = [] if chat else inst_find(u["text"], 3)
     if ih:
         L.append("مهارات متثبتة تفيد (حمّلها بأداة Skill): " + " ⏐ ".join(r["name"] for r in ih))
-    lb = lib_find(u["text"], 2)
+    lb = [] if chat else [r for r in lib_find(u["text"], 6) if _relevant(u["text"], r, r["name"])][:2]
     if lb:
         L.append("من مكتبة المهارات (مش متثبتة، اقرا SKILL.md بتاعها لو هتفيد): " + " ⏐ ".join(f"{r['name']} ★{r['stars']:,} → {LIBRARY / r['name'] / 'SKILL.md'}" for r in lb))
-    ls = recall(u["text"], 3, pb[0][1].get("domain") if pb else None, minscore=4)
+    ls = [] if chat else recall(u["text"], 3, pb[0][1].get("domain") if pb else None, minscore=4)
     if ls:
-        L.append("دروس سابقة: " + " ⏐ ".join(l["text"][:170] for l in ls))
+        L.append("دروس سابقة: " + " ⏐ ".join(_clip(l["text"], 170) for l in ls))
     out = "\n".join(L)[:limit + 500]
-    return {"understood": u, "playbook": pb[0][1]["id"] if pb and pb[0][0] >= 2 else None, "library": [r["name"] for r in lb], "installed": [r["name"] for r in ih], "brief": out}
+    return {"understood": u, "playbook": pb[0][1]["id"] if pb and pb[0][0] >= 2 else None, "library": [r["name"] for r in lb], "installed": [r["name"] for r in ih], "brief": out,
+            "confidence": conf, "alternative": pb[1][1]["id"] if len(pb) > 1 and pb[1][0] >= 2 else None, "used_context": bool(before)}
 
 
 # ------------------------------------------------------------------ re: what is this target
@@ -940,11 +1317,16 @@ def main():
         return chats_mod().main(sys.argv[1:])
     ap = argparse.ArgumentParser(prog="rd.py", description="Red Dragon brain")
     sub = ap.add_subparsers(dest="cmd")
-    sub.add_parser("start"); sub.add_parser("where"); sub.add_parser("doctor"); sub.add_parser("docs"); sub.add_parser("selftest"); sub.add_parser("retro")
+    sub.add_parser("start"); sub.add_parser("where"); sub.add_parser("doctor"); sub.add_parser("docs"); sub.add_parser("retro")
+    s = sub.add_parser("selftest")
+    s.add_argument("--quick", action="store_true", help="skip the routing eval gate (~12 s warm; mind/route_eval/floor.json)")
     for n in ("understand", "brief"):
         s_ = sub.add_parser(n); s_.add_argument("q")
     for n in ("plan", "route", "recall", "intel"):
         s = sub.add_parser(n); s.add_argument("q"); s.add_argument("--json", action="store_true")
+        if n in ("plan", "route"):
+            s.add_argument("--prev", default=None, help="the owner's previous message (default: the chat topic brief() saved in the last 45 min)")
+    s = sub.add_parser("teach", help="a request was routed wrong: remember «request → playbook» (example + lesson)"); s.add_argument("q"); s.add_argument("id")
     s = sub.add_parser("map"); s.add_argument("--md", action="store_true")
     s = sub.add_parser("show"); s.add_argument("id")
     s = sub.add_parser("learn"); s.add_argument("text"); s.add_argument("--domain", default="general"); s.add_argument("--trigger", default=""); s.add_argument("--kind", default="rule")
@@ -960,6 +1342,7 @@ def main():
     s = sub.add_parser("math", help="drawing maths (draw-math): body, dist, angle, ik2, cam, frame-fit, puppet-shadow, gait, ease ..."); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("dcm", help="dragon-character-memory v1.0 (second engine): extract, analyze, redraw, memory, rebuild, animate, identity, demo"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("desktop", help="guarded BlackDragon desktop bridge: catalog, doctor, read, snapshot"); s.add_argument("args", nargs=argparse.REMAINDER)
+    s = sub.add_parser("think", help="planning-mind: card, gate, workflow, check, learn, lessons, types, selftest"); s.add_argument("args", nargs=argparse.REMAINDER)
     a = ap.parse_args()
 
     if a.cmd in (None, "start"):
@@ -984,11 +1367,16 @@ def main():
     elif a.cmd == "brief":
         print(json.dumps(brief(a.q), ensure_ascii=False, indent=1))
     elif a.cmd == "plan":
-        plan(a.q, a.json)
+        plan(a.q, a.json, a.prev)
     elif a.cmd == "route":
-        pb, pw = route(understand(a.q)["text"])
+        q = understand(a.q)["text"]
+        before = _pb_scores(understand(a.prev)["text"], playbooks())[0] if a.prev else _topic_for(q, last_turn())
+        pb, pw = route(q, prev=before or None)
+        print(f"ثقة الاختيار: {CONF_AR[confidence(pb)]}" + (" (بالسياق)" if before else ""))
         for s, p in pb:
             print(f"playbook {s:5.1f}  {p['id']:<16} {p['ar']}")
+        for s, r in ex_near(q, k=3):
+            print(f"  شبه طلب قديم {s:.2f} → {r['pb']:<14} «{r['q'][:70]}» ({r.get('src', '')})")
         for s, p in pw:
             print(f"power    {s:5.1f}  {p['id']:<16} {COST.get(p.get('cost'), '')} {p.get('ar')}")
     elif a.cmd == "map":
@@ -1027,6 +1415,23 @@ def main():
         if a.result == "fail" and a.note:
             row, _ = learn(a.note, next(p for p in playbooks() if p["id"] == a.id).get("domain", "general"), a.id, "failure", "outcome")
             print(f"والسبب اتحفظ كدرس [{row['id']}]")
+        lt = last_turn(12 * 3600)
+        if a.result == "ok" and lt and lt.get("task_q"):      # v2.8: the request that started this task is now an example of this road
+            ex = add_example(lt["task_q"], a.id, "outcome")
+            if ex:
+                print(f"واتحفظ كمثال للراوتر: «{ex['q'][:80]}» → {a.id}")
+    elif a.cmd == "teach":
+        ids = {p["id"] for p in playbooks()} | {"none"}
+        if a.id not in ids:
+            raise SystemExit(f"مفيش playbook بالاسم ده: {a.id} (شوف rd.py map، أو none لو الطلب دردشة)")
+        q = understand(a.q)["text"]
+        old = route(q)[0]
+        ex = add_example(a.q, a.id, "teach")
+        new = route(q)[0]
+        if a.id != "none":
+            learn(f"طلب زي «{' '.join(q.split())[:90]}» طريقه {a.id} مش {old[0][1]['id'] if old else 'none'}", "routing", a.id, "route", "owner")
+        print(f"قبل: {old[0][1]['id'] if old else 'none'} → بعد: {new[0][1]['id'] if new and new[0][0] >= 2 else 'none'}"
+              + ("" if ex else "  (المثال ده كان محفوظ قبل كده)") + f" · {MEM / 'route_examples.jsonl'}")
     elif a.cmd == "retro":
         print("مراجعة بعد المهمة (جاوب في سطر لكل واحدة، وكل إجابة مفيدة = rd.py learn):\n"
               " 1. إيه اللي صاحب الشغل صحّحه أو كرّره؟ (ده أهم درس)\n 2. أنهي خطوة اتعادت أو فشلت، وإيه اللي كان هيمنعها من الأول؟\n"
@@ -1145,12 +1550,10 @@ def main():
         if not dm.is_file():
             raise SystemExit(f"مفيش draw-math: {dm}")
         raise SystemExit(subprocess.call([sys.executable, "-X", "utf8", str(dm)] + (a.args or ["--help"])))
-    elif a.cmd == "dcm":
-        dc = ROOT / "engine" / "skills" / "dragon-character-memory" / "scripts" / "dcm.py"
-        raise SystemExit(subprocess.call([sys.executable, "-X", "utf8", str(dc)] + (a.args or ["--help"])))
-    elif a.cmd == "desktop":
-        bridge = ROOT / "engine" / "skills" / "blackdragon-desktop-bridge" / "scripts" / "bridge.py"
-        raise SystemExit(subprocess.call([sys.executable, "-X", "utf8", str(bridge)] + (a.args or ["--help"])))
+    elif a.cmd in ("dcm", "desktop", "think"):
+        sk = {"dcm": ("dragon-character-memory", "dcm.py"), "desktop": ("blackdragon-desktop-bridge", "bridge.py"), "think": ("planning-mind", "plan.py")}[a.cmd]
+        sc = ROOT / "engine" / "skills" / sk[0] / "scripts" / sk[1]
+        raise SystemExit(subprocess.call([sys.executable, "-X", "utf8", str(sc)] + (a.args or ["--help"])))
     elif a.cmd == "doctor":
         doctor()
     elif a.cmd == "docs":
@@ -1174,10 +1577,16 @@ def main():
             for x in p.get("powers", []):
                 if x not in pids:
                     bad.append(f"{p['id']}: unknown power {x}")
-        for q, want in (jload(MIND / "route_tests.json", {}) or {}).items():
+        for q, want in (jload(MIND / "route_tests.json", {}) or {}).items():      # want "none" = chat, no road
             pb, _ = route(understand(q)["text"])
-            if not pb or pb[0][1]["id"] != want:
-                bad.append(f"route «{q}» → {pb[0][1]['id'] if pb else None}, expected {want}")
+            got = pb[0][1]["id"] if pb else "none"
+            if got != want:
+                bad.append(f"route «{q}» → {got}, expected {want}")
+        for c in jload(MIND / "route_ctx_tests.json", []) or []:       # v2.8: the previous message carries follow-ups, never chat or a status question
+            pb, _ = route(understand(c["q"])["text"], prev=understand(c["prev"])["text"])
+            got = pb[0][1]["id"] if pb else "none"
+            if ("want" in c and got != c["want"]) or got == c.get("not"):
+                bad.append(f"route «{c['prev'][:30]} ← {c['q']}» → {got}, expected {c.get('want') or 'not ' + str(c.get('not'))}")
         for raw, want in (jload(MIND / "understand_tests.json", {}) or {}).items():
             got = understand(raw)["text"]
             if got != want:
@@ -1212,7 +1621,21 @@ def main():
                     bad.append(f"blind chats eval: top-3 {t3}/{len(blind)} < 85%")
         except Exception as e:
             bad.append(f"rd_chats: {e}")
-        print(json.dumps({"ok": not bad, "playbooks": len(ids), "powers": len(pids), "lessons": len(lessons()), "chats": nch, "edition": "public (no chats memory)" if public else "full", "problems": bad}, ensure_ascii=False, indent=1))
+        gate, ev, fl = {}, MIND / "route_eval" / "route_eval2.py", jload(MIND / "route_eval" / "floor.json", {}) or {}
+        if not a.quick and ev.is_file() and fl.get("floor"):     # v2.8: the blind test half may never get worse (old: no context, fresh: session topic)
+            for s, extra in (("old", []), ("fresh", ["--topic"])):
+                try:
+                    r = subprocess.run([sys.executable, "-X", "utf8", str(ev), str(ROOT / "scripts"), "--set", s, "--split", "test", "--json", *extra], capture_output=True,
+                                       text=True, encoding="utf-8", errors="replace", timeout=600, env=dict(os.environ, PYTHONDONTWRITEBYTECODE="1"))
+                    res = json.loads(r.stdout.strip().splitlines()[-1])
+                    gate[s] = {k: res[k] for k in ("n", "top1", "ok", "top3")}
+                    for k, v in fl["floor"].get(s, {}).items():
+                        if res[k] < v:
+                            bad.append(f"route eval {s}/test: {k} {res[k]:.0%} < floor {v:.0%}")
+                except Exception as e:
+                    bad.append(f"route eval {s}: {type(e).__name__}: {str(e)[:160]}")
+        print(json.dumps({"ok": not bad, "playbooks": len(ids), "powers": len(pids), "lessons": len(lessons()), "chats": nch, "edition": "public (no chats memory)" if public else "full",
+                          "route_eval": gate or ("skipped (--quick)" if a.quick else "no floor.json"), "problems": bad}, ensure_ascii=False, indent=1))
         sys.exit(1 if bad else 0)
 
 

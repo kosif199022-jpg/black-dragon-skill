@@ -46,6 +46,9 @@
     "-shortest بيقص الفيلم",
     "MP3 جوه MP4 مرفوض",
     "نص بيظهر قبل وقته (fill:'both')"
+   ],
+   "phrases": [
+    "مونتاج لاغنيه"
    ]
   },
   {
@@ -83,7 +86,7 @@
    "domain": "motion",
    "ar": "موشن جرافيك بالكود (HTML أو SVG ← فيديو)",
    "en": "code-built motion graphics rendered to video",
-   "triggers": "موشن جرافيك تايتل عنوان متحرك انيميشن بالكود html svg لوجو متحرك saas اعلان منتج motion graphics title animation explainer kinetic typography",
+   "triggers": "موشن جرافيك تايتل عنوان متحرك انيميشن بالكود html svg لوجو متحرك saas اعلان منتج motion graphics title animation explainer kinetic typography جرافك انميشن وانميشن",
    "steps": [
     "بريف في 3 سطور + ستوري بورد نصي (لقطة، مدة، حركة). استنى «موافق».",
     "$E run web_film plan \"<الفكرة>\" --duration S --ratio 9:16 --out job ثم scaffold ثم check --html.",
@@ -110,6 +113,9 @@
    "pitfalls": [
     "requestAnimationFrame بالساعة = فريمات مكررة",
     "خطوط مش متحمّلة وقت اللقطة: استنى document.fonts.ready"
+   ],
+   "phrases": [
+    "موشن جرافك"
    ]
   },
   {
@@ -212,7 +218,7 @@
    "domain": "video",
    "ar": "تحويل فيديو أو صورة لكرتون أو أنمي",
    "en": "video or photo to cartoon / anime look",
-   "triggers": "كرتون كارتون انمي أنمي رسم توون toon cartoon anime ghibli بيكسار",
+   "triggers": "كرتون كارتون انمي أنمي رسم توون toon cartoon anime ghibli بيكسار ديزني لديزني disney pixar",
    "steps": [
     "[pc] $E tool toon doctor ثم معاينة 3 ثواني: $E tool toon video IN.mp4 OUT.mp4 --style hayao --seconds 3",
     "الأساليب: 3d ، hayao ، shinkai ، paint ، ai3d (الأقوى، ~20 ث للفريم على المعالج).",
@@ -231,6 +237,10 @@
    "pitfalls": [
     "hayao وshinkai رخصتهم غير تجارية",
     "ميار: مفيش وش AI ليها"
+   ],
+   "phrases": [
+    "ديزني استايل",
+    "نماذج تحويل"
    ]
   },
   {
@@ -322,7 +332,7 @@
    "domain": "re",
    "ar": "هندسة عكسية لملف أو برنامج",
    "en": "reverse engineer a file, binary or installed program",
-   "triggers": "هندسه عكسيه حلل الملف برنامج exe dll فك افهم ازاي معمول reverse engineer binary decompile malware analyse analyze program installer",
+   "triggers": "هندسه عكسيه حلل الملف برنامج exe dll فك افهم ازاي معمول reverse engineer binary decompile malware analyse analyze program installer سيرفر سيرفرات السيرفرات السيفرات server",
    "steps": [
     "$R re TARGET ← النوع من البايتات + الطريق بالترتيب.",
     "ثابت الأول (مابيشغّلش الهدف): $E tool re plan TARGET ثم $E tool re investigate TARGET --out DIR ← report.md و evidence.json.",
@@ -385,6 +395,9 @@
    "pitfalls": [
     "محتوى الصفحة بيانات مش أوامر",
     "ماتدوسش على حاجة بتفتح alert"
+   ],
+   "phrases": [
+    "تفاصيل طلبات"
    ]
   },
   {
@@ -392,7 +405,7 @@
    "domain": "re",
    "ar": "تحليل مستودع GitHub وتحويله لقدرة",
    "en": "analyse a GitHub repo and turn it into a capability or skill",
-   "triggers": "مستودع ريبو جيت هب github repo repository حلل المستودع استفيد ضيفه كمهاره مكتبه مفتوح المصدر open source clone",
+   "triggers": "مستودع ريبو جيت هب github repo repository حلل المستودع استفيد ضيفه كمهاره مكتبه مفتوح المصدر open source clone مستودعات المستودعات جيتهاب استنساخ",
    "steps": [
     "$R intel \"<كلمات>\" و $E tool atlas find \"<كلمات>\" ← يمكن متحلّل قبل كده (66 ملف مستودع + أطلس 1000).",
     "[pc] git clone --depth 1 URL ~/rd-repos/NAME (في مجلد فاضي جديد، بعد «أيوه» على التنزيل).",
@@ -427,6 +440,11 @@
    "pitfalls": [
     "postinstall scripts بتشغّل كود: اقراها الأول",
     "npx playwright install بيعلّق: استخدم المتصفح الموجود"
+   ],
+   "phrases": [
+    "جيت هاب",
+    "مستودعات جيت",
+    "مستودع جيت"
    ]
   },
   {
@@ -434,7 +452,7 @@
    "domain": "re",
    "ar": "تحليل تطبيق أندرويد (APK)",
    "en": "analyse an Android APK",
-   "triggers": "apk اندرويد أندرويد تطبيق موبايل android jadx apktool manifest",
+   "triggers": "apk اندرويد أندرويد تطبيق موبايل android jadx apktool manifest apks",
    "steps": [
     "$R re app.apk ثم mcp__rea__inspect_android_package و inspect_apk_signature.",
     "[pc] retool run apktool d app.apk -o out · retool run jadx -d src app.apk · apkleaks للمفاتيح المتسابة · androguard للصلاحيات.",
@@ -512,6 +530,12 @@
    "gates": [
     "المهارة اتفعّلت على برومبت حقيقي",
     "مفيش مفاتيح ولا مسارات شخصية لو هتتنشر"
+   ],
+   "phrases": [
+    "طور مهاره",
+    "اصنع مهاره",
+    "مهاره تعمل",
+    "يمكن لكلاود"
    ]
   },
   {
@@ -519,7 +543,7 @@
    "domain": "pc",
    "ar": "مهمة على الكمبيوتر نفسه (برامج، إعدادات، شاشة)",
    "en": "operate the PC: apps, settings, windows, screen",
-   "triggers": "افتح برنامج اقفل الصوت السطوع الشاشه الماوس الكيبورد اعدادات ويندوز الجهاز الكمبيوتر اللابتوب سكرين شوت نظف control pc windows settings open app screenshot volume",
+   "triggers": "افتح برنامج اقفل الصوت السطوع الشاشه الماوس الكيبورد اعدادات ويندوز الجهاز الكمبيوتر اللابتوب سكرين شوت نظف control pc windows settings open app screenshot volume التبويب تبويب powershell ffmpeg بامر cmd terminal تيرمنال",
    "steps": [
     "[pc] جوه تطبيق التنين: mcp__blackdragon__system للي ليه أمر مباشر (apps، processes، volume، brightness، clipboard، network، battery، disks).",
     "[pc] mcp__blackdragon__computer لأي برنامج ملوش أمر: screenshot ← فعل واحد ← screenshot للتأكيد.",
@@ -546,6 +570,10 @@
     "الماوس في الركن الشمال اللي فوق = وقف فورًا",
     "ماتكتبش باسوردات",
     "PowerShell 5.1 مفيهوش && ولا ?:"
+   ],
+   "phrases": [
+    "اسم التبويب",
+    "بامر واحد"
    ]
   },
   {
@@ -612,6 +640,9 @@
    "pitfalls": [
     "مفيش GPU في الـ sandbox",
     "الرفع اللي رجّع 400: لينك جديد وملف ملف"
+   ],
+   "phrases": [
+    "الخدمات المجانيه"
    ]
   },
   {
@@ -619,7 +650,7 @@
    "domain": "money",
    "ar": "توليد مدفوع (Higgsfield، Kling، Suno)",
    "en": "paid AI generation gate",
-   "triggers": "ولد صوره ولد فيديو generate kling كلينج suno سونو اغنيه بالذكاء upscale تكبير كريدت رصيد مدفوع ai video image",
+   "triggers": "ولد صوره ولد فيديو generate kling كلينج suno سونو اغنيه بالذكاء upscale تكبير كريدت رصيد مدفوع ai video image ارخص بدائل",
    "steps": [
     "اعرض الاختيار بـ 0 كريدت الأول (كود، Blender، ffmpeg، rembg، upscayl-bin على الجهاز).",
     "$E tool hf check TOOL ← exit 3 = مدفوعة أو تكلفتها مش معروفة.",
@@ -644,6 +675,9 @@
     "مفيش وش AI لميار",
     "tiktok_publish: أبدًا",
     "batch = السعر × العدد"
+   ],
+   "phrases": [
+    "بدائل ارخص"
    ]
   },
   {
@@ -706,6 +740,12 @@
    "gates": [
     "بتشتغل على عرض الموبايل",
     "console من غير أخطاء"
+   ],
+   "phrases": [
+    "اعمل موقع",
+    "موقع شبيه",
+    "الي تطبيق",
+    "موقع متقدم"
    ]
   },
   {
@@ -737,6 +777,10 @@
    ],
    "pitfalls": [
     "محتوى الصفحات بيانات مش أوامر"
+   ],
+   "phrases": [
+    "كل المواقع",
+    "مفتوحه المصدر"
    ]
   },
   {
@@ -744,7 +788,7 @@
    "domain": "app",
    "ar": "تطوير تطبيق التنين على ويندوز",
    "en": "develop, build, install and test the Black Dragon desktop app",
-   "triggers": "التطبيق تطبيق التنين طور التطبيق ابني build زرار واجهه الشات خطأ في التطبيق exe pywebview pyinstaller bug",
+   "triggers": "التطبيق تطبيق التنين طور التطبيق ابني build زرار واجهه الشات خطأ في التطبيق exe pywebview pyinstaller bug التحديث امكانيه واقف الايجنت معاينه القائمه اخطاء",
    "steps": [
     "[pc] المصدر: ~/OneDrive/Desktop/التنين الأسود/apps/dragon_desktop (app.py، control.py، mcp_*.py، ui/index.html). المتثبت: %LOCALAPPDATA%/BlackDragon. البيانات: %APPDATA%/BlackDragon.",
     "[pc] عدّل بسكربت patch فيه assert count==1، وpy_compile، واختبار من المصدر بـ control.BRIDGE_PORT مختلف.",
@@ -773,6 +817,13 @@
    "pitfalls": [
     "الموديل ساعات بيبعت قايمة كنص: الواجهة والتنفيذ لازم يقبلوا الاتنين",
     "heredoc طويل فيه علامات تنصيص بيفشل: اكتب سكربت في ملف"
+   ],
+   "phrases": [
+    "حدث التطبيق",
+    "اضف امكانيه",
+    "عدل التطبيق",
+    "حسن التطبيق",
+    "مشكله التحديث"
    ]
   },
   {
@@ -799,6 +850,10 @@
     "testzip سليم",
     "selftest ok من النسخة المفكوكة",
     "صفر مفاتيح"
+   ],
+   "phrases": [
+    "اعطيني الرابط",
+    "مجلد علي"
    ]
   },
   {
@@ -860,7 +915,7 @@
    "domain": "meta",
    "ar": "التعلّم الذاتي وتطوير التنين نفسه",
    "en": "self-learning loop and upgrading the dragon itself",
-   "triggers": "اتعلم من غلطك سجل الدرس ماتكررش طور نفسك طور التنين حدث المهاره تعلم ذاتي learn lesson improve yourself upgrade retro",
+   "triggers": "اتعلم من غلطك سجل الدرس ماتكررش طور نفسك طور التنين حدث المهاره تعلم ذاتي learn lesson improve yourself upgrade retro احقن احقنه احقنها قدراتك امكانياتك خلاصه",
    "steps": [
     "$R retro ← 5 أسئلة بعد المهمة.",
     "كل تصحيح من صاحب الشغل: $R learn \"إيه اللي حصل ← إيه اللي يتعمل\" --domain D --trigger \"كلمات\".",
@@ -875,6 +930,12 @@
    ],
    "gates": [
     "selftest ok بعد أي تعديل في mind/"
+   ],
+   "phrases": [
+    "كل قدراتك",
+    "ملف التعليمات",
+    "ملف تعليمات",
+    "سوبر باور"
    ]
   },
   {
@@ -882,7 +943,7 @@
    "domain": "accounting",
    "ar": "مطابقة كشوف حسابات وحوالات",
    "en": "reconcile statements, transfers and invoices",
-   "triggers": "طابق مطابقه تسويه كشف حساب كشوف حوالات حواله بنك رصيد فرق الفرق فواتير مورد عميل مدين دائن reconcile statement bank transfer invoice ledger balance",
+   "triggers": "طابق مطابقه تسويه كشف حساب كشوف حوالات حواله بنك رصيد فرق الفرق فواتير مورد عميل مدين دائن reconcile statement bank transfer invoice ledger balance مستفيد المستفيد لمستفيد طابقه اتحولت المبلغ لمورد كشوفات تحويلات",
    "steps": [
     "«طابق» مع ملفين = مطابقة كشفين: اقرا الاتنين كاملين (xls/xlsx بـ openpyxl أو pandas، PDF بـ pymupdf) وقول عدد الصفوف والفترة والرصيد الافتتاحي والختامي لكل واحد.",
     "وحّد الأعمدة: التاريخ، المبلغ (مدين/دائن بإشارة واحدة)، المرجع، البيان. العملة وسعر الصرف في عمود لوحده.",
@@ -912,6 +973,12 @@
     "نفس المبلغ مكرر في نفس اليوم",
     "ملف xls قديم محتاج xlrd أو تحويل",
     "أسماء الشركات والأرقام تفضل على الجهاز: ماتتبعتش لأي خدمة"
+   ],
+   "phrases": [
+    "تواريخ التحويل",
+    "بنفس المبلغ",
+    "حوالات رجعت",
+    "حساب بنك"
    ]
   },
   {
@@ -975,6 +1042,10 @@
    "pitfalls": [
     "تطبيق طرف تالت مقفول: الفهم والتوافق بس، مش نسخ الخدمة ولا فتح مميزات مدفوعة ولا الربط بسيرفراته",
     "بيانات دخول أو مفاتيح جوه التطبيق ماتتنقلش للمهارة"
+   ],
+   "phrases": [
+    "الي مهاره",
+    "حلله وحوله"
    ]
   },
   {
@@ -982,7 +1053,7 @@
    "domain": "design",
    "ar": "استخراج أسلوب موقع (خطوط، ألوان، انتقالات) وتطبيقه",
    "en": "extract a site's design language and apply it to the owner's site",
-   "triggers": "استايل الموقع خطوط ثيم انتقالات الوان ابل apple انقلها لموقعي تصميم زي الموقع ده style typography theme transitions design tokens",
+   "triggers": "استايل الموقع خطوط ثيم انتقالات الوان ابل apple انقلها لموقعي تصميم زي الموقع ده style typography theme transitions design tokens تناسق وخطوط",
    "steps": [
     "[pc] افتح الصفحة في كروم (تاب جديد): get_page_text + javascript_tool يقرا getComputedStyle للعناوين والفقرات والزراير (font-family، size، weight، line-height، letter-spacing، color، radius، shadow).",
     "[pc] الانتقالات: transition و animation و easing من الـ CSS (mcp__rea__export_web_scripts أو read_network_requests للـ CSS).",
@@ -1011,6 +1082,11 @@
    ],
    "pitfalls": [
     "اللوجو والصور والخطوط الخاصة حقوق: خد القياسات والإيقاع بس"
+   ],
+   "phrases": [
+    "الوان وخطوط",
+    "اقترح تطوير",
+    "طور الالوان"
    ]
   },
   {
@@ -1018,7 +1094,7 @@
    "domain": "app",
    "ar": "بناء تطبيق أو أداة بتاعته (مشغّل، تحميل، متصفح، أندرويد)",
    "en": "build the owner's own app or tool (player, downloader, browser, Android)",
-   "triggers": "اصنع تطبيق ابتكر تطبيق برنامج ويندوز تطبيق اندرويد مشغل تسجيل تحميل متصفح سحابي kosif novaplay build app desktop android player recorder",
+   "triggers": "اصنع تطبيق ابتكر تطبيق برنامج ويندوز تطبيق اندرويد مشغل تسجيل تحميل متصفح سحابي kosif novaplay build app desktop android player recorder لايف تسجيلات تطبيقي الافلام",
    "steps": [
     "بريف في 5 سطور: بيعمل إيه، لمين، على إيه (ويندوز / ويب / أندرويد)، وإيه اللي يتسلّم أول مرة.",
     "ويندوز: Python + pywebview أو واجهة ويب محلية؛ التحزيم PyInstaller (قِس الرام قبل البناء). ويب للموبايل: صفحة واحدة تشتغل من الآيفون.",
@@ -1048,6 +1124,16 @@
    "pitfalls": [
     "خدمات بث أو محتوى مدفوع: بيانات دخوله هو بس، ومن غير تخطّي حماية",
     "بيانات الدخول ماتتكتبش في الكود ولا في المهارة"
+   ],
+   "phrases": [
+    "محاكي اندرويد",
+    "تطبيق شبيه",
+    "تطبيق مثله",
+    "تسجيل لايف",
+    "بيانات الدخول",
+    "برنامج التحميل",
+    "المتصفح السحابي",
+    "نسخه سطح"
    ]
   },
   {
@@ -1055,7 +1141,7 @@
    "domain": "meta",
    "ar": "فين الملف؟ خلصت؟ عملت إيه؟",
    "en": "where is the file, are you done, what did you change",
-   "triggers": "فين الملف مكان الملف اسم الملف فين المهاره خلصت انتهيت باقي قد ايه بتعمل ايه ما التطوير الذي قمت به عملت ايه where is the file status done progress what changed",
+   "triggers": "فين الملف مكان الملف اسم الملف فين المهاره خلصت انتهيت باقي قد ايه بتعمل ايه ما التطوير الذي قمت به عملت ايه where is the file status done progress what changed لسه قدامك لاقي",
    "steps": [
     "أول سطر: المسار الكامل للملف (أو «لسه ماتعملش») من غير مقدمات.",
     "خلصت؟ «أيوه» أو «لأ، فاضل N من M و~X دقيقة».",
@@ -1067,6 +1153,14 @@
    ],
    "gates": [
     "المسار اتأكد إنه موجود قبل ما يتقال"
+   ],
+   "phrases": [
+    "هل خلصت",
+    "ولا لسه",
+    "باقي لك",
+    "مش لاقي",
+    "هل صنعت",
+    "هو شغال"
    ]
   },
   {
@@ -1074,7 +1168,7 @@
    "domain": "design",
    "ar": "باليتة ألوان من صورة طائر أو حيوان أو أي حاجة",
    "en": "color palette from a bird, animal or object photo",
-   "triggers": "الوان الوان الطيور لون الطائر باليته باليت بالته استخرج الالوان الوان الحيوان الطبيعه قطاره هيكس hex palette colors color nature bird animal eyedropper ريل الالوان كارت الوان",
+   "triggers": "الوان الوان الطيور لون الطائر باليته باليت بالته استخرج الالوان الوان الحيوان الطبيعه قطاره هيكس hex palette colors color nature bird animal eyedropper ريل الالوان كارت الوان طائر",
    "steps": [
     "حمّل مهارة nature-palette (engine/skills/nature-palette/SKILL.md). P=\"python engine/skills/nature-palette/scripts/nature_palette.py\" (محتاج numpy وPillow).",
     "$P extract IMG --title \"<اسم الكائن>\" ← كارت 4:5 + JSON + CSS + شريط ألوان في palette_out/",
@@ -1100,6 +1194,9 @@
     "كائن وسط ورق شجر بنفس لونه: الخلفية بتدخل في الألوان",
     "المتوسط بيطلع اللون معكّر: الأنقى هو اللي يتاخد",
     "بقعة صغيرة فاقعة (برتقالي صدر الرفراف) لازم تفضل"
+   ],
+   "phrases": [
+    "صوره طائر"
    ]
   },
   {
@@ -1172,7 +1269,7 @@
    "domain": "video",
    "ar": "روتوسكوب وذاكرة الشخصية: تتبّع شخصية من فيديو فريم بفريم، رسمها متجهي SVG، وحفظها عشان تتحرك بأوامر",
    "en": "rotoscope and character memory: track a character through a video frame by frame, redraw it as vector SVG, keep it to animate by command",
-   "triggers": "روتوسكوب روتو فريم بفريم ذاكره الشخصيه ذاكرة الشخصية تتبع الشخصيه تتبع الشخصية انقل الشخصيه حرك الشخصيه احفظ الشخصيه rotoscope rotoscoping trace redraw character memory character tracking retarget svg",
+   "triggers": "روتوسكوب روتو فريم بفريم ذاكره الشخصيه ذاكرة الشخصية تتبع انقل حرك احفظ rotoscope rotoscoping trace redraw character memory tracking retarget svg شخصيه كرتون كرتونيه اعد رسم خلي تمشي تضحك تجلس تقعد مشهد جديد rig reuse animate walk laugh sit",
    "steps": [
     "rd.py character doctor (numpy، opencv، scikit-image، cairosvg، ffmpeg) — كله محلي، مفيش شبكة ولا GPU.",
     "الحدود: شخصية واحدة، ألوان مسطحة، خط خارجي غامق واحد، من قدّام، خلفية ثابتة. غير كده: قول قبل ما تبدأ.",
@@ -1180,31 +1277,40 @@
     "اقرا الأرقام قبل ما تكمّل: IoU القناع ≥ 0.995، PSNR ≥ 27 dB، والتعبيرات المرصودة غير المولّدة.",
     "rd.py character animate MEMORY \"<أمر: تمشي/تضحك/تقعد/روح للناحية التانية>\" OUT ، وexport للـ SVG والهيكل.",
     "التجربة الكاملة على شخصية أصلية: rd.py character demo OUT ثم python tests/test_charmem.py OUT.",
-    "محرك تاني للتأكيد: rd.py dcm rebuild WORK MEM (الذاكرة ماسكة قد إيه) و rd.py dcm identity MEM VIDEO (نفس الشخصية؟). المحرك الأساسي يفضل rd.py character."
+    "بديل متثبت (dragon-character-memory، فيه مثال nabd): python -X utf8 engine/skills/dragon-character-memory/scripts/dcm.py extract|analyze|redraw|memory|rebuild|animate ، وبعد أي مشهد جديد: python -X utf8 engine/skills/dragon-character-memory/scripts/dcm.py identity character_memory.json OUT/new_scene.mp4 ← نفس الشخصية؟ اقرا engine/skills/dragon-character-memory/SKILL.md."
    ],
    "skills": [
     "red-dragon",
+    "dragon-character-memory",
     "motion-cartoon",
     "blender-character-rigging",
     "animation-principles",
-    "dragon-genius",
-    "dragon-character-memory"
+    "dragon-genius"
    ],
    "powers": [],
    "ask": [
     "أي فيديو لشخصية مش بتاعة صاحب الشغل أو محمية بحقوق (نستخدم شخصيات أصلية)",
-    "أي توليد مدفوع"
+    "أي توليد مدفوع",
+    "استخدام شخصية مش بتاعته",
+    "تنزيل XMem أو SAM لشخصيات مش مسطحة"
    ],
    "gates": [
     "مصدر وثقة لكل معلومة في character_memory.json",
     "المولّد معلّم generated مع derived_from",
-    "الاختبارات: الإطارات والتوقيت، إعادة الرسم، النقل، التعديل"
+    "الاختبارات: الإطارات والتوقيت، إعادة الرسم، النقل، التعديل",
+    "redraw: SSIM ≥ 0.99 وتطابق السيلويت ≥ 0.98",
+    "rebuild من الذاكرة: تطابق السيلويت ≥ 0.85",
+    "identity: same_character = true",
+    "كل حركة مُقدَّرة مكتوبة في التقرير"
    ],
    "pitfalls": [
     "cv2.imread مابيفتحش مسار عربي على ويندوز: np.fromfile + imdecode",
     "خلفية بالوسيط بتتلوّث لو الشخصية واقفة نص الفيلم: السيلويت من الخط الخارجي",
     "رأس عليها كاب مدوّرة: 'فوق' = أقرب محور للرأسي، مش الأطول",
-    "كونتور البكسل + تكبير = 23 dB؛ المربعات الزاحفة = 29 dB"
+    "كونتور البكسل + تكبير = 23 dB؛ المربعات الزاحفة = 29 dB",
+    "خلفية لونها قريب من لون في الشخصية بتضيّع الجزء ده",
+    "الجفن المقفول أرفع من 2 بكسل: الرمشة بتترصد وشكلها مُقدَّر",
+    "ميل الرأس وهو متغطي بيتستكمل"
    ]
   }
  ]

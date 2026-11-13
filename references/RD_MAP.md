@@ -10,8 +10,9 @@
 | `where` | بيشتغل فين (claude.ai، سحابة، لابتوب) |
 | `doctor` | فحص الأدوات والمكتبات |
 | `docs` | يولّد المراجع |
-| `selftest` | فحص ذاتي سريع (الطرق، القدرات، الدروس، المحادثات) |
 | `retro` | مراجعة بعد الشغل |
+| `selftest` | فحص ذاتي سريع (الطرق، القدرات، الدروس، المحادثات) |
+| `teach` | a request was routed wrong: remember «request → playbook» (example + lesson) |
 | `map` | خريطة الطرق |
 | `show` | تفاصيل طريق |
 | `learn` | يسجّل درس من تصحيح |
@@ -27,6 +28,7 @@
 | `math` | drawing maths (draw-math): body, dist, angle, ik2, cam, frame-fit, puppet-shadow, gait, ease ... |
 | `dcm` | dragon-character-memory v1.0 (second engine): extract, analyze, redraw, memory, rebuild, animate, identity, demo |
 | `desktop` | guarded BlackDragon desktop bridge: catalog, doctor, read, snapshot |
+| `think` | planning-mind: card, gate, workflow, check, learn, lessons, types, selftest |
 | `understand` | يفهم الطلب (صوت، كيبورد إنجليزي، غلطات) |
 | `brief` | ملخص JSON: الطريق والمهارات والقدرات للطلب |
 | `plan` | الخطة كاملة للطلب: الطريق والخطوات والمهارات |
@@ -34,7 +36,7 @@
 | `recall` | يفتكر من المحادثات القديمة |
 | `intel` | مستودعات ومعلومات تخص الطلب |
 
-## مهارات المحرك (33)
+## مهارات المحرك (34)
 
 | المسار | بيعمل إيه |
 |---|---|
@@ -62,6 +64,7 @@
 | `engine/skills/omni-analyst` | المحلل الشامل (Omni Analyst) — عقل تحليل لأي حاجة في المنظومة الرقمية. |
 | `engine/skills/paint-studio` | Full Windows 11 Paint feature set as a scriptable skill. |
 | `engine/skills/physics-math` | حاسبة الرياضيات والفيزياء للمونتاج والموشن والـ 3D — أحجام ومساحات وأوزان وكثافات، تحويل وحدات، سقوط حر ومقذوفات وارتداد كورة وسبرينج بكيفريمات فريم ب… |
+| `engine/skills/planning-mind` | العقل المخطِّط: طريقة تفكير وتخطيط لأي طلب فيه أكتر من خطوة أو فيه غموض. |
 | `engine/skills/rea-ultra` | التنين الأسود — الهندسة العكسية الفائقة بـ REA (MCP mcp__rea__* + CLI rea 6.8.0) على ويندوز، ومعاها Ghidra 12.1.4 وJDK 21 وJADX وapktool وadb وrizin و… |
 | `engine/skills/reverse-engineer-anything` | Reverse engineer native, managed, Electron/JavaScript, packaged, firmware, and browser targets with REA, and build agent environments (AgentEnv bundle… |
 | `engine/skills/saas-animation` | Make short, high-end SaaS, app, product and brand animations (about 8–20s) with Claude, built as code and rendered to 4K video, without any AI video o… |
@@ -119,6 +122,7 @@
 | `references/RD_RULES.md` | القواعد |
 | `references/RD_CHANGELOG.md` | كل نسخة اتغيّر فيها إيه |
 | `references/MERGE_V271.md` | كل مصدر من المحادثات القديمة راح فين |
+| `engine/skills/planning-mind/` (`rd.py think`) | العقل المخطِّط: كارت فهم، أسأل ولا أفترض، ورك فلو |
 | `engine/references/PROTOCOL.md` + `VIDEO_PROTOCOL_V2_ORIGINAL.md` | بروتوكول الفيديو الإلزامي |
 | `engine/references/PASTE_PROMPT.md` | برومبت التنين الأسود للنسخ |
 | `engine/references/prompts/USIP_v6_4/` | آخر نسخة من بروتوكول USIP (v6.4) |
