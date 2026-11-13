@@ -172,22 +172,59 @@ def kra_layers(path: Path):
 
 
 # ------------------------------------------------------------------ run
-def run_krita(kbin: Path, job: Path, timeout: int):
+FINISH_GRACE = 15  # seconds Krita gets to quit on its own after krita_job.py wrote its final result
+
+
+def _job_finished(job: Path) -> bool:
+    """krita_job.py writes "seconds" into result.json only as its very last step (after export + close)."""
+    try:
+        return "seconds" in json.loads((job / "result.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+
+
+def _watch(cmd, job: Path, timeout: int, env=None, flags=0, grace=FINISH_GRACE):
+    """Run cmd and wait for it. Measured 2026-11-13: kritarunner sometimes stays alive after the job is
+    done and every file is saved, and the host then sat out the whole --timeout (300 s for a 16 s
+    render). Once the finish marker is written, Krita gets `grace` seconds, then it is closed."""
     t0 = time.time()
+    log = job / "krita_stderr.txt"
+    with open(log, "wb") as fe:
+        p = subprocess.Popen(cmd, cwd=str(job), env=env, stdout=subprocess.DEVNULL, stderr=fe, creationflags=flags)
+        done_at = None
+        while True:
+            try:
+                code = p.wait(timeout=0.5)
+                break
+            except subprocess.TimeoutExpired:
+                pass
+            now = time.time()
+            if done_at is None and _job_finished(job):
+                done_at = now
+            if done_at is not None and now - done_at > grace:
+                p.kill()
+                p.wait()
+                code = "finished; closed after %ss grace" % grace
+                break
+            if now - t0 > timeout:
+                p.kill()
+                p.wait()
+                code = "timeout"
+                break
+    err = log.read_text(encoding="utf-8", errors="replace")
+    log.unlink(missing_ok=True)
+    return code, err, round(time.time() - t0, 1)
+
+
+def run_krita(kbin: Path, job: Path, timeout: int):
     env = dict(os.environ)
     env.pop("PYTHONPATH", None)
     env.pop("PYTHONHOME", None)
     flags = 0x08000000 if os.name == "nt" else 0  # CREATE_NO_WINDOW
-    try:
-        p = subprocess.run([str(kbin / "kritarunner.exe"), "-s", RUNNER_MODULE, str(job)],
-                           cwd=str(job), env=env, capture_output=True, timeout=timeout, creationflags=flags)
-        code = p.returncode
-        err = p.stderr.decode("utf-8", "replace")
-    except subprocess.TimeoutExpired:
-        code, err = "timeout", ""
+    code, err, secs = _watch([str(kbin / "kritarunner.exe"), "-s", RUNNER_MODULE, str(job)], job, timeout, env, flags)
     noise = ("Fontconfig error", "platform independent libraries", "added to PYTHONPATH")
     err = "\n".join(l for l in err.splitlines() if l.strip() and not any(n in l for n in noise))
-    return code, err[-3000:], round(time.time() - t0, 1)
+    return code, err[-3000:], secs
 
 
 def run_pass(kbin: Path, job: Path, payload: dict, timeout: int):
