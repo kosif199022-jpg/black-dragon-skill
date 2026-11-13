@@ -789,7 +789,7 @@ def snapshot_installed(dst=CATALOG):
     out = [{"name": r["name"], "dir": r["dir"], "kind": r["mode"], "description": home.sub("~", r["description"])[:400]} for r in rows]
     Path(dst).write_text(json.dumps({"kind": "red-dragon/installed-catalog", "date": datetime.date.today().isoformat(), "count": len(out),
                                      "_doc_ar": "كل المهارات المتثبتة على لابتوب صاحب الشغل (اسم ووصف بس). rd.py بيستخدمها لما الجهاز اللي شغال عليه مافيهوش ~/.claude/skills. التحديث: rd.py skills snapshot.",
-                                     "skills": out}, ensure_ascii=False, indent=0), encoding="utf-8")
+                                     "skills": out}, ensure_ascii=False, indent=0), encoding="utf-8", newline="\n")   # LF on Windows too: no line-ending churn in git
     return len(out)
 
 
