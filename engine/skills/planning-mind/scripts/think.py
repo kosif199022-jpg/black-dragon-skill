@@ -122,6 +122,24 @@ def is_chat(text):
     return kind in ("greet", "cont")
 
 
+# Guards: requests that need a hard, measured check no matter how small they look (the owner, 2026-11-13).
+GUARDS = [
+    {"id": "ref", "re": r"(نفس|زي|مطابق|بالظبط|ذات|same|match|exact)\W+(?:\w+\W+){0,3}?(ال)?(خط|فونت|الفونت|لون|ألوان|الوان|ستايل|باليت|هوية|font|colou?rs?|palette|style)|(خط|فونت|ألوان|الوان)\W+(?:\w+\W+){0,2}?(زي|نفس|مطابق)",
+     "first": "🔒 اقفل المرجع قبل أي حاجة: `rd.py ref lock <اسم> <ملف المرجع> [--text \"النص اللي فيه\"]`، وحط ناتج `rd.py ref show <اسم>` كقيود في الكود أو البرومبت (hex والخط بالاسم، ممنوع «قريب منه»)",
+     "last": "✅ قيس الناتج قدام المرجع: `rd.py ref verify <اسم> <الناتج>` لازم يرجع ✅ قبل «خلص». ❌ = صلّح، ⚠ = بُص بعينك",
+     "q": {"key": "reference", "q": "فين المرجع بالظبط (الملف أو اللقطة)؟ ولو الخط ليه اسم تعرفه قوله", "rec": "ابعت الملف نفسه، مش وصفه", "default": "آخر ملف اتبعت في المحادثة", "risk": 99},
+     "mistakes": ["M08"]},
+    {"id": "sync", "re": r"(كابشن|كابشنز|ترجم|ترجمة|subtitle|caption|srt|نص|كلام|كلمات|تيكست|text|موشن|motion)\W+(?:\w+\W+){0,4}?(على|مع|فوق|في)\W+(?:\w+\W+){0,2}?(الفيديو|فيديو|الريل|ريل|الكلام|الصوت|الأغنية|الاغنية|اغنية|أغنية)|ترجم\w*\W+(?:\w+\W+){0,2}?(ال)?(فيديو|ريل|اغنية|أغنية)|تزامن|متزامن|sync|lip|مع الكلام|كاريوكي|karaoke",
+     "first": "🎙 توقيت كل كلمة من الصوت: `rd.py sync words <الفيديو>` (أو ملف كلمات جاهز). النص والموشن يتبنوا على التوقيت ده، مش بالعين",
+     "last": "⏱ فحص التزامن: `rd.py sync check <words.json> <الكابشن> --motion <cues.json>`. أي فرق فوق 0.12 ث ← `rd.py sync fix …` وبعدين check تاني لحد ✅",
+     "q": None, "mistakes": ["M09", "M03"]},
+]
+
+
+def guards_for(text):
+    return [g for g in GUARDS if re.search(g["re"], text, re.I)]
+
+
 def start(request, prev="", answers=""):
     known = {}
     for part in filter(None, (x.strip() for x in answers.split(";"))):
@@ -143,7 +161,8 @@ def start(request, prev="", answers=""):
             alt = ranked[1][1] if len(ranked) > 1 and ranked[1][0] >= 0.6 * ranked[0][0] else None
     # one step = do it (the owner: the pipeline is for multi-step requests)
     multi = a["depth"] in ("L2", "L3") or len(pb.get("steps", [])) >= 3 if pb else a["depth"] in ("L2", "L3")
-    if a["decision"] in ("go", "go_all") and not multi:
+    gs = guards_for(request + " " + understood)
+    if a["decision"] in ("go", "go_all") and not multi and not gs:
         return {"mode": "direct", "understood": understood, "text": "▶️ طلب واضح وخطوة واحدة: نفّذ على طول، وقول الافتراضات في سطر."}
     # ② look: old chats and lessons that answer questions before they are asked
     seen = []
@@ -154,6 +173,14 @@ def start(request, prev="", answers=""):
             seen = []
     lessons = [l["text"][:220] for l in (RD.recall(understood, limit=4, domain=domain) if RD else [])]
     must = mistakes_for(understood + " " + (pb or {}).get("id", "") + " " + a["type"], domain)
+    have = {m["id"] for m in must}
+    for g in gs:
+        for mid in g["mistakes"]:
+            if mid not in have:
+                mm = next((m for m in mistakes() if m["id"] == mid), None)
+                if mm:
+                    must.insert(0, mm)
+                    have.add(mid)
     # ③ all questions at once, each with a ⭐ recommendation and the default that is used when there is no answer
     qs = []
     for s in a["slots"]:
@@ -162,6 +189,7 @@ def start(request, prev="", answers=""):
         rec = s.get("suggest") or s.get("value") or "—"
         qs.append({"key": s["key"], "q": s["question"], "rec": rec.lstrip("⭐ ").strip(), "default": s.get("value") or rec.lstrip("⭐ ").strip(),
                    "risk": s["risk"], "status": s["status"]})
+    qs += [dict(g["q"], status="missing") for g in gs if g["q"] and g["q"]["key"] not in known]
     qs.sort(key=lambda x: -x["risk"])
     qs = qs[:7]
     # ④ steps: the playbook's own steps (they name the commands), else the planning-mind template
@@ -174,6 +202,9 @@ def start(request, prev="", answers=""):
         checks = [x.get("check") for x in ty.get("workflow", []) if isinstance(x, dict)]
         skills = []
     checks = locals().get("checks", [])
+    if gs:                                   # hard guards wrap the plan: lock/measure first, verify last
+        raw = [g["first"] for g in gs] + raw + [g["last"] for g in gs]
+        checks = ([None] * len(gs) + checks) if checks else []
     kind = (pb or {}).get("id") or a["type"]
     ratio, nobs = calibration(kind)
     steps = []
@@ -339,6 +370,9 @@ def selftest():
     bad = []
     for c in cases:
         r = start(c["q"], c.get("prev", ""))
+        for must in c.get("must_text", []) if r["mode"] != "plan" else []:
+            if must not in r["text"]:
+                bad.append(f"«{c['q']}»: «{must}» مش في الرد")
         if r["mode"] != c["mode"]:
             bad.append(f"«{c['q']}»: mode {r['mode']} ≠ {c['mode']}")
             continue
@@ -349,6 +383,9 @@ def selftest():
                     bad.append(f"«{c['q']}»: الخطأ {must} ماطلعش في الخطة")
             if c.get("max_questions") is not None and t.count("\n| ") - t.count("| # |") - len(re.findall(r"\n\| \d+ \| .* \| ~\d+ د \|", t)) > c["max_questions"] + 1:
                 bad.append(f"«{c['q']}»: أسئلة كتير")
+            for must in c.get("must_text", []):
+                if must not in t:
+                    bad.append(f"«{c['q']}»: «{must}» مش في الخطة")
             ck = check(r["path"])
             if ck["ok"]:
                 bad.append(f"«{c['q']}»: check قبل الخطة الفاضية وده غلط")

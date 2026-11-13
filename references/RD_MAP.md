@@ -28,6 +28,8 @@
 | `math` | drawing maths (draw-math): body, dist, angle, ik2, cam, frame-fit, puppet-shadow, gait, ease ... |
 | `dcm` | dragon-character-memory v1.0 (second engine): extract, analyze, redraw, memory, rebuild, animate, identity, demo |
 | `desktop` | guarded BlackDragon desktop bridge: catalog, doctor, read, snapshot |
+| `ref` | reference-lock: lock, show, verify, fontmatch, list, selftest (same font/colours = exactly the same) |
+| `sync` | sync-guard: words, check, fix, onsets, selftest (captions and motion on the spoken word) |
 | `think` | think & plan: start, revise, check, time, mistake, mistakes, pipeline-selftest · planning-mind: card, gate, workflow, learn, lessons, types, selftest |
 | `understand` | يفهم الطلب (صوت، كيبورد إنجليزي، غلطات) |
 | `brief` | ملخص JSON: الطريق والمهارات والقدرات للطلب |
@@ -36,7 +38,7 @@
 | `recall` | يفتكر من المحادثات القديمة |
 | `intel` | مستودعات ومعلومات تخص الطلب |
 
-## مهارات المحرك (34)
+## مهارات المحرك (36)
 
 | المسار | بيعمل إيه |
 |---|---|
@@ -66,8 +68,10 @@
 | `engine/skills/physics-math` | حاسبة الرياضيات والفيزياء للمونتاج والموشن والـ 3D — أحجام ومساحات وأوزان وكثافات، تحويل وحدات، سقوط حر ومقذوفات وارتداد كورة وسبرينج بكيفريمات فريم ب… |
 | `engine/skills/planning-mind` | العقل المخطِّط: طريقة تفكير وتخطيط لأي طلب فيه أكتر من خطوة أو فيه غموض. |
 | `engine/skills/rea-ultra` | التنين الأسود — الهندسة العكسية الفائقة بـ REA (MCP mcp__rea__* + CLI rea 6.8.0) على ويندوز، ومعاها Ghidra 12.1.4 وJDK 21 وJADX وapktool وadb وrizin و… |
+| `engine/skills/reference-lock` | قفل المرجع: لما صاحب الشغل يقول «نفس الخط» أو «نفس الألوان» أو «زي ده بالظبط»، المهارة دي بتستخرج من المرجع الألوان (hex) والخطوط، وتقفلهم كقيود، وتقي… |
 | `engine/skills/reverse-engineer-anything` | Reverse engineer native, managed, Electron/JavaScript, packaged, firmware, and browser targets with REA, and build agent environments (AgentEnv bundle… |
 | `engine/skills/saas-animation` | Make short, high-end SaaS, app, product and brand animations (about 8–20s) with Claude, built as code and rendered to 4K video, without any AI video o… |
+| `engine/skills/sync-guard` | حارس التزامن: أي نص أو كابشن أو موشن جرافيك على فيديو فيه كلام أو أغنية لازم يطلع مع الكلمة وهي بتتقال. |
 | `engine/skills/teardown` | محاكي 3D لأي ماكينة — صفحة واحدة أوفلاين فيها الماكينة شغالة، بعدادات حية وزرار لكل جزء (عزل، قطاع، x-ray، تفكيك) وجولة أوتوماتيك، وبعدها فيلم 60 فريم… |
 | `engine/skills/theme-factory` | Toolkit for styling artifacts with a theme. |
 | `engine/skills/ultra-mind` | العقل الفائق — بروتوكول تفكير مبني على خلاصة كتب التفكير العالمية (Polya، Kahneman، Tetlock، Heuer، Popper، Pearl، Meadows، TRIZ، de Bono) وأبحاث الاس… |

@@ -1,5 +1,12 @@
 # سجل تغييرات التنين الأحمر
 
+## v2.9.1 — 2026-11-13 (قفل المرجع + حارس التزامن)
+- جديد: `engine/skills/reference-lock` (`reflock.py`) و`engine/skills/sync-guard` (`syncguard.py`)، و`rd.py ref` و`rd.py sync`.
+- think.py: حراس (GUARDS) بيضيفوا خطوة أولى وأخيرة إلزامية وسؤال المرجع، وبيلغوا «نفّذ على طول» لما الطلب فيه مطابقة مرجع أو نص على فيديو.
+- mistakes_seed: M08 وM09. think_cases: 9 حالات.
+- `rd.py selftest` بيشغّل selftest الاتنين.
+- BOOT.md وCLAUDE.md: قاعدتين إلزاميتين جداد.
+
 ## v2.9.0 — 2026-11-13 (فكّر وخطّط)
 - جديد: `engine/skills/planning-mind/scripts/think.py` و`data/council.json` و`data/mistakes_seed.jsonl` و`evals/think_cases.json`.
 - `rd.py think start|revise|check|time|mistake|mistakes|pipeline-selftest` بتروح لـ think.py، والباقي لـ plan.py زي الأول.
