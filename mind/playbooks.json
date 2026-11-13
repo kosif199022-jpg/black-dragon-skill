@@ -861,10 +861,11 @@
    "domain": "design",
    "ar": "تصميم ثابت: بوستر، ثامنيل، رسم، تعديل صورة",
    "en": "static design: poster, thumbnail, drawing, photo edit",
-   "triggers": "بوستر تصميم ثامنيل غلاف ارسم رسمه لوحه عدل الصوره شيل الخلفيه ستيكر كبر الصوره poster thumbnail design draw paint remove background upscale psd فوتوشوب",
+   "triggers": "بوستر تصميم ثامنيل غلاف ارسم رسمه لوحه عدل الصوره شيل الخلفيه ستيكر كبر الصوره poster thumbnail design draw paint remove background upscale psd فوتوشوب كريتا krita kra طبقات",
    "steps": [
     "كونسبت في سطر + 3 اتجاهات (مهارة absolute-creativity: $E tool creativity brief).",
     "رسم وكتابة عربي: $E tool paint new/draw (الكتابة بتطلع متشكّلة).",
+    "رسم بطبقات تتعدّل (ملف .kra) أو رسم إجرائي أو أنيميشن فريم بفريم: `$R krita render scene.json` (مهارة krita-draw، Krita الحقيقي من غير واجهة، على جهاز صاحب الشغل).",
     "شيل خلفية: [pc] rembg i IN OUT · تكبير: [pc] upscayl-bin -i IN -o OUT -s 4 · RAW: darktable-cli · متجهات: inkscape.",
     "بوستر فني: مهارة canvas-design · ثيم: theme-factory · PSD: $E tool psd.",
     "افتح الناتج بـ Read واتأكد بعينك من الكتابة والحواف."
@@ -904,7 +905,8 @@
     "ultra-mind",
     "expert-council",
     "dragon-genius",
-    "montage-arena"
+    "montage-arena",
+    "claude-mind"
    ],
    "powers": [
     "skill-mind"

@@ -233,6 +233,8 @@ def start(request, prev="", answers=""):
     return {"mode": "plan", "id": pid, "path": str(d / "plan_v1.md"), "text": md}
 
 
+CM_TYPE = {"montage": "media", "design": "media", "writing": "writing", "app_dev": "code", "skill_dev": "code", "analysis_re": "analysis",
+           "accounting": "data", "research": "research", "decision": "decision", "download": "system", "general": "project"}
 UM_TYPE = {"montage": "creative", "design": "creative", "writing": "writing", "app_dev": "code", "skill_dev": "code", "analysis_re": "analysis",
            "accounting": "analysis", "research": "analysis", "decision": "decision", "download": "general", "general": "general"}
 
@@ -245,6 +247,7 @@ def render(p, members, chair):
          f"- **النوع:** {p['type_name']} · العمق {p['depth']}",
          f"- **الطريق:** {p['playbook_ar'] or '—'} [`{p['playbook'] or '—'}`] · ثقة {p['confidence']}" + (f" · بديل: `{p['alternative']}`" if p['alternative'] else ""),
          f"- **المهارات:** {', '.join(p['skills']) or '—'}",
+         f"- **عقل Claude (claude-mind):** الحلقة العشرة (اقرا الإنسان ← ابدأ من التسليم ← … ← اتحقق مستقل ← سلّم). قبل «خلص»: `rd.py mind gate {CM_TYPE.get(p.get('type'), 'project')}`",
          f"- **العقل الفائق (ultra-mind):** `python3 engine/skills/ultra-mind/scripts/scaffold.py {UM_TYPE.get(p.get('type'), 'general')} {p['depth'] if p['depth'] in ('L2', 'L3') else 'L2'}` ← خطواته السبعة (افهم، ارجع خطوة، بدائل، نفّذ، pre-mortem، تحقق مستقل، سلّم بثقة) هي اللي بتملا ⑤ و⑥ تحت", ""]
     L += ["## ② بصّيت فين قبل ما أسأل"]
     L += [f"- محادثة قديمة: `{s['id']}` {s['title']}" for s in p["seen"]] or ["- مفيش محادثة قديمة قريبة."]
