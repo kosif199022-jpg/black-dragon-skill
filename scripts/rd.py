@@ -23,7 +23,7 @@ It reads and advises; it never installs, publishes, spends or deletes."""
 import argparse, datetime, hashlib, json, math, os, re, shutil, subprocess, sys
 from pathlib import Path
 
-VERSION = "2.11.0"
+VERSION = "2.12.0"
 ROOT = Path(__file__).resolve().parent.parent
 ENGINE = ROOT / "engine"
 MIND = ROOT / "mind"
@@ -1378,7 +1378,7 @@ def main():
     s = sub.add_parser("ref", help="reference-lock: lock, show, verify, fontmatch, list, selftest (same font/colours = exactly the same)"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("mind", help="claude-mind: brief, gate, learn, lessons, types (how Claude thinks and checks before delivery)"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("krita", help="krita-draw: render scene.json | layers file.kra | info (draw with code inside the real Krita)"); s.add_argument("args", nargs=argparse.REMAINDER)
-    s = sub.add_parser("sync", help="sync-guard: words, check, fix, onsets, selftest (captions and motion on the spoken word)"); s.add_argument("args", nargs=argparse.REMAINDER)
+    s = sub.add_parser("sync", help="sync-guard: words, check, fix, onsets, script, grid, selftest (captions and motion on the spoken word)"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("think", help="think & plan: start, revise, check, time, mistake, mistakes, pipeline-selftest · planning-mind: card, gate, workflow, learn, lessons, types, selftest"); s.add_argument("args", nargs=argparse.REMAINDER)
     a = ap.parse_args()
 

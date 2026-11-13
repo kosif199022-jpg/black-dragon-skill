@@ -1,5 +1,11 @@
 # سجل تغييرات التنين الأحمر
 
+## v2.12.0 — 2026-11-13 (أفكار hypit-ai/hypit)
+- اتدرس `hypit-ai/hypit` (commit `6bacce0`، 1,721 ملف TypeScript). الكود ماتنسخش: رخصته Apache-2.0 بشروط (ممنوع البيع أو التشغيل كخدمة لناس تانية، ولازم نفس الرخصة لأي نسخة معدّلة). اللي اتاخد أفكار، واتكتبت بكود بايثون بتاعنا.
+- `syncguard.py`: `script` (Moment وSelection وفواصل الكابشن والنص المزدوج ← كابشن وكاريوكي وأحداث)، و`grid` (فريمات عليها الكلام)، و`--lock` من reference-lock. selftest بقى 17 فحص.
+- playbooks: خطوة في `trend` وخطوة في `reel-montage`. think.py: خطوة التزامن الأولى بتقول `sync script`.
+- `references/HYPIT.md`.
+
 ## v2.11.0 — 2026-11-13 (claude-mind + WhiteBird)
 - **`claude-mind.rar`** (32 ملف) ← `engine/skills/claude-mind` كما هي، و`rd.py mind`. think.py بيشاور على `mind gate` في كل خطة.
 - **`WhiteBird_source.zip`** (54 ملف) ← `apps/white-bird`. اتشالت 4 ملفات `.woff2` (سياسة الخطوط)، والرخص OFL فضلت. اختباراته ماتشغّلتش على السحابة.

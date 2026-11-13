@@ -14,6 +14,7 @@
     "$E run dragon_montage plan \"<الطلب>\" --clip a.mp4 --clip b.mp4 [--music m.mp3] ← بيطلّع PLAN_AR.md و storyboard.jpg",
     "اعرض الستوري بورد ومصفوفة التحركات واستنى «موافق» (إلا لو قال «نفّذ مباشرة»).",
     "$E run dragon_montage go --job <المجلد> --rounds 3",
+    "لو فيه كلام أو أغنية: اكتب السكربت بعلامات (@{moment!} و@{sel}…@{/sel} و||) و`$R sync script script.txt words.json --out timeline.json --events events.json --ass karaoke.ass`، فالكابشن والموشن يتربطوا بالكلمة مش بالثانية.",
     "$E tool onscreen check CAPTIONS.ass --words words.json --lyrics lyrics.txt ← لازم PASS",
     "$E mux VIDEO AUDIO OUT.mp4 --duration S --normalize ثم $E verify OUT.mp4 --expect 1080x1920 --duration S --out evidence.json",
     "[pc] اتفرج على 6 فريمات من الناتج بعينك (Read على صور ffmpeg -ss) قبل ما تقول خلص.",
@@ -311,6 +312,7 @@
    "triggers": "ترند تريند فايرل حلل الريل فكك هوك ليه نجح trend viral analyze reel hook breakdown virality",
    "steps": [
     "$E tool hf trend live ثم find \"<كلمات>\" (مجاني).",
+    "افهم المرجع بالكلام: `$R sync words ref.mp4` ثم `$R sync grid ref.mp4 --words ref.words.json --out grid.jpg` (كل فريم عليه وقته والكلام اللي بيتقال)، واكتب: الهوك، كل عنصر بيظهر إمتى ومع أي كلمة، وليه ده شادّ.",
     "tiktok_music_trending و get_presets source=genjutsu category=genjutsu-trending (قراية بس).",
     "تفكيك ريل: فريمات كل ثانية (ffmpeg) + scenedetect + تفريغ؛ اكتب: الهوك في أول ثانية، طول اللقطات، البيت، النص.",
     "$E run reel_hooks hook --hook \"<السطر>\" ← تقييم الهوك على 5 خصائص.",

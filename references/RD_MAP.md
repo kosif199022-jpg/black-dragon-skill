@@ -31,7 +31,7 @@
 | `ref` | reference-lock: lock, show, verify, fontmatch, list, selftest (same font/colours = exactly the same) |
 | `mind` | claude-mind: brief, gate, learn, lessons, types (how Claude thinks and checks before delivery) |
 | `krita` | krita-draw: render scene.json | layers file.kra | info (draw with code inside the real Krita) |
-| `sync` | sync-guard: words, check, fix, onsets, selftest (captions and motion on the spoken word) |
+| `sync` | sync-guard: words, check, fix, onsets, script, grid, selftest (captions and motion on the spoken word) |
 | `think` | think & plan: start, revise, check, time, mistake, mistakes, pipeline-selftest · planning-mind: card, gate, workflow, learn, lessons, types, selftest |
 | `understand` | يفهم الطلب (صوت، كيبورد إنجليزي، غلطات) |
 | `brief` | ملخص JSON: الطريق والمهارات والقدرات للطلب |

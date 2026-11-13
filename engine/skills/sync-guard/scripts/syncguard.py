@@ -321,6 +321,238 @@ def cmd_fix(a):
     sys.exit(after["code"])
 
 
+# ------------------------------------------------------------------ v2.12: time anchored to words (ideas studied from hypit-ai/hypit, own code)
+SCRIPT_TOK = re.compile(r"@\{(/?)([\w\u0600-\u06FF-]+)(!?)\}|\|\||\[([^\]|]+)\|([^\]]+)\]|\n|[^\s@\[\|]+")
+
+
+def parse_script(text):
+    """Mini script syntax:
+       @{name!}            a Moment: the instant the next spoken word starts (a reveal, a punchline, a zoom)
+       @{name} … @{/name}  a Selection: the span of those words (B-roll covers it, a board stays while it is said)
+       ||                  a caption break: the next caption starts here
+       [display|spoken]    what is written on screen vs what is said (ميار مكتوبة، «مايار» متقالة)
+       a blank line or a new line also breaks captions."""
+    units, marks, breaks = [], [], set()
+    open_sel = {}
+    for m in SCRIPT_TOK.finditer(text):
+        g = m.group(0)
+        if m.group(2):
+            name = m.group(2)
+            if m.group(3):
+                marks.append(("moment", name, len(units)))
+            elif m.group(1):
+                if name not in open_sel:
+                    raise ValueError(f"@{{/{name}}} من غير @{{{name}}}")
+                marks.append(("selection", name, (open_sel.pop(name), len(units) - 1)))
+            else:
+                open_sel[name] = len(units)
+        elif g in ("||", "\n"):
+            breaks.add(len(units))
+        elif m.group(4):
+            units.append({"display": m.group(4).strip(), "spoken": tokens(m.group(5))})
+        else:
+            sp = tokens(g)
+            if sp:
+                units.append({"display": g, "spoken": sp})
+    if open_sel:
+        raise ValueError("Selection مفتوحة من غير قفلة: " + ", ".join(open_sel))
+    return units, marks, breaks
+
+
+def align_units(units, words):
+    """Each script unit (one or more spoken tokens) gets the start of its first word and the end of its last."""
+    nw = [norm(w["word"]) for w in words]
+    j, out = 0, []
+    for u in units:
+        span = []
+        for tk in u["spoken"]:
+            k = j
+            while k < len(words) and k < j + 6 and not _same(nw[k], tk):
+                k += 1
+            if k < len(words) and k < j + 6:
+                span.append(k)
+                j = k + 1
+        out.append(dict(u, start=words[span[0]]["start"], end=words[span[-1]]["end"]) if span else dict(u, start=None, end=None))
+    return out
+
+
+def compile_script(text, words, max_words=4, gap=0.45):
+    units, marks, breaks = parse_script(text)
+    al = align_units(units, words)
+    missing = [u["display"] for u in al if u["start"] is None]
+    cues, cur = [], []
+    for i, u in enumerate(al):
+        if u["start"] is None:
+            continue
+        if cur and (i in breaks or len(cur) >= max_words or u["start"] - cur[-1]["end"] > gap):
+            cues.append(cur)
+            cur = []
+        cur.append(u)
+    if cur:
+        cues.append(cur)
+    cue_objs = [{"start": c[0]["start"], "end": c[-1]["end"], "text": " ".join(x["display"] for x in c),
+                 "words": [{"w": x["display"], "start": x["start"], "end": x["end"]} for x in c]} for c in cues]
+    moments, selections = {}, {}
+    for kind, name, at in marks:
+        if kind == "moment":
+            nxt = next((u for u in al[at:] if u["start"] is not None), None)
+            moments[name] = nxt["start"] if nxt else None
+        else:
+            seg = [u for u in al[at[0]:at[1] + 1] if u["start"] is not None]
+            selections[name] = [round(seg[0]["start"], 3), round(seg[-1]["end"], 3)] if seg else None
+    return {"cues": cue_objs, "moments": moments, "selections": selections, "missing": missing}
+
+
+def resolve_events(events, comp, words):
+    """events: [{"label": "zoom", "at": "claim"}, {"label": "broll", "span": "proof"}, {"label": "pop", "word": "الدنيا", "occurrence": 1}]
+       optional "offset" (s), "dur" (s). Output gets absolute t / start / end, so changing the voice re-flows everything."""
+    out, errs = [], []
+    for e in events:
+        off = float(e.get("offset", 0))
+        r = dict(e)
+        if "at" in e:
+            t = comp["moments"].get(e["at"])
+            if t is None:
+                errs.append(f"«{e.get('label', '')}»: الـ Moment «{e['at']}» مش موجودة أو كلمتها ماتقالتش")
+                continue
+            r["t"] = round(t + off, 3)
+        elif "span" in e:
+            s = comp["selections"].get(e["span"])
+            if not s:
+                errs.append(f"«{e.get('label', '')}»: الـ Selection «{e['span']}» مش موجودة")
+                continue
+            r["start"], r["end"] = round(s[0] + off, 3), round(s[1] + float(e.get("tail", 0)), 3)
+        elif "word" in e:
+            w = find_word(words, e["word"], int(e.get("occurrence", 1)))
+            if not w:
+                errs.append(f"«{e.get('label', '')}»: الكلمة «{e['word']}» ماتقالتش")
+                continue
+            r["t"] = round(w["start"] + off, 3)
+        if "dur" in e and "t" in r:
+            r["end"] = round(r["t"] + float(e["dur"]), 3)
+        out.append(r)
+    return out, errs
+
+
+def ass_color(h):
+    h = h.lstrip("#")
+    return f"&H00{h[4:6]}{h[2:4]}{h[0:2]}&".upper()
+
+
+def karaoke_ass(cues, font="Arial", size=72, base="#FFFFFF", hi="#FFD60A", outline="#000000", w=1080, h=1920, margin_v=420):
+    L = ["[Script Info]", "ScriptType: v4.00+", f"PlayResX: {w}", f"PlayResY: {h}", "WrapStyle: 2", "",
+         "[V4+ Styles]",
+         "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
+         f"Style: Karaoke,{font},{size},{ass_color(hi)},{ass_color(base)},{ass_color(outline)},&H64000000&,-1,0,0,0,100,100,0,0,1,5,0,2,60,60,{margin_v},1",
+         "", "[Events]", "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"]
+    for c in cues:
+        parts, t = [], c["start"]
+        for x in c["words"]:
+            pre = max(0, round((x["start"] - t) * 100))
+            if pre:
+                parts.append(f"{{\\k{pre}}}")
+            parts.append(f"{{\\kf{max(1, round((x['end'] - x['start']) * 100))}}}{x['w']} ")
+            t = x["end"]
+        L.append(f"Dialogue: 0,{ass_ts(c['start'])},{ass_ts(c['end'] + 0.15)},Karaoke,,0,0,0,,{''.join(parts).rstrip()}")
+    return "\n".join(L) + "\n"
+
+
+def lock_style(name):
+    """Take font and colours from a reference-lock (rd.py ref lock NAME …) so captions use the reference's exact look."""
+    home = Path(os.environ.get("RED_DRAGON_HOME") or Path.home() / ".red-dragon") / "refs" / name / "lock.json"
+    if not home.is_file():
+        sys.exit(f"مفيش قفل مرجع باسم {name}")
+    lk = json.loads(home.read_text(encoding="utf-8"))
+    cols = [c["hex"] for c in lk.get("colors", [])]
+    return {"font": (lk.get("fonts") or [{}])[0].get("family"), "colors": cols}
+
+
+def cmd_script(a):
+    words = read_words(a.source)
+    comp = compile_script(Path(a.script).read_text(encoding="utf-8"), words, a.max_words, a.gap)
+    if a.events:
+        ev, errs = resolve_events(json.loads(Path(a.events).read_text(encoding="utf-8")), comp, words)
+        comp["events"], comp["event_errors"] = ev, errs
+    out = Path(a.out)
+    out.write_text(json.dumps(comp, ensure_ascii=False, indent=1), encoding="utf-8")
+    if a.srt:
+        write_fixed(Path("x.json"), [{"text": c["text"]} for c in comp["cues"]], [(c["start"], c["end"]) for c in comp["cues"]], Path(a.srt))
+    if a.ass:
+        st = {"font": a.font, "hi": a.hi, "base": a.base}
+        if a.lock:
+            ls = lock_style(a.lock)
+            st["font"] = ls["font"] or st["font"]
+            if len(ls["colors"]) >= 2 and not a.keep_colors:
+                st["base"], st["hi"] = ls["colors"][0], ls["colors"][1]
+        Path(a.ass).write_text(karaoke_ass(comp["cues"], st["font"] or "Arial", a.size, st["base"], st["hi"]), encoding="utf-8")
+    print(f"{len(comp['cues'])} كابشن · {len(comp['moments'])} Moment · {len(comp['selections'])} Selection"
+          + (f" · {len(comp.get('events', []))} حدث" if a.events else "") + f" ← {out}")
+    for m in comp["missing"]:
+        print(f"  ⚠ «{m}» في السكربت بس ماتقالتش في الصوت")
+    for e in comp.get("event_errors", []):
+        print("  ❌", e)
+    sys.exit(1 if comp.get("event_errors") else (2 if comp["missing"] else 0))
+
+
+def word_grid(video, words, out, every=1.0, start=0.0, end=None, cols=4, width=360):
+    from PIL import Image, ImageDraw, ImageFont
+    if end is None:
+        try:
+            end = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(video)],
+                                       capture_output=True, text=True).stdout.strip())
+        except Exception:
+            end = (words[-1]["end"] if words else 10.0)
+    ts_ = []
+    t = start
+    while t < end and len(ts_) < 120:
+        ts_.append(round(t, 2))
+        t += every
+    tmp = Path(tempfile.mkdtemp(prefix="grid-"))
+    cells = []
+    fontp = None
+    for cand in ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", "C:/Windows/Fonts/arial.ttf", "/System/Library/Fonts/Supplemental/Arial.ttf"):
+        if Path(cand).is_file():
+            fontp = cand
+            break
+    font = ImageFont.truetype(fontp, 20) if fontp else ImageFont.load_default()
+    kw = {}
+    try:
+        from PIL import features
+        if features.check("raqm"):
+            kw = {"direction": "rtl", "language": "ar"}
+    except Exception:
+        pass
+    for i, t in enumerate(ts_):
+        f = tmp / f"{i}.png"
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{t:.2f}", "-i", str(video), "-frames:v", "1", "-vf", f"scale={width}:-2", str(f)], capture_output=True)
+        im = Image.open(f).convert("RGB") if f.is_file() else Image.new("RGB", (width, int(width * 16 / 9)), "#222")
+        said = " ".join(w["word"] for w in words if w["end"] > t - every / 2 and w["start"] < t + every / 2)
+        cell = Image.new("RGB", (im.width, im.height + 64), "#111")
+        cell.paste(im, (0, 0))
+        d = ImageDraw.Draw(cell)
+        d.text((8, im.height + 4), f"{t:.1f}s", fill="#FFD60A", font=font)
+        if said:
+            txt = said if len(said) < 40 else said[:38] + "…"
+            try:
+                d.text((cell.width - 8, im.height + 32), txt, fill="#FFFFFF", font=font, anchor="ra", **(kw if re.search(r"[\u0600-\u06FF]", txt) else {}))
+            except Exception:
+                d.text((8, im.height + 32), txt, fill="#FFFFFF", font=font)
+        cells.append(cell)
+    cw, ch = cells[0].size
+    rows = (len(cells) + cols - 1) // cols
+    sheet = Image.new("RGB", (cw * cols, ch * rows), "#000")
+    for i, c in enumerate(cells):
+        sheet.paste(c.resize((cw, ch)), ((i % cols) * cw, (i // cols) * ch))
+    sheet.save(out, quality=88)
+    return len(cells)
+
+
+def cmd_grid(a):
+    words = read_words(a.words) if a.words else []
+    n = word_grid(a.video, words, a.out, a.every, a.start, a.end, a.cols)
+    print(f"{n} فريم، كل واحد عليه وقته والكلام اللي بيتقال فيه ← {a.out}")
+
+
 def cmd_selftest(a):
     tmp = Path(tempfile.mkdtemp(prefix="sync-st-"))
     ok, bad = 0, []
@@ -362,6 +594,23 @@ def cmd_selftest(a):
                     "-filter_complex", "[1]atrim=0:1[s0];[0]aresample=44100[t];[1]atrim=0:1[s1];[s0][t][s1]concat=n=3:v=0:a=1", str(au)], capture_output=True)
     on = speech_onsets(au) if au.is_file() else []
     t("speech onset ~1.0s", any(abs(o - 1.0) < 0.06 for o in on))
+    sc = "@{hook!}انا بحبك @{love}يا قلبي@{/love} || والكلام ده [ليكي|ليكي]\n@{big!}انتِ الدنيا كلها"
+    comp = compile_script(sc, words)
+    t("script: moment on its word", comp["moments"].get("hook") == 0.5 and comp["moments"].get("big") == 4.5)
+    t("script: selection span", comp["selections"].get("love") == [1.4, 1.95])
+    t("script: caption breaks (|| and newline)", [c["text"] for c in comp["cues"]] == ["انا بحبك يا قلبي", "والكلام ده ليكي", "انتِ الدنيا كلها"])
+    ev, errs = resolve_events([{"label": "zoom", "at": "big"}, {"label": "broll", "span": "love"}, {"label": "pop", "word": "الدنيا", "dur": 0.5},
+                               {"label": "x", "at": "nope"}], comp, words)
+    t("events resolve + bad anchor reported", len(ev) == 3 and ev[0]["t"] == 4.5 and ev[2]["end"] == 5.4 and len(errs) == 1)
+    slow = [dict(w, start=w["start"] * 1.3 + 0.2, end=w["end"] * 1.3 + 0.2) for w in words]
+    t("re-flow: slower voice moves the moment", abs(compile_script(sc, slow)["moments"]["big"] - (4.5 * 1.3 + 0.2)) < 1e-6)
+    ka = karaoke_ass(comp["cues"])
+    t("karaoke ass has \\kf per word", ka.count("\\kf") == 10 and "Dialogue:" in ka)
+    vid = tmp / "v.mp4"
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "testsrc=s=320x568:d=3:r=10", str(vid)], capture_output=True)
+    if vid.is_file():
+        g = tmp / "g.jpg"
+        t("word grid", word_grid(vid, words, g, every=1.0, cols=3) == 3 and g.is_file())
     total = ok + len(bad)
     print(f"{ok}/{total} sync-guard checks" + (f" · فشل: {', '.join(bad)}" if bad else ""))
     sys.exit(0 if not bad else 1)
@@ -379,6 +628,14 @@ def main():
             s.add_argument("--out", required=True); s.add_argument("--motion-out"); s.add_argument("--lead", type=float, default=0.0); s.add_argument("--hold", type=float, default=0.25)
         s.set_defaults(f=fn)
     s = sub.add_parser("onsets"); s.add_argument("media"); s.add_argument("captions"); s.add_argument("--tol", type=float, default=0.15); s.set_defaults(f=cmd_onsets)
+    s = sub.add_parser("script", help="سكربت بعلامات (@{moment!} و@{sel}…@{/sel} و|| و[مكتوب|متقال]) + كلمات ← كابشن وأحداث مربوطة بالكلام")
+    s.add_argument("script"); s.add_argument("source", help="words.json أو الفيديو"); s.add_argument("--out", required=True); s.add_argument("--events")
+    s.add_argument("--srt"); s.add_argument("--ass"); s.add_argument("--lock", help="اسم قفل مرجع: الخط والألوان منه"); s.add_argument("--keep-colors", action="store_true")
+    s.add_argument("--font", default="Arial"); s.add_argument("--size", type=int, default=72); s.add_argument("--hi", default="#FFD60A"); s.add_argument("--base", default="#FFFFFF")
+    s.add_argument("--max-words", type=int, default=4); s.add_argument("--gap", type=float, default=0.45); s.set_defaults(f=cmd_script)
+    s = sub.add_parser("grid", help="شبكة فريمات من فيديو، كل فريم عليه وقته والكلام اللي بيتقال فيه (لفهم المرجع)")
+    s.add_argument("video"); s.add_argument("--words"); s.add_argument("--out", required=True); s.add_argument("--every", type=float, default=1.0)
+    s.add_argument("--start", type=float, default=0.0); s.add_argument("--end", type=float); s.add_argument("--cols", type=int, default=4); s.set_defaults(f=cmd_grid)
     s = sub.add_parser("selftest"); s.set_defaults(f=cmd_selftest)
     a = p.parse_args()
     a.f(a)
