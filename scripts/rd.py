@@ -23,7 +23,7 @@ It reads and advises; it never installs, publishes, spends or deletes."""
 import argparse, datetime, hashlib, json, math, os, re, shutil, subprocess, sys
 from pathlib import Path
 
-VERSION = "2.9.1"
+VERSION = "2.10.0"
 ROOT = Path(__file__).resolve().parent.parent
 ENGINE = ROOT / "engine"
 MIND = ROOT / "mind"
@@ -623,10 +623,11 @@ LIB_AR = {"مونتاج": "video edit editing montage cut", "فيديو": "video
           "بيكسل": "pixel", "العاب": "game sprite", "لعبه": "game sprite", "شركه": "business startup founder", "مشروع": "business startup project", "كتابه": "writing copy", "محتوى": "content", "هندسه": "engineering reverse",
           "ظل": "shadow silhouette", "ظلال": "shadow silhouette", "دمي": "puppet puppetry", "دميه": "puppet puppetry", "عرائس": "puppet marionette puppetry",
           "مسافه": "distance measure", "مسافات": "distance measure", "رياضه": "math geometry", "رياضيه": "math geometry", "نسب": "proportion anthropometry",
-          "زاويه": "angle geometry", "منظور": "perspective camera", "فيزيا": "physics", "فيزياء": "physics", "قياس": "measure", "روتوسكوب": "rotoscope trace", "شخصيه": "character", "كرتون": "cartoon character", "تتبع": "tracking"}
+          "زاويه": "angle geometry", "منظور": "perspective camera", "فيزيا": "physics", "فيزياء": "physics", "قياس": "measure", "روتوسكوب": "rotoscope trace", "شخصيه": "character", "كرتون": "cartoon character", "تتبع": "tracking",
+          "كريتا": "krita paint layered", "طبقات": "layers layered", "طبقه": "layer layered", "لوحه": "painting illustration", "تلوين": "paint painting"}
 
 
-def lib_find(q, limit=8):
+def lib_find(q, limit=8, hide_installed=True):
     """Arabic words map to the English the skill descriptions are written in."""
     qt = tokens(q)
     extra = []
@@ -635,7 +636,8 @@ def lib_find(q, limit=8):
             if match(t, norm(k)):
                 extra += v.split()
     qt = qt + extra
-    out = [(score(qt, r["_tok"]) + min(r["stars"], 50000) / 50000, r) for r in library()]
+    here = {r["dir"] for r in installed() if r["mode"] != "catalog"} if hide_installed else set()   # v2.10: never offer what this machine already has
+    out = [(score(qt, r["_tok"]) + min(r["stars"], 50000) / 50000, r) for r in library() if r["name"] not in here]
     return [r for sc, r in sorted(out, key=lambda x: -x[0]) if sc >= 2][:limit]
 
 
@@ -734,7 +736,9 @@ def installed():
         st = SKILLS_HOME.stat()
         dirs = sorted(d.name for d in SKILLS_HOME.iterdir() if (d / "SKILL.md").is_file())
     except OSError:
-        return []
+        dirs = []
+    if not dirs:            # v2.10: claude.ai / cloud / a fresh PC -> the owner's laptop skills from the shipped snapshot
+        return catalog()
     sig = f"{st.st_mtime_ns}:{len(dirs)}"
     if _inst.get("sig") == sig:
         return _inst["rows"]
@@ -760,6 +764,35 @@ def installed():
     return rows
 
 
+CATALOG = MIND / "installed_catalog.json"
+
+
+def catalog():
+    """Snapshot of every skill on the owner's laptop (name, description, kind) — no paths, no private files.
+    Used when this machine has no ~/.claude/skills, so a cloud chat still knows what the laptop can do."""
+    if "cat" not in _inst:
+        rows = (jload(CATALOG, {}) or {}).get("skills", [])
+        for r in rows:
+            r["mode"] = "catalog"
+            r["path"] = f"~/.claude/skills/{r.get('dir', r['name'])}/SKILL.md (على لابتوب صاحب الشغل)"
+            r["_tok"] = set(tokens(r["name"].replace("-", " ").replace(":", " ") + " " + r.get("description", "")))
+        _inst["cat"] = rows
+    return _inst["cat"]
+
+
+def snapshot_installed(dst=CATALOG):
+    """Write the shipped catalog from this machine's installed skills (descriptions trimmed, no absolute paths)."""
+    rows = installed()
+    if not rows or rows is _inst.get("cat"):
+        raise SystemExit(f"مفيش مهارات متثبتة هنا ({SKILLS_HOME}) — الـ snapshot بيتعمل من لابتوب صاحب الشغل.")
+    home = re.compile(r"[A-Za-z]:[\\/]+Users[\\/]+[^\\/\s]+|/(?:c/)?(?:Users|home)/[^/\s]+", re.I)   # never ship a user folder name
+    out = [{"name": r["name"], "dir": r["dir"], "kind": r["mode"], "description": home.sub("~", r["description"])[:400]} for r in rows]
+    Path(dst).write_text(json.dumps({"kind": "red-dragon/installed-catalog", "date": datetime.date.today().isoformat(), "count": len(out),
+                                     "_doc_ar": "كل المهارات المتثبتة على لابتوب صاحب الشغل (اسم ووصف بس). rd.py بيستخدمها لما الجهاز اللي شغال عليه مافيهوش ~/.claude/skills. التحديث: rd.py skills snapshot.",
+                                     "skills": out}, ensure_ascii=False, indent=0), encoding="utf-8")
+    return len(out)
+
+
 def inst_find(q, limit=8, mode=None):
     """Installed skills for a request (Arabic words widened to the English the descriptions use); own skills win ties."""
     qt = tokens(q)
@@ -774,7 +807,7 @@ def inst_find(q, limit=8, mode=None):
 
 
 def inst_line(r):
-    tag = "مهارتك" if r["mode"] == "own" else "من المكتبة، متثبتة"
+    tag = {"own": "مهارتك", "catalog": "على لابتوب صاحب الشغل، مش هنا", "library": "من المكتبة، متثبتة"}.get(r["mode"], "متثبتة")
     return f"{r['name']}  ({tag})\n     {r['description'][:200]}\n     {r['path']}"
 
 
@@ -1336,7 +1369,7 @@ def main():
     s = sub.add_parser("re"); s.add_argument("target")
     s = sub.add_parser("repo"); s.add_argument("path"); s.add_argument("--json", action="store_true"); s.add_argument("--save", action="store_true")
     s = sub.add_parser("repos"); s.add_argument("action", choices=["find", "list", "show", "stats"]); s.add_argument("q", nargs="?", default=""); s.add_argument("--json", action="store_true")
-    s = sub.add_parser("skills"); s.add_argument("action", choices=["find", "list", "show", "install", "stats"]); s.add_argument("q", nargs="?", default=""); s.add_argument("--yes", action="store_true"); s.add_argument("--json", action="store_true"); s.add_argument("--installed", action="store_true")
+    s = sub.add_parser("skills"); s.add_argument("action", choices=["find", "list", "show", "install", "stats", "snapshot"]); s.add_argument("q", nargs="?", default=""); s.add_argument("--yes", action="store_true"); s.add_argument("--json", action="store_true"); s.add_argument("--installed", action="store_true")
     s = sub.add_parser("x"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("character", help="character memory + auto rotoscope: doctor, demo, extract, analyze, redraw, memory, animate, edit, export"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("math", help="drawing maths (draw-math): body, dist, angle, ik2, cam, frame-fit, puppet-shadow, gait, ease ..."); s.add_argument("args", nargs=argparse.REMAINDER)
@@ -1515,7 +1548,9 @@ def main():
             print(json.dumps({k: v for k, v in r.items() if not k.startswith("_")}, ensure_ascii=False, indent=1))
     elif a.cmd == "skills":
         rows = library()
-        if a.action == "stats":
+        if a.action == "snapshot":
+            print(f"اتكتب {snapshot_installed()} مهارة في {CATALOG}")
+        elif a.action == "stats":
             by = {}
             for r in rows:
                 by[r["repo"]] = by.get(r["repo"], 0) + 1
@@ -1532,7 +1567,8 @@ def main():
             else:
                 ih = inst_find(a.q, 8)
                 if ih:
-                    print("🟢 متثبتة على الجهاز (" + str(len(installed())) + " مهارة):\n" + "\n".join(inst_line(r) for r in ih) + "\n")
+                    where = "على لابتوب صاحب الشغل، مش على الجهاز ده" if ih[0]["mode"] == "catalog" else "متثبتة على الجهاز"
+                    print(f"🟢 {where} ({len(installed())} مهارة):\n" + "\n".join(inst_line(r) for r in ih) + "\n")
                 print(("📚 من المكتبة (مش متثبتة):\n" + "\n".join(lib_line(r) for r in hits)) if hits else "مفيش مطابق في المكتبة. جرّب كلمات إنجليزي، أو rd.py intel / x tool atlas find.")
         elif a.action == "show":
             f = LIBRARY / a.q / "SKILL.md"
@@ -1602,8 +1638,12 @@ def main():
             for r in library():
                 if not (LIBRARY / r["name"] / "SKILL.md").is_file():
                     bad.append(f"library: missing {r['name']}/SKILL.md")
-            if not lib_find("مونتاج فيديو", 3):
+            if not lib_find("مونتاج فيديو", 3, hide_installed=False):
                 bad.append("library: Arabic search returned nothing")
+        if CATALOG.is_file():
+            cat = (jload(CATALOG, {}) or {}).get("skills", [])
+            if len(cat) < 100 or any(re.search(r"[A-Za-z]:[\/]+Users[\/]", r.get("description", "")) for r in cat):
+                bad.append(f"installed catalog: {len(cat)} rows or a user path leaked")
         if classify(__file__) != "python" or classify(str(ROOT)) not in ("skill-package", "repo"):
             bad.append("classify")
         idx = jload(MIND / "chats_index.json", {}) or {}

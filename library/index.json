@@ -7679,6 +7679,107 @@
    "rank": 500,
    "review": [],
    "has_scripts": false
+  },
+  {
+   "name": "algorithmic-art",
+   "title": "algorithmic-art",
+   "description": "Creating algorithmic art using p5.js with seeded randomness and interactive parameter exploration. Use this when users request creating art using code, generative art, algorithmic art, flow fields, or particle systems. Create original algorithmic art rather than copying existing artists' work to avoid copyright violations.",
+   "repo": "anthropics/skills",
+   "stars": 194030,
+   "license": "apache-2.0",
+   "pushed": "2026-11-06",
+   "source_path": "anthropics__skills/skills/algorithmic-art",
+   "files": 4,
+   "kb": 60,
+   "review": [
+    "exec"
+   ],
+   "has_scripts": true,
+   "rank": 501
+  },
+  {
+   "name": "canvas-design",
+   "title": "canvas-design",
+   "description": "Create beautiful visual art in .png and .pdf documents using design philosophy. You should use this skill when the user asks to create a poster, piece of art, design, or other static piece. Create original visual designs, never copying existing artists' work to avoid copyright violations.",
+   "repo": "anthropics/skills",
+   "stars": 194030,
+   "license": "apache-2.0",
+   "pushed": "2026-11-06",
+   "source_path": "anthropics__skills/skills/canvas-design",
+   "files": 30,
+   "kb": 142,
+   "review": [],
+   "has_scripts": false,
+   "rank": 502
+  },
+  {
+   "name": "frontend-design",
+   "title": "frontend-design",
+   "description": "Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults.",
+   "repo": "anthropics/skills",
+   "stars": 194030,
+   "license": "apache-2.0",
+   "pushed": "2026-11-06",
+   "source_path": "anthropics__skills/skills/frontend-design",
+   "files": 2,
+   "kb": 19,
+   "review": [],
+   "has_scripts": false,
+   "rank": 503
+  },
+  {
+   "name": "mcp-builder",
+   "title": "mcp-builder",
+   "description": "Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. Use when building MCP servers to integrate external APIs or services, whether in Python (FastMCP) or Node/TypeScript (MCP SDK).",
+   "repo": "anthropics/skills",
+   "stars": 194030,
+   "license": "apache-2.0",
+   "pushed": "2026-11-06",
+   "source_path": "anthropics__skills/skills/mcp-builder",
+   "files": 11,
+   "kb": 160,
+   "review": [
+    "network",
+    "secrets-read"
+   ],
+   "has_scripts": true,
+   "rank": 504
+  },
+  {
+   "name": "web-artifacts-builder",
+   "title": "web-artifacts-builder",
+   "description": "Suite of tools for creating elaborate, multi-component claude.ai HTML artifacts using modern frontend web technologies (React, Tailwind CSS, shadcn/ui). Use for complex artifacts requiring state management, routing, or shadcn/ui components - not for simple single-file HTML/JSX artifacts.",
+   "repo": "anthropics/skills",
+   "stars": 194030,
+   "license": "apache-2.0",
+   "pushed": "2026-11-06",
+   "source_path": "anthropics__skills/skills/web-artifacts-builder",
+   "files": 5,
+   "kb": 45,
+   "review": [
+    "network"
+   ],
+   "has_scripts": true,
+   "rank": 505
+  },
+  {
+   "name": "webapp-testing",
+   "title": "webapp-testing",
+   "description": "Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.",
+   "repo": "anthropics/skills",
+   "stars": 194030,
+   "license": "apache-2.0",
+   "pushed": "2026-11-06",
+   "source_path": "anthropics__skills/skills/webapp-testing",
+   "files": 6,
+   "kb": 22,
+   "review": [
+    "exec",
+    "network"
+   ],
+   "has_scripts": true,
+   "rank": 506
   }
- ]
+ ],
+ "added_2026_11_13": "v2.10: the official Anthropic skills with an explicit Apache-2.0 LICENSE.txt (fonts left out). doc-coauthoring is not copied: no licence file upstream; it is listed in mind/installed_catalog.json."
 }

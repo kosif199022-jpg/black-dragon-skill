@@ -219,12 +219,19 @@ def _score(a, b):
 def font_candidates(text, extra_dirs=()):
     files = {}
     q = ":lang=ar" if re.search(r"[؀-ۿ]", text) else ""
-    r = subprocess.run(["fc-list", q or ":", "family", "style", "file"], capture_output=True, text=True)
-    for line in r.stdout.splitlines():
-        fp, _, rest = line.partition(":")
-        fam = rest.split(":")[0].split(",")[0].strip()
-        if fp.lower().endswith((".ttf", ".otf", ".ttc")):
-            files.setdefault(fp.strip(), fam)
+    try:
+        out = subprocess.run(["fc-list", q or ":", "family", "style", "file"], capture_output=True,
+                             text=True, encoding="utf-8", errors="replace").stdout
+    except (OSError, subprocess.SubprocessError):
+        out = ""
+    for line in out.splitlines():
+        # Windows paths carry a drive colon ("C:/WINDOWS/fonts/x.ttf: Family"), so split after the extension
+        m = re.match(r"^(.+?\.(?:ttf|otf|ttc))\s*:\s*(.*)$", line.strip(), re.I)
+        if m:
+            files.setdefault(m.group(1), m.group(2).split(":")[0].split(",")[0].strip())
+    if not files and os.name == "nt":
+        extra_dirs = tuple(extra_dirs) + tuple(d for d in (Path(os.environ.get("WINDIR", r"C:\Windows")) / "Fonts",
+                                                           Path(os.environ.get("LOCALAPPDATA", "")) / "Microsoft/Windows/Fonts") if d.is_dir())
     for d in extra_dirs:
         for fp in Path(d).rglob("*"):
             if fp.suffix.lower() in (".ttf", ".otf", ".ttc"):
