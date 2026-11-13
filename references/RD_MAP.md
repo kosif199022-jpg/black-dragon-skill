@@ -28,7 +28,7 @@
 | `math` | drawing maths (draw-math): body, dist, angle, ik2, cam, frame-fit, puppet-shadow, gait, ease ... |
 | `dcm` | dragon-character-memory v1.0 (second engine): extract, analyze, redraw, memory, rebuild, animate, identity, demo |
 | `desktop` | guarded BlackDragon desktop bridge: catalog, doctor, read, snapshot |
-| `think` | planning-mind: card, gate, workflow, check, learn, lessons, types, selftest |
+| `think` | think & plan: start, revise, check, time, mistake, mistakes, pipeline-selftest · planning-mind: card, gate, workflow, learn, lessons, types, selftest |
 | `understand` | يفهم الطلب (صوت، كيبورد إنجليزي، غلطات) |
 | `brief` | ملخص JSON: الطريق والمهارات والقدرات للطلب |
 | `plan` | الخطة كاملة للطلب: الطريق والخطوات والمهارات |

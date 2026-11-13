@@ -1,5 +1,14 @@
 # سجل تغييرات التنين الأحمر
 
+## v2.9.0 — 2026-11-13 (فكّر وخطّط)
+- جديد: `engine/skills/planning-mind/scripts/think.py` و`data/council.json` و`data/mistakes_seed.jsonl` و`evals/think_cases.json`.
+- `rd.py think start|revise|check|time|mistake|mistakes|pipeline-selftest` بتروح لـ think.py، والباقي لـ plan.py زي الأول.
+- الخطة بتستخدم الراوتر (مش مصنّف منفصل)، وبتسكت في الدردشة و«كمّل»، وبتسأل كل الأسئلة مرة واحدة، والمجلس على كل خطة، والنقد إلزامي (`check` بيرفض «…»).
+- العقل الفائق (ultra-mind) متربط: الخطة بتقول أمر `scaffold.py` المناسب للنوع والعمق، وجزء ⑥ فيه تحقق مستقل (CoVe).
+- سجل أوقات بيظبط التقدير، وسجل أخطاء بيتعلّم (وبيسجّل درس في `learn` كمان).
+- `rd.py selftest` بقى بيشغّل اختبار الخطة (6/6) وبيفشل لو حالة «الراجل والبنت» ماتمسكتش.
+- BOOT.md وCLAUDE.md: القاعدة الإلزامية للطلبات متعددة الخطوات بقت `think start`.
+
 ## v2.8.2 — 2026-11-13 (دمج 2.8.1 + 2.7.1 + planning-mind)
 - **الأساس:** `red-dragon-v2.8.1.zip`. نسخة 2.8 اتبنت فوق 2.7.0، فإضافات 2.7.1 اتنقلت عليها:
   - `engine/skills/blackdragon-desktop-bridge` و`rd.py desktop`.

@@ -23,7 +23,7 @@ It reads and advises; it never installs, publishes, spends or deletes."""
 import argparse, datetime, hashlib, json, math, os, re, shutil, subprocess, sys
 from pathlib import Path
 
-VERSION = "2.8.2"
+VERSION = "2.9.0"
 ROOT = Path(__file__).resolve().parent.parent
 ENGINE = ROOT / "engine"
 MIND = ROOT / "mind"
@@ -1342,7 +1342,7 @@ def main():
     s = sub.add_parser("math", help="drawing maths (draw-math): body, dist, angle, ik2, cam, frame-fit, puppet-shadow, gait, ease ..."); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("dcm", help="dragon-character-memory v1.0 (second engine): extract, analyze, redraw, memory, rebuild, animate, identity, demo"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("desktop", help="guarded BlackDragon desktop bridge: catalog, doctor, read, snapshot"); s.add_argument("args", nargs=argparse.REMAINDER)
-    s = sub.add_parser("think", help="planning-mind: card, gate, workflow, check, learn, lessons, types, selftest"); s.add_argument("args", nargs=argparse.REMAINDER)
+    s = sub.add_parser("think", help="think & plan: start, revise, check, time, mistake, mistakes, pipeline-selftest · planning-mind: card, gate, workflow, learn, lessons, types, selftest"); s.add_argument("args", nargs=argparse.REMAINDER)
     a = ap.parse_args()
 
     if a.cmd in (None, "start"):
@@ -1552,6 +1552,10 @@ def main():
         raise SystemExit(subprocess.call([sys.executable, "-X", "utf8", str(dm)] + (a.args or ["--help"])))
     elif a.cmd in ("dcm", "desktop", "think"):
         sk = {"dcm": ("dragon-character-memory", "dcm.py"), "desktop": ("blackdragon-desktop-bridge", "bridge.py"), "think": ("planning-mind", "plan.py")}[a.cmd]
+        if a.cmd == "think" and a.args and a.args[0] in ("start", "revise", "check", "time", "mistake", "mistakes", "pipeline-selftest"):
+            sk = ("planning-mind", "think.py")      # v2.9: the think-and-plan pipeline; the other words go to plan.py
+            if a.args[0] == "pipeline-selftest":
+                a.args = ["selftest"] + a.args[1:]
         sc = ROOT / "engine" / "skills" / sk[0] / "scripts" / sk[1]
         raise SystemExit(subprocess.call([sys.executable, "-X", "utf8", str(sc)] + (a.args or ["--help"])))
     elif a.cmd == "doctor":
@@ -1621,6 +1625,12 @@ def main():
                     bad.append(f"blind chats eval: top-3 {t3}/{len(blind)} < 85%")
         except Exception as e:
             bad.append(f"rd_chats: {e}")
+        tp = ROOT / "engine" / "skills" / "planning-mind" / "scripts" / "think.py"
+        if tp.is_file():                     # v2.9: the think-and-plan pipeline must still catch the known mistakes (M01: things on faces)
+            r = subprocess.run([sys.executable, "-X", "utf8", str(tp), "selftest"], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=300,
+                               env=dict(os.environ, PYTHONDONTWRITEBYTECODE="1"))
+            if r.returncode:
+                bad.append("think pipeline: " + (r.stdout.strip().splitlines() or ["?"])[-1][:200])
         gate, ev, fl = {}, MIND / "route_eval" / "route_eval2.py", jload(MIND / "route_eval" / "floor.json", {}) or {}
         if not a.quick and ev.is_file() and fl.get("floor"):     # v2.8: the blind test half may never get worse (old: no context, fresh: session topic)
             for s, extra in (("old", []), ("fresh", ["--topic"])):
