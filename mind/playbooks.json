@@ -87,10 +87,11 @@
    "domain": "motion",
    "ar": "موشن جرافيك بالكود (HTML أو SVG ← فيديو)",
    "en": "code-built motion graphics rendered to video",
-   "triggers": "موشن جرافيك تايتل عنوان متحرك انيميشن بالكود html svg لوجو متحرك saas اعلان منتج motion graphics title animation explainer kinetic typography جرافك انميشن وانميشن",
+   "triggers": "موشن جرافيك تايتل عنوان متحرك انيميشن بالكود html svg لوجو متحرك saas اعلان منتج motion graphics title animation explainer kinetic typography جرافك انميشن وانميشن hypit svml svrun",
    "steps": [
     "بريف في 3 سطور + ستوري بورد نصي (لقطة، مدة، حركة). استنى «موافق».",
     "$E run web_film plan \"<الفكرة>\" --duration S --ratio 9:16 --out job ثم scaffold ثم check --html.",
+    "بديل جاهز لمشهد بمكوّنات مربوط بالكلمة (SVML): `$R hypit doctor` ثم `$R hypit plan <proj> <x.svrun>` (exit 3 = بفلوس، استنى «موافق») ثم `$R hypit render <proj> <x.svrun> --to out.mp4`.",
     "الحركة seek-driven (الوقت بيتحسب من رقم الفريم مش من الساعة) عشان الرندر يبقى حتمي.",
     "[pc] $E run web_film render --width 1080 --height 1920 --fps 30 --stills 1,3,5 الأول، وبعدين الرندر الكامل.",
     "[cloud] الرندر على سحابة Higgsfield: Playwright موجود في sandbox_exec؛ $E tool hf paste ثم prender.sh لتقسيم الفريمات على 4 أنوية.",
@@ -100,7 +101,8 @@
     "saas-animation",
     "frontend-design",
     "theme-factory",
-    "absolute-creativity"
+    "absolute-creativity",
+    "hypit-run"
    ],
    "powers": [
     "eng-web-film",
