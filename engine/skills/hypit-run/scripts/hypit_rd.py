@@ -16,6 +16,7 @@ and fetches upstream examples at run time.
 """
 import argparse, json, os, re, shutil, subprocess, sys, tempfile
 from pathlib import Path
+from hypit_guard import assess_plan, cli_is_inspection_only
 
 DEFAULT_VERSION = "0.3.2"
 HOME = Path(os.environ.get("HYPIT_RD_HOME", Path.home() / ".hypit-rd"))
@@ -174,48 +175,54 @@ def _hy(project, args, timeout=1800, check=True):
 
 
 def paid_lines(plan_text):
-    """Provider lines in `hypit plan` that are not local/free."""
-    bad = []
-    for line in plan_text.splitlines():
-        s = line.strip()
-        if "·" in s and "(" in s and "@" in s and not s.startswith(("×", "@")) and LOCAL_PRICE not in s:
-            bad.append(s)
-    return bad
-
+    return assess_plan(plan_text).bad
 
 def cmd_check(a):
     print(_hy(a.dir, ["check", a.file]).stdout)
 
 
 def cmd_plan(a):
-    p = _hy(a.dir, ["plan", a.file], check=False)
-    print(p.stdout + p.stderr)
-    paid = paid_lines(p.stdout)
-    print("💰 فيه مزوّد مش محلي:\n  " + "\n  ".join(paid) if paid else "✅ كل الشغل محلي ومجاني")
-    return 3 if paid else p.returncode
-
+    p=_hy(a.dir,["plan",a.file],check=False)
+    gate=assess_plan(p.stdout,p.returncode)
+    print(p.stdout+p.stderr)
+    if gate.errors:
+        print("⛔ plan invalid: "+"; ".join(gate.errors))
+        return 2
+    if gate.bad:
+        print("⛔ paid providers:\n  "+"\n  ".join(gate.bad))
+        return 3
+    print("✅ Local-only plan verified")
+    return 0
 
 def cmd_render(a):
-    p = _hy(a.dir, ["plan", a.file], check=False)
-    paid = paid_lines(p.stdout)
-    if paid and not a.allow_paid:
-        print("⛔ الخطة فيها توليد بفلوس. اعرض السعر على صاحب الشغل وخد «موافق»، وبعدين --allow-paid:\n  " + "\n  ".join(paid))
+    p=_hy(a.dir,["plan",a.file],check=False)
+    gate=assess_plan(p.stdout,p.returncode)
+    if gate.errors:
+        print("⛔ plan failed/unknown; no build: "+"; ".join(gate.errors))
+        return 2
+    if gate.bad and not a.allow_paid:
+        print("⛔ approval of these prices required first:\n  "+"\n  ".join(gate.bad))
         return 3
-    if p.returncode != 0 or "Runtime preflight" in p.stdout and re.search(r"^\s*× ", p.stdout.split("Runtime preflight")[-1], re.M):
-        print(p.stdout[-1500:]); return 2
-    b = _hy(a.dir, ["build", a.file, "--follow"])
-    m = re.search(r"Build\s+(bld_\S+)", b.stdout) or sys.exit(b.stdout)
-    out = str(Path(a.to).resolve())
-    _hy(a.dir, ["get", m.group(1), "--output", a.output, "--to", out])
-    probe = run(["ffprobe", "-v", "error", "-show_entries", "stream=codec_name,width,height,r_frame_rate:format=duration",
-                 "-of", "json", out], check=False).stdout if shutil.which("ffprobe") else "{}"
-    print(json.dumps({"build": m.group(1), "out": out, "probe": json.loads(probe or "{}")}, ensure_ascii=False, indent=1))
-
+    out=str(Path(a.to).resolve())
+    if Path(out).exists():
+        print("⛔ refusing to overwrite "+out)
+        return 2
+    if gate.bad: print("⚠ --allow-paid specified; use only after user approved quoted prices.")
+    b=_hy(a.dir,["build",a.file,"--follow"])
+    m=re.search(r"Build\s+(bld_\S+)",b.stdout) or sys.exit(b.stdout)
+    _hy(a.dir,["get",m.group(1),"--output",a.output,"--to",out])
+    probe=run(["ffprobe","-v","error","-show_entries","stream=codec_name,width,height,r_frame_rate:format=duration",
+              "-of","json",out],check=False).stdout if shutil.which("ffprobe") else "{}"
+    print(json.dumps({"build":m.group(1),"out":out,"probe":json.loads(probe or "{}")},ensure_ascii=False,indent=1))
 
 def cmd_cli(a):
-    args = a.rest[1:] if a.rest[:1] == ["--"] else a.rest
-    p = _hy(a.dir, args, check=False); print(p.stdout + p.stderr); return p.returncode
-
+    args=a.rest[1:] if a.rest[:1]==["--"] else a.rest
+    if not cli_is_inspection_only(args):
+        print("⛔ direct CLI is inspection-only; use gated hypit render for builds")
+        return 3
+    p=_hy(a.dir,args,check=False)
+    print(p.stdout+p.stderr)
+    return p.returncode
 
 def cmd_selftest(_):
     ok = []
@@ -223,6 +230,8 @@ def cmd_selftest(_):
               "      ×1  width 540\n    hypihub (@hypit/provider-hypihub)  ·  $0.40 per request\n")
     ok.append(("paid_detect", paid_lines(sample) == ["hypihub (@hypit/provider-hypihub)  ·  $0.40 per request"]))
     ok.append(("free_plan", paid_lines(sample.split("    hypihub")[0]) == []))
+    ok.append(("empty_plan_blocks", not assess_plan("").safe))
+    ok.append(("build_cli_blocks", not cli_is_inspection_only(["build","x.svrun"])))
     with tempfile.TemporaryDirectory() as t:
         d = Path(t); (d / "packages/x").mkdir(parents=True)
         (d / "packages/x/package.json").write_text(json.dumps({"name": "@ex/x", "devDependencies": {"@hypit/hypit": "workspace:*"}}))
