@@ -211,7 +211,7 @@ def start(request, prev="", answers=""):
     for i, s in enumerate(raw, 1):
         m = max(1, round(step_minutes(s) * ratio))
         ck = (checks[i - 1] if not pb and i - 1 < len(checks) and checks[i - 1] else "فحص بالأرقام أو بالعين قبل الخطوة اللي بعدها")
-        steps.append({"n": i, "step": s, "minutes": m, "check": ck})
+        steps.append({"n": i, "step": s, "minutes": m, "check": ck, "worker": worker_for(s)})
     total = sum(s["minutes"] for s in steps)
     ty = PM.load_data()["types"].get(a["type"], {})
     hints = {"approaches": [x if isinstance(x, str) else x.get("name", str(x)) for x in ty.get("approaches", [])][:3],
@@ -235,6 +235,15 @@ def start(request, prev="", answers=""):
 
 CM_TYPE = {"montage": "media", "design": "media", "writing": "writing", "app_dev": "code", "skill_dev": "code", "analysis_re": "analysis",
            "accounting": "data", "research": "research", "decision": "decision", "download": "system", "general": "project"}
+# v2.15: mechanical steps go to the cheap Haiku worker (agents/rd-runner.md); taste and thinking stay with the main model
+ROUTINE = re.compile(r"(حمّل|حمل|نزّل|نزل|تحميل|download|grab|yt-dlp|insta |ffmpeg|ffprobe|حوّل|convert|قص من|اقطع|استخرج (?:الصوت|فريمات)|انسخ|انقل|سمّي|rename|zip|اضغط|sha256|checksum|selftest|verify|sync check|ref verify|mux|جرد)", re.I)
+TASTE = re.compile(r"(صمم|تصميم|ارسم|اكتب|كتابة|ابتكر|اختار|قرار|خطة|نقد|رأي|ستوري ?بورد|كونسبت|اتجاه|هوك|افهم|حلل|عينك|بعينك|اعرض)", re.I)
+
+
+def worker_for(step):
+    return "rd-runner" if ROUTINE.search(step) and not TASTE.search(step) else None
+
+
 UM_TYPE = {"montage": "creative", "design": "creative", "writing": "writing", "app_dev": "code", "skill_dev": "code", "analysis_re": "analysis",
            "accounting": "analysis", "research": "analysis", "decision": "decision", "download": "general", "general": "general"}
 
@@ -256,7 +265,9 @@ def render(p, members, chair):
           "| # | السؤال | ⭐ اقتراحي | لو مارديتش |", "|---|---|---|---|"]
     L += [f"| {i} | {q['q']} | {q['rec']} | {q['default']} |" for i, q in enumerate(p["questions"], 1)] or ["| — | مفيش سؤال يغيّر الناتج | — | — |"]
     L += ["", "## ④ الخطة", "", "| # | الخطوة | الوقت | الفحص بعدها |", "|---|---|---|---|"]
-    L += [f"| {s['n']} | {s['step']} | ~{s['minutes']} د | {s['check']} |" for s in p["steps"]]
+    L += [f"| {s['n']} | {s['step']}{' · 🤖 rd-runner (Haiku)' if s.get('worker') else ''} | ~{s['minutes']} د | {s['check']} |" for s in p["steps"]]
+    if any(s.get("worker") for s in p["steps"]):
+        L += ["", "🤖 **الخطوات الروتينية** (تحميل، تحويل، نسخ، فحص) تتعمل بالعامل الرخيص: في Claude Code بـ `Agent(subagent_type=\"rd-runner\")` بعد `rd.py agents install`. لو مش متاح، اعملها إنت عادي. أي خطوة فيها ذوق أو قرار، لأ."]
     cal = p["calibration"]
     L += [f"\n**الإجمالي: ~{p['total']} دقيقة**" + (f" (متظبط على {cal['observations']} مرة سابقة × {cal['ratio']})" if cal["observations"] >= 3 else " (تقدير أولي؛ بيتظبط من الأوقات الحقيقية)")]
     if p["approvals"]:

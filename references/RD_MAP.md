@@ -30,6 +30,8 @@
 | `desktop` | guarded BlackDragon desktop bridge: catalog, doctor, read, snapshot |
 | `ref` | reference-lock: lock, show, verify, fontmatch, list, selftest (same font/colours = exactly the same) |
 | `mind` | claude-mind: brief, gate, learn, lessons, types (how Claude thinks and checks before delivery) |
+| `insta` | insta-reader: doctor, profile, top, post, download, login, selftest (Instagram via instaloader, MIT) |
+| `agents` | subagents: list, install, check (rd-runner = cheap Haiku worker for routine steps) |
 | `hypit` | hypit-run: doctor, setup, example, check, plan, render, cli, selftest (the real Hypit SVML video engine, local and free; paid Providers blocked without --allow-paid) |
 | `krita` | krita-draw: render scene.json | layers file.kra | info (draw with code inside the real Krita) |
 | `sync` | sync-guard: words, check, fix, onsets, script, grid, selftest (captions and motion on the spoken word) |
@@ -41,7 +43,7 @@
 | `recall` | يفتكر من المحادثات القديمة |
 | `intel` | مستودعات ومعلومات تخص الطلب |
 
-## مهارات المحرك (39)
+## مهارات المحرك (40)
 
 | المسار | بيعمل إيه |
 |---|---|
@@ -62,6 +64,7 @@
 | `engine/skills/higgsfield-cloud` | سحابة هيجز المجانية — بتشغّل جهاز لينكس Higgsfield المجاني (sandbox_exec عادي وXL) كمزرعة رندر وتفريغ وتصفّح جنب ويندوز من غير كريدت. |
 | `engine/skills/higgsfield-free` | هيجز فيلد ببلاش — استغلال كل الإمكانيات المجانية في Higgsfield من غير ما يتصرف كريدت: سحابة لينكس للرندر والترميز والتفريغ (sandbox_exec)، Blender مست… |
 | `engine/skills/hypit-run` | تشغيل Hypit الحقيقي (hypit-ai/hypit) من التنين: فيديو مكتوب كـ SVML (مكوّنات HTML/CSS/SVG + Timeline مربوط بالكلمة) بيترندر MP4 محليًا ببلاش في Chromi… |
+| `engine/skills/insta-reader` | قراية وتحميل من إنستجرام بـ instaloader (MIT): بيانات حساب (متابعين، بايو، عدد بوستات)، آخر البوستات بلايكاتها وكومنتاتها ومشاهداتها وكابشنها، أعلى ال… |
 | `engine/skills/kosif-black-dragon-ultra` | التنين الأسود الفائق — one front door to all 21 KOSIF modules: video montage, motion/web films, voice-over and subtitles, reels and hooks, Kling promp… |
 | `engine/skills/kosif-downloads` | KOSIF «كوسيف» — مدير تحميل مسرّع زي Internet Download Manager مدموج في التنين الأسود. |
 | `engine/skills/krita-draw` | Draw and paint with code through the real Krita installed on this PC, with no GUI. |

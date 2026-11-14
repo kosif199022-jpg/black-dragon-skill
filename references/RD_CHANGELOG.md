@@ -1,5 +1,11 @@
 # سجل تغييرات التنين الأحمر
 
+## v2.15.0 — 2026-11-14 (rd-runner + insta-reader)
+- جديد: `agents/rd-runner.md` (Haiku)، `scripts/rd_agents.py` (`rd.py agents list|install|check`)، وselftest بيفحص صيغة الـ agents.
+- think.py: `ROUTINE`/`TASTE` بيحددوا الخطوات اللي تروح لـ rd-runner، وسطر 🤖 في الخطة. think_cases: 10.
+- جديد: `engine/skills/insta-reader` (`insta.py`، 11 فحص من غير نت)، و`rd.py insta`. instaloader 4.16 اتجرّب: كل الخصايص اللي الكود بيستخدمها موجودة. الطلبات الحقيقية لإنستجرام اتحظرت من السحابة، فماتجرّبتش على حساب حقيقي.
+- مبني فوق v2.14.0 اللي اترفعت من اللابتوب (hypit-run).
+
 ## v2.14.0 — 2026-11-14 (Hypit secure execution)
 - Existing Hypit 0.3.2 bridge hardened: missing/unknown provider cost or preflight failures cannot trigger rendering.
 - The raw Hypit CLI is inspection-only, so build cannot bypass the provider-price gate.
