@@ -1,5 +1,13 @@
 # سجل تغييرات التنين الأحمر
 
+## v2.13.0 — 2026-11-14 (Hypit بيشتغل فعلًا)
+- **جديد: `engine/skills/hypit-run`** و`rd.py hypit doctor|setup|example|check|plan|render|cli|selftest`. كود تغليف أصلي حوالين حزمة npm `@hypit/hypit` المنشورة؛ ولا سطر من كود Hypit اتنسخ (نفس قرار v2.12.0 بسبب الرخصة).
+  - `setup`: تثبيت في `~/.hypit-rd` بـ `--ignore-scripts`.
+  - `example`: بيجيب مثال من المستودع (sparse clone)، ويبدّل `workspace:*` بنسخ npm، ويبني المكوّنات بـ tsc، ويوجّه `chromePath` لمتصفح موجود (Hypit كان بيدوّر على متصفح مش متنزّل ويقف بـ MANAGED_PROGRAM_DOWN).
+  - `render`: بيقرا `plan` الأول؛ أي مزوّد مش محلي ← exit 3 لحد «موافق» و`--allow-paid`.
+- **اتجرّب:** `semantic-composition/chat.svrun` من الصفر: تجهيز 30 ث، render 19 ث ← MP4 h264+aac، 540×960، 30fps، 8.0 ث، وشبكة الفريمات اتشافت بالعين.
+- selftest بتاع hypit-run (4 فحوص، أوفلاين) دخل في `rd.py selftest`.
+
 ## v2.12.0 — 2026-11-13 (أفكار hypit-ai/hypit)
 - اتدرس `hypit-ai/hypit` (commit `6bacce0`، 1,721 ملف TypeScript). الكود ماتنسخش: رخصته Apache-2.0 بشروط (ممنوع البيع أو التشغيل كخدمة لناس تانية، ولازم نفس الرخصة لأي نسخة معدّلة). اللي اتاخد أفكار، واتكتبت بكود بايثون بتاعنا.
 - `syncguard.py`: `script` (Moment وSelection وفواصل الكابشن والنص المزدوج ← كابشن وكاريوكي وأحداث)، و`grid` (فريمات عليها الكلام)، و`--lock` من reference-lock. selftest بقى 17 فحص.
