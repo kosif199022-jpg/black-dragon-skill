@@ -36,6 +36,7 @@
 | `hypit` | hypit-run: doctor, setup, example, check, plan, render, cli, selftest (the real Hypit SVML video engine, local and free; paid Providers blocked without --allow-paid) |
 | `krita` | krita-draw: render scene.json | layers file.kra | info (draw with code inside the real Krita) |
 | `sync` | sync-guard: words, check, fix, onsets, script, grid, selftest (captions and motion on the spoken word) |
+| `arena` | arena-gate (v2.19): size, start, jobs, next, collect, advance, winner, skip, gate, selftest (the arena is a required step: competing copies, bracket, judge) |
 | `think` | think & plan: start, revise, check, time, mistake, mistakes, pipeline-selftest · planning-mind: card, gate, workflow, learn, lessons, types, selftest |
 | `understand` | يفهم الطلب (صوت، كيبورد إنجليزي، غلطات) |
 | `brief` | ملخص JSON: الطريق والمهارات والقدرات للطلب |
@@ -44,11 +45,12 @@
 | `recall` | يفتكر من المحادثات القديمة |
 | `intel` | مستودعات ومعلومات تخص الطلب |
 
-## مهارات المحرك (40)
+## مهارات المحرك (41)
 
 | المسار | بيعمل إيه |
 |---|---|
 | `engine/skills/absolute-creativity` | الإبداع المطلق — محرك ابتكار وإخراج فني كامل بيطلّع أفكار أصلية مش كليشيه، وبيحوّلها لشغل حقيقي في المونتاج والتصوير السينمائي والفوتوغرافي والحبكة ال… |
+| `engine/skills/arena-gate` | الحلبة شرط أساسي في شغل التنين: أي مهمة فيها ذوق أو قرار (تصميم، كتابة، مونتاج، خطة، كود فيه أكتر من حل) تتعمل كحلبة. |
 | `engine/skills/atlas-picks` | Build Awwwards-quality web experiences with spring physics, GLSL shaders, R3F, post-processing, particles, Framer Motion, and interactive 3D. |
 | `engine/skills/black-dragon-cinema` | التنين الأسود — سينما الفوتيج. |
 | `engine/skills/blackdragon-desktop-bridge` | جسر اختياري آمن لتشخيص القدرات الموجودة في تطبيق BlackDragon على ويندوز وقراءة معلومات أو التقاط صورة للشاشة بموافقة صريحة. |

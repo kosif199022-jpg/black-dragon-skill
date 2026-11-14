@@ -38,6 +38,8 @@ def _load(name, path):
 
 RD = _load("rd_core", RD_ROOT / "scripts" / "rd.py") if (RD_ROOT / "scripts" / "rd.py").is_file() else None
 PM = _load("planning_mind", HERE / "plan.py")
+_AG = SKILL.parent / "arena-gate" / "scripts" / "arena_gate.py"
+AG = _load("arena_gate", _AG) if _AG.is_file() else None      # v2.19: the arena is a required step
 
 
 def jl(path):
@@ -163,7 +165,9 @@ def start(request, prev="", answers=""):
     multi = a["depth"] in ("L2", "L3") or len(pb.get("steps", [])) >= 3 if pb else a["depth"] in ("L2", "L3")
     gs = guards_for(request + " " + understood)
     if a["decision"] in ("go", "go_all") and not multi and not gs:
-        return {"mode": "direct", "understood": understood, "text": "▶️ طلب واضح وخطوة واحدة: نفّذ على طول، وقول الافتراضات في سطر."}
+        ar = AG.size(request + " " + understood, depth=a["depth"]) if AG else None
+        extra = ("\n" + AG.render_size(ar)) if ar and ar["agents"] else ""
+        return {"mode": "direct", "understood": understood, "arena": ar, "text": "▶️ طلب واضح وخطوة واحدة: نفّذ على طول، وقول الافتراضات في سطر." + extra}
     # ② look: old chats and lessons that answer questions before they are asked
     seen = []
     if RD:
@@ -205,6 +209,15 @@ def start(request, prev="", answers=""):
     if gs:                                   # hard guards wrap the plan: lock/measure first, verify last
         raw = [g["first"] for g in gs] + raw + [g["last"] for g in gs]
         checks = ([None] * len(gs) + checks) if checks else []
+    arena = AG.size(request + " " + understood, depth=a["depth"]) if AG else None
+    if arena and arena["agents"]:
+        ap_ = arena["plan"]
+        st_ = (f"⚔️ الحلبة (شرط أساسي) على الحل المكتوب قبل التنفيذ: {arena['agents']} وكيل، {ap_['rounds']} جولات — اكتب .arena/task.md، "
+               f"`rd.py arena start \"…\" --task-file .arena/task.md`، وبعدين `rd.py arena next` و`jobs` لحد DONE، و`rd.py arena gate` ✅")
+        pos = 1 if len(raw) >= 3 else max(0, len(raw) - 1)     # on the written plan/concept, before the expensive execution
+        raw = raw[:pos] + [st_] + raw[pos:]
+        if checks:
+            checks = checks[:pos] + ["rd.py arena gate = ✅ (بطل، أو نهائي أعمى قدام الإجابة المرفوضة)"] + checks[pos:]
     kind = (pb or {}).get("id") or a["type"]
     ratio, nobs = calibration(kind)
     steps = []
@@ -224,7 +237,7 @@ def start(request, prev="", answers=""):
             "alternative": (alt or {}).get("id"), "skills": skills, "seen": seen, "lessons": lessons,
             "mistakes": [{"id": m["id"], "rule": m["rule"]} for m in must], "questions": qs, "steps": steps, "total": total,
             "calibration": {"ratio": ratio, "observations": nobs}, "council": [m["name"] for m in members] + [chair["name"]],
-            "gates": [g for g in (pb or {}).get("gates", [])], "hints": hints, "approvals": a.get("confirm_before", []) + (pb or {}).get("ask", [])}
+            "gates": [g for g in (pb or {}).get("gates", [])], "arena": arena, "hints": hints, "approvals": a.get("confirm_before", []) + (pb or {}).get("ask", [])}
     d = PLANS / pid
     d.mkdir(parents=True, exist_ok=True)
     (d / "plan.json").write_text(json.dumps(plan, ensure_ascii=False, indent=1), encoding="utf-8")
@@ -268,6 +281,11 @@ def render(p, members, chair):
     L += [f"| {s['n']} | {s['step']}{' · 🤖 rd-runner (Haiku)' if s.get('worker') else ''} | ~{s['minutes']} د | {s['check']} |" for s in p["steps"]]
     if any(s.get("worker") for s in p["steps"]):
         L += ["", "🤖 **الخطوات الروتينية** (تحميل، تحويل، نسخ، فحص) تتعمل بالعامل الرخيص: في Claude Code بـ `Agent(subagent_type=\"rd-runner\")` بعد `rd.py agents install`. لو مش متاح، اعملها إنت عادي. أي خطوة فيها ذوق أو قرار، لأ."]
+    ar = p.get("arena")
+    if ar:
+        L += ["", AG.render_size(ar) if AG else f"⚔️ الحلبة: {ar.get('tier_ar')}"]
+        if ar["agents"]:
+            L += ["   الخطوات الروتينية بس هي اللي برا الحلبة. التسليم ممنوع قبل `rd.py arena gate` = ✅."]
     cal = p["calibration"]
     L += [f"\n**الإجمالي: ~{p['total']} دقيقة**" + (f" (متظبط على {cal['observations']} مرة سابقة × {cal['ratio']})" if cal["observations"] >= 3 else " (تقدير أولي؛ بيتظبط من الأوقات الحقيقية)")]
     if p["approvals"]:

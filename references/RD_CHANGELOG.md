@@ -8,6 +8,12 @@
 
 # سجل تغييرات التنين الأحمر
 
+## v2.19.0 — 2026-11-14 (الحلبة شرط أساسي)
+- مهارة جديدة `engine/skills/arena-gate` (كودنا) فوق `engine/tools/arena/bracket.py` (arena-skill، MIT): size، start، jobs، skip، gate، selftest، والباقي بيروح للـ bracket زي ما هو.
+- `agents/rd-fighter.md`: مقاتل Haiku للحلول والجولة الأولى. بيكتب جوه `.arena/` بس، وممنوع يحكم.
+- `think.py`: خطوة الحلبة بقت جزء من أي خطة فيها ذوق أو قرار، وسطر الحلبة بيظهر حتى في الطلب المباشر. `rd.py selftest` بيشغّل `arena selftest` (10 حالات حجم + bracket حقيقي بـ 4 وكلاء).
+- LIB_AR: حلبه، يتنافسوا، يتعاركوا.
+
 ## v2.18.0 — 2026-11-14 (دفعة الصور التانية + أحدث المهارات)
 - المكتبة 537 ← 570. من الصور: grill-me (+13 من mattpocock/skills، MIT). frontend-design وHyperFrames (9) كانوا موجودين. Playwright MCP وFigma MCP وphone-harness إعداد بس في `library/mcp_servers.json`.
 - أحدث حاجات (اتعملت بين أغسطس ونوفمبر 2026): google/elephant-goldfish-model (7، Apache-2.0)، Ryze open-seo (5، MIT)، huashu-motion، oil-ui، oil-motion، stack-diagram، answer-me-with-html، pinky (MIT/Apache).
