@@ -1,3 +1,11 @@
+## Unreleased: approval-gate hotfix candidate — 2026-11-14
+
+- In the White Bird application, risky tools always require explicit confirmation even when auto mode is set.
+- White Bird source generator now repairs known unsafe approval patterns and refuses unknown upstream patterns.
+- Added tests for the privilege guard and generator; this is staged in a review branch and is **not** the complete v2.15.0 distribution.
+- Golden Bird sources are absent in the current GitHub tree and must be synchronized and checked separately; existing SHA manifest also needs full reconciliation before merge.
+- Local tests were run on matching v2.14.0 White Bird files; a full repository selftest and Windows integration test remain pending.
+
 # سجل تغييرات التنين الأحمر
 
 ## v2.16.0 — 2026-11-14 (instagram-agent-skill)
