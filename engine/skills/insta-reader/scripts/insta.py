@@ -193,6 +193,35 @@ def cmd_top(a):
         print(f"{i}. " + row(d))
 
 
+def swipe_rows(acct, followers, posts):
+    """TSV rows for ig-viral/swipe.py: account, followers, median (of this account's recent reel views), views, hook (first caption line)."""
+    vids = sorted(d["views"] for d in posts if d.get("is_video") and d.get("views"))
+    med = vids[len(vids) // 2] if len(vids) % 2 else (sum(vids[len(vids) // 2 - 1:len(vids) // 2 + 1]) / 2 if vids else 0)
+    rows = []
+    for d in posts:
+        if d.get("is_video") and d.get("views"):
+            hook = (d["caption"].strip().splitlines() or [""])[0].replace("\t", " ")[:200]
+            rows.append(f"@{acct}\t{followers}\t{int(med)}\t{d['views']}\t{hook}")
+    return rows
+
+
+def cmd_swipe(a):
+    il = need()
+    L = loader(a.session)
+    out = ["account\tfollowers\tmedian\tviews\thook"]
+    for u in a.users:
+        P = il.Profile.from_username(L.context, username(u))
+        posts = []
+        for i, p in enumerate(P.get_posts()):
+            if i >= a.posts:
+                break
+            posts.append(post_info(p))
+            time.sleep(a.wait)
+        out += swipe_rows(P.username, P.followers, posts)
+    Path(a.out).write_text("\n".join(out) + "\n", encoding="utf-8")
+    print(f"{len(out) - 1} ريل من {len(a.users)} حساب ← {Path(a.out).resolve()}\nالخطوة الجاية: rd.py ig swipe {a.out} --out swipe.md")
+
+
 def cmd_login(a):
     need()
     print("هتكتب الباسورد في نافذة instaloader نفسها. التنين مابيشوفهاش ومابيحفظهاش. السيشن بتتحفظ في مجلد instaloader على جهازك.")
@@ -230,6 +259,20 @@ def cmd_selftest(a):
     t("rank by likes", [d["shortcode"] for d in rank(ps, "likes", 2)] == ["b", "c"])
     t("rank by views", rank(ps, "views", 1)[0]["shortcode"] == "c")
     t("row text", "ريل" in row(ps[0]) and "▶ 500" in row(ps[0]))
+    sr = swipe_rows("acc", 48000, ps)
+    t("swipe rows: median of reel views", len(sr) == 3 and sr[0].split("\t")[2] == "500" and sr[0].startswith("@acc\t48000"))
+    ig = Path(__file__).with_name("ig.py")
+    lib = Path(__file__).resolve().parents[4] / "library"
+    if (lib / "ig-viral" / "swipe.py").is_file():
+        import tempfile
+        tsv = Path(tempfile.mkdtemp()) / "c.tsv"
+        tsv.write_text("account\tfollowers\tmedian\tviews\thook\n" + "\n".join(swipe_rows("acc", 48000, ps)) + "\n", encoding="utf-8")
+        r = subprocess.run([sys.executable, "-I", "-X", "utf8", str(ig), "swipe", str(tsv), "--json"], capture_output=True, text=True, encoding="utf-8")
+        t("ig swipe runs on insta swipe output", r.returncode == 0 and "acc" in r.stdout)
+        h = tsv.with_name("h.txt")
+        h.write_text("I lost $18,000 because of one missing contract.\nHey guys, today I wanted to talk about content\n", encoding="utf-8")
+        r = subprocess.run([sys.executable, "-I", "-X", "utf8", str(ig), "hooks", str(h)], capture_output=True, text=True, encoding="utf-8")
+        t("ig hooks ranks", r.returncode == 0 and "HOOK RANKING" in r.stdout and "Greeting" in r.stdout)
     print(f"{ok}/{ok + len(bad)} insta-reader checks" + (f" · فشل: {', '.join(bad)}" if bad else ""))
     sys.exit(0 if not bad else 1)
 
@@ -242,9 +285,10 @@ def main():
     s = sp.add_parser("post"); s.add_argument("target"); s.add_argument("--out"); s.add_argument("--no-media", action="store_true"); s.add_argument("--comments", type=int, default=0); s.set_defaults(f=cmd_post)
     s = sp.add_parser("download"); s.add_argument("user"); s.add_argument("--out", required=True); s.add_argument("--max", type=int, default=12); s.add_argument("--since"); s.add_argument("--reels-only", action="store_true"); s.set_defaults(f=cmd_download)
     s = sp.add_parser("top"); s.add_argument("user"); s.add_argument("--posts", type=int, default=50); s.add_argument("--by", choices=["likes", "comments", "views"], default="likes"); s.add_argument("--n", type=int, default=10); s.add_argument("--json", action="store_true"); s.set_defaults(f=cmd_top)
+    s = sp.add_parser("swipe"); s.add_argument("users", nargs="+"); s.add_argument("--out", required=True); s.add_argument("--posts", type=int, default=24); s.set_defaults(f=cmd_swipe)
     s = sp.add_parser("login"); s.add_argument("user"); s.set_defaults(f=cmd_login)
     sp.add_parser("selftest").set_defaults(f=cmd_selftest)
-    for name in ("profile", "post", "download", "top"):
+    for name in ("profile", "post", "download", "top", "swipe"):
         sp.choices[name].add_argument("--session", help="اسم حسابك اللي عملت بيه login (للخاص والستوريز)")
         sp.choices[name].add_argument("--wait", type=float, default=1.5, help="ثواني بين الطلبات")
     a = ap.parse_args()

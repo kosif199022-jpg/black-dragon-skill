@@ -31,6 +31,7 @@
 | `ref` | reference-lock: lock, show, verify, fontmatch, list, selftest (same font/colours = exactly the same) |
 | `mind` | claude-mind: brief, gate, learn, lessons, types (how Claude thinks and checks before delivery) |
 | `insta` | insta-reader: doctor, profile, top, post, download, login, selftest (Instagram via instaloader, MIT) |
+| `ig` | instagram-agent-skill tools (library/ig-*, MIT): list, hooks, beats, caption, humanize, detect, swipe, voice |
 | `agents` | subagents: list, install, check (rd-runner = cheap Haiku worker for routine steps) |
 | `hypit` | hypit-run: doctor, setup, example, check, plan, render, cli, selftest (the real Hypit SVML video engine, local and free; paid Providers blocked without --allow-paid) |
 | `krita` | krita-draw: render scene.json | layers file.kra | info (draw with code inside the real Krita) |
@@ -114,7 +115,7 @@
 | `tools/draw-math` | Precise geometry, measurement and proportion calculator for drawing and animating people and scenes (shadow-puppet films, 3D silhouette films, 2D figu… |
 | `tools/link-collector` | collect-links.js: يجمع الروابط من صفحة بمتصفح Chromium حقيقي (--filter، --same-site، --json) |
 
-## مكتبة المهارات الخارجية: `library/` (506 مهارة)
+## مكتبة المهارات الخارجية: `library/` (509 مهارة)
 
 بتتدوّر بـ `rd.py skills find …` وبتتثبت بـ `rd.py skills install NAME --yes`. القايمة كاملة: `references/RD_LIBRARY.md`.
 

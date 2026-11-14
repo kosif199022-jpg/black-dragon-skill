@@ -23,7 +23,7 @@ It reads and advises; it never installs, publishes, spends or deletes."""
 import argparse, datetime, hashlib, json, math, os, re, shutil, subprocess, sys
 from pathlib import Path
 
-VERSION = "2.15.0"
+VERSION = "2.16.0"
 ROOT = Path(__file__).resolve().parent.parent
 ENGINE = ROOT / "engine"
 MIND = ROOT / "mind"
@@ -1378,6 +1378,7 @@ def main():
     s = sub.add_parser("ref", help="reference-lock: lock, show, verify, fontmatch, list, selftest (same font/colours = exactly the same)"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("mind", help="claude-mind: brief, gate, learn, lessons, types (how Claude thinks and checks before delivery)"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("insta", help="insta-reader: doctor, profile, top, post, download, login, selftest (Instagram via instaloader, MIT)"); s.add_argument("args", nargs=argparse.REMAINDER)
+    s = sub.add_parser("ig", help="instagram-agent-skill tools (library/ig-*, MIT): list, hooks, beats, caption, humanize, detect, swipe, voice"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("agents", help="subagents: list, install, check (rd-runner = cheap Haiku worker for routine steps)"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("hypit", help="hypit-run: doctor, setup, example, check, plan, render, cli, selftest (the real Hypit SVML video engine, local and free; paid Providers blocked without --allow-paid)"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("krita", help="krita-draw: render scene.json | layers file.kra | info (draw with code inside the real Krita)"); s.add_argument("args", nargs=argparse.REMAINDER)
@@ -1593,6 +1594,8 @@ def main():
         if not dm.is_file():
             raise SystemExit(f"مفيش draw-math: {dm}")
         raise SystemExit(subprocess.call([sys.executable, "-X", "utf8", str(dm)] + (a.args or ["--help"])))
+    elif a.cmd == "ig":
+        raise SystemExit(subprocess.call([sys.executable, "-X", "utf8", str(ROOT / "engine" / "skills" / "insta-reader" / "scripts" / "ig.py")] + (a.args or ["--help"])))
     elif a.cmd == "agents":
         raise SystemExit(subprocess.call([sys.executable, "-X", "utf8", str(ROOT / "scripts" / "rd_agents.py")] + (a.args or ["list"])))
     elif a.cmd in ("dcm", "desktop", "think", "ref", "sync", "krita", "mind", "hypit", "insta"):

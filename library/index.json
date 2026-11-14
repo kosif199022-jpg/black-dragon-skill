@@ -7779,6 +7779,51 @@
    ],
    "has_scripts": true,
    "rank": 506
+  },
+  {
+   "name": "ig-repurpose",
+   "title": "ig-repurpose",
+   "description": "Turn one long asset - a YouTube video, podcast, livestream, newsletter, blog post or client call - into a week of reels and carousels. Use when the user says \"repurpose this\", \"turn this into reels\", \"I have a video/podcast/ transcript\", \"cut this up\", or pastes something long and wants it on Instagram.",
+   "repo": "Jakeschincariol/instagram-agent-skill",
+   "stars": 6103,
+   "license": "mit",
+   "pushed": "2026-09-13",
+   "source_path": "Jakeschincariol__instagram-agent-skill/skills/ig-repurpose",
+   "files": 3,
+   "kb": 5,
+   "rank": 507,
+   "review": [],
+   "has_scripts": false
+  },
+  {
+   "name": "ig-story",
+   "title": "ig-story",
+   "description": "Write the day's Instagram Stories - the frame-by-frame sequence, which stickers to use where, and the one that moves people into the DMs. Use when the user says \"stories\", \"what do I post on my story\", \"story sequence\", \"poll idea\", \"I have nothing to story about\", or wants to sell something without making a post about it.",
+   "repo": "Jakeschincariol/instagram-agent-skill",
+   "stars": 6103,
+   "license": "mit",
+   "pushed": "2026-09-13",
+   "source_path": "Jakeschincariol__instagram-agent-skill/skills/ig-story",
+   "files": 3,
+   "kb": 6,
+   "rank": 508,
+   "review": [],
+   "has_scripts": false
+  },
+  {
+   "name": "ig-viral",
+   "title": "ig-viral",
+   "description": "Go and find the reels that are actually working right now in the user's niche, rank them by how far each beat its own account, name the hook formula each one used, and turn that into a swipe file they can shoot from. Use when the user says \"find viral videos\", \"what's working right now\", \"what are people posting in my niche\", \"reverse engineer this account\", \"build me a swipe file\", \"why is this reel doing numbers\", or asks what to make next and has no evidence to answer with.",
+   "repo": "Jakeschincariol/instagram-agent-skill",
+   "stars": 6103,
+   "license": "mit",
+   "pushed": "2026-09-13",
+   "source_path": "Jakeschincariol__instagram-agent-skill/skills/ig-viral",
+   "files": 4,
+   "kb": 17,
+   "rank": 509,
+   "review": [],
+   "has_scripts": true
   }
  ],
  "added_2026_11_13": "v2.10: the official Anthropic skills with an explicit Apache-2.0 LICENSE.txt (fonts left out). doc-coauthoring is not copied: no licence file upstream; it is listed in mind/installed_catalog.json."

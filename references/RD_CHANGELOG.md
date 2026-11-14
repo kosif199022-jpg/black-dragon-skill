@@ -1,5 +1,10 @@
 # سجل تغييرات التنين الأحمر
 
+## v2.16.0 — 2026-11-14 (instagram-agent-skill)
+- `Jakeschincariol/instagram-agent-skill` (commit `d03c56b`، MIT): 10 من الـ 13 مهارة كانوا في المكتبة من 2.7.1 ومطابقين (الفرق نهايات السطور بس). اتضاف ig-viral وig-story وig-repurpose في `library/` و`index.json` (509 مهارة)، و`LICENSE` في الـ 13، و`library/ig-plan/voice.md`.
+- جديد: `engine/skills/insta-reader/scripts/ig.py` و`rd.py ig`، و`insta swipe` (instaloader ← TSV ← swipe.py). selftest insta بقى 14.
+- السكربتات بتاعتهم stdlib بس ومن غير نت (اتفحصت).
+
 ## v2.15.0 — 2026-11-14 (rd-runner + insta-reader)
 - جديد: `agents/rd-runner.md` (Haiku)، `scripts/rd_agents.py` (`rd.py agents list|install|check`)، وselftest بيفحص صيغة الـ agents.
 - think.py: `ROUTINE`/`TASTE` بيحددوا الخطوات اللي تروح لـ rd-runner، وسطر 🤖 في الخطة. think_cases: 10.
