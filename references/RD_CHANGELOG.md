@@ -8,6 +8,11 @@
 
 # سجل تغييرات التنين الأحمر
 
+## v2.17.0 — 2026-11-14 (مهارات الصور)
+- المكتبة 509 ← 537: vercel-labs/skills (find-skills)، nextlevelbuilder/ui-ux-pro-max-skill (ui-ux-pro-max، من غير tests)، upstash/context7 (context7-cli، context7-mcp، find-docs)، DietrichGebert/ponytail (6)، addyosmani/agent-skills (14 من 25)، usestrix/strix (2 دفاعية؛ مهارات الاختراق الـ 7 اتسابت حسب سياسة المكتبة)، Graphify-Labs/graphify (skills/claude + skill.md).
+- أداة «برومت بسيط ← احترافي» من الريل مالهاش اسم ظاهر؛ المكتبة فيها prompt-master من قبل.
+- LIB_AR: 15 كلمة عربي جديدة للبحث. `references/DEV_KIT.md` جديد.
+
 ## v2.16.0 — 2026-11-14 (instagram-agent-skill)
 - `Jakeschincariol/instagram-agent-skill` (commit `d03c56b`، MIT): 10 من الـ 13 مهارة كانوا في المكتبة من 2.7.1 ومطابقين (الفرق نهايات السطور بس). اتضاف ig-viral وig-story وig-repurpose في `library/` و`index.json` (509 مهارة)، و`LICENSE` في الـ 13، و`library/ig-plan/voice.md`.
 - جديد: `engine/skills/insta-reader/scripts/ig.py` و`rd.py ig`، و`insta swipe` (instaloader ← TSV ← swipe.py). selftest insta بقى 14.
