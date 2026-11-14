@@ -1,5 +1,12 @@
 # سجل تغييرات التنين الأحمر
 
+## v2.14.0 — 2026-11-14 (Hypit secure execution)
+- Existing Hypit 0.3.2 bridge hardened: missing/unknown provider cost or preflight failures cannot trigger rendering.
+- The raw Hypit CLI is inspection-only, so build cannot bypass the provider-price gate.
+- Rendering refuses to overwrite an existing output. Priced external providers still require explicit user approval and --allow-paid.
+- Added offline regression tests; no Hypit source was copied or third-party service called.
+- Full end-to-end rendering, Windows verification and the full Red Dragon selftest remain pending.
+
 ## v2.13.0 — 2026-11-14 (Hypit بيشتغل فعلًا)
 - **جديد: `engine/skills/hypit-run`** و`rd.py hypit doctor|setup|example|check|plan|render|cli|selftest`. كود تغليف أصلي حوالين حزمة npm `@hypit/hypit` المنشورة؛ ولا سطر من كود Hypit اتنسخ (نفس قرار v2.12.0 بسبب الرخصة).
   - `setup`: تثبيت في `~/.hypit-rd` بـ `--ignore-scripts`.

@@ -41,3 +41,10 @@ $R hypit cli ./proj -- builds                     # أي أمر hypit تاني (
 - الأمثلة اللي فيها توليد (ranking-football، interview، podcast): محتاجة حساب HypiHub أو مفتاح.
 - WhisperX المحلي (التوقيت من الصوت): بديله عندنا `rd.py sync words`.
 - Studio (المعاينة الحية) وويندوز.
+
+## v2.14.0 — بوابة التكلفة الصارمة
+- الخطة غير الواضحة أو الفارغة أو التي فشل فحصها تتوقف قبل أي رندر.
+- cli للاستعلام فقط. أي build أو get أو deploy يرفض؛ الرندر يمر عبر hypit render.
+- لا كتابة فوق الفيديو الموجود؛ الخدمات المدفوعة تتطلب موافقة المستخدم على السعر و--allow-paid.
+- فحص: python -I -X utf8 -m unittest discover -s tests -p test_hypit_guard.py
+- المصدر والترخيص: https://github.com/hypit-ai/hypit/blob/main/LICENSE
