@@ -8,6 +8,13 @@
 
 # سجل تغييرات التنين الأحمر
 
+## v2.18.0 — 2026-11-14 (دفعة الصور التانية + أحدث المهارات)
+- المكتبة 537 ← 570. من الصور: grill-me (+13 من mattpocock/skills، MIT). frontend-design وHyperFrames (9) كانوا موجودين. Playwright MCP وFigma MCP وphone-harness إعداد بس في `library/mcp_servers.json`.
+- أحدث حاجات (اتعملت بين أغسطس ونوفمبر 2026): google/elephant-goldfish-model (7، Apache-2.0)، Ryze open-seo (5، MIT)، huashu-motion، oil-ui، oil-motion، stack-diagram، answer-me-with-html، pinky (MIT/Apache).
+- phone-harness وpinky: SKILL.md والتعليمات بس، من غير الكود، وعليهم `device-control`.
+- اتسابوا: logo-design-skill وanidoodle (أكبر من حد المكتبة)، reverify (مافيهوش SKILL.md)، scenario-labs (توليد بفلوس).
+- DEV_KIT بقى 7 فئات. LIB_AR: 13 كلمة جديدة.
+
 ## v2.17.0 — 2026-11-14 (مهارات الصور)
 - المكتبة 509 ← 537: vercel-labs/skills (find-skills)، nextlevelbuilder/ui-ux-pro-max-skill (ui-ux-pro-max، من غير tests)، upstash/context7 (context7-cli، context7-mcp، find-docs)، DietrichGebert/ponytail (6)، addyosmani/agent-skills (14 من 25)، usestrix/strix (2 دفاعية؛ مهارات الاختراق الـ 7 اتسابت حسب سياسة المكتبة)، Graphify-Labs/graphify (skills/claude + skill.md).
 - أداة «برومت بسيط ← احترافي» من الريل مالهاش اسم ظاهر؛ المكتبة فيها prompt-master من قبل.

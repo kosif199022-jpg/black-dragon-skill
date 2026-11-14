@@ -23,7 +23,7 @@ It reads and advises; it never installs, publishes, spends or deletes."""
 import argparse, datetime, hashlib, json, math, os, re, shutil, subprocess, sys
 from pathlib import Path
 
-VERSION = "2.17.0"
+VERSION = "2.18.0"
 ROOT = Path(__file__).resolve().parent.parent
 ENGINE = ROOT / "engine"
 MIND = ROOT / "mind"
@@ -624,6 +624,9 @@ LIB_AR = {"مونتاج": "video edit editing montage cut", "فيديو": "video
           "ظل": "shadow silhouette", "ظلال": "shadow silhouette", "دمي": "puppet puppetry", "دميه": "puppet puppetry", "عرائس": "puppet marionette puppetry",
           "مسافه": "distance measure", "مسافات": "distance measure", "رياضه": "math geometry", "رياضيه": "math geometry", "نسب": "proportion anthropometry",
           "زاويه": "angle geometry", "منظور": "perspective camera", "فيزيا": "physics", "فيزياء": "physics", "قياس": "measure", "روتوسكوب": "rotoscope trace", "شخصيه": "character", "كرتون": "cartoon character", "تتبع": "tracking",
+          "موبايل": "phone android iphone control", "تليفون": "phone android iphone", "فيجما": "figma design", "سيو": "seo keyword search", "كلمات مفتاحيه": "keyword research seo",
+          "اسئله": "grill interview questions", "اسالني": "grill-me interview", "موشن": "motion animation graphics", "انيميشن": "animation motion", "معماريه": "architecture diagram codebase",
+          "شرح": "explain teach html", "تسليم": "handoff summary", "متصفح": "playwright browser test",
           "توثيق": "documentation docs library api", "مكتبات": "library documentation api", "ثغرات": "security vulnerabilities", "ثغره": "security vulnerability",
           "تبسيط": "simplify simplification lazy", "مراجعه كود": "code review", "اختبارات": "test testing tdd", "باج": "debugging bug error", "واجهات": "ui ux design interface",
           "جراف": "graph knowledge codebase", "خريطه": "graph map codebase", "مهاره": "skill skills find", "مهارات": "skills find install", "مواصفات": "spec specification",

@@ -3,9 +3,14 @@ name: red-dragon
 description: "التنين الأحمر (Red Dragon): العقل الجامع لكل التنانين. بيفهم الطلب حتى لو مكتوب بالصوت أو والكيبورد إنجليزي، وبيختار الطريق من 38 خطة مهمة (بذاكرة طلبات حقيقية وموضوع المحادثة، وبيقول درجة ثقته) (منها مسرح ظل بدمى عصيان، وحسابات الرسم: نسب الجسم والمسافات والكاميرا)، وبيشوف كل المهارات المتثبتة على الجهاز، وبيوصل لـ 60 قدرة واتصال (MCP، Higgsfield، REA، كروم، التحكم في الجهاز، تطبيق التنين، وكلاء)، وفيه ذاكرة لـ 162 محادثة مع صاحبه (فين الملف، اتقرر إيه) ودروس بتتعلم من كل تصحيح، وحارس ضد جلستين على نفس المجلد، وجواه محرك التنين الأسود كامل. Use first when the user says «التنين الأحمر» or «التنين الاحمر»، «Red Dragon»، «كل قدراتك»، «فعّل كل حاجة»، «طابق»، «حلل»، «هندسة عكسية»، «مونتاج»، «موشن»، «محاكي»، «اصنع تطبيق»، «حوّله لمهارة»، «فين الملف»، «اتعلم من غلطك»، «استخرج الألوان»، «باليتة»، «ألوان الطائر ده»، «مسرح الظل»، «دمى/عرائس»، «احسب المسافة»، «نسب الجسم»، sends gibberish Latin letters (Arabic typed on an English keyboard), or sends this package. Works on claude.ai, Claude Code cloud and the owner's Windows laptop, and detects which. Prefer it over white-dragon and black-dragon when it is installed."
 ---
 
-# التنين الأحمر — Red Dragon v2.17.0 (2026-11-14)
+# التنين الأحمر — Red Dragon v2.18.0 (2026-11-14)
 
 > **ابدأ من `BOOT.md`:** بيقول إزاي تحمّل التنين وتفهمه وتثبّته، وإنه إلزامي في كل طلب طول المحادثة. الخريطة الكاملة لكل حاجة ومكانها في `references/RD_MAP.md`.
+
+## v2.18.0 — المهارات مترتبة بفئات + أحدث المهارات
+- `references/DEV_KIT.md` بقى 7 فئات: تخطيط، واجهات، فيديو وموشن، برمجة، أمان، محتوى، MCP.
+- 33 مهارة جديدة (المكتبة 570): mattpocock/skills (14، منهم grill-me)، google/elephant-goldfish-model (7)، open-seo (5)، huashu-motion، oil-ui، oil-motion، stack-diagram، answer-me-with-html، phone-harness، pinky.
+- `library/mcp_servers.json`: Playwright، Figma، Context7، HyperFrames، Ryze SEO، phone-harness، Pinky. **التحكم في الموبايل ممنوع من غير موافقة على المهمة بالظبط.**
 
 ## v2.17.0 — عدّة البرمجة والتصميم
 - 28 مهارة جديدة في `library/` من 7 مستودعات (كلهم MIT أو Apache-2.0، ومع كل واحدة `LICENSE`): find-skills، ui-ux-pro-max، Context7 (3)، Ponytail (6)، Agent Skills لـ addyosmani (14)، Strix (2 دفاعية بس)، Graphify. المكتبة بقت 537.

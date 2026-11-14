@@ -115,7 +115,7 @@
 | `tools/draw-math` | Precise geometry, measurement and proportion calculator for drawing and animating people and scenes (shadow-puppet films, 3D silhouette films, 2D figu… |
 | `tools/link-collector` | collect-links.js: يجمع الروابط من صفحة بمتصفح Chromium حقيقي (--filter، --same-site، --json) |
 
-## مكتبة المهارات الخارجية: `library/` (537 مهارة)
+## مكتبة المهارات الخارجية: `library/` (570 مهارة)
 
 بتتدوّر بـ `rd.py skills find …` وبتتثبت بـ `rd.py skills install NAME --yes`. القايمة كاملة: `references/RD_LIBRARY.md`.
 
