@@ -37,6 +37,7 @@ def fz(monkeypatch):
     """dragon_fusion from app\\ with its own bundled data, reloaded so a test can repoint DATA / SKILLS_DIR safely."""
     monkeypatch.setenv("GOLDEN_FUSION_DATA", str(APP / "fusion"))
     monkeypatch.setenv("GOLDEN_FUSION_NO_RD", "1")      # deterministic and fast; the Red Dragon path has its own tests
+    monkeypatch.setenv("GOLDEN_NO_LOCAL", "1")          # the PC catalog (discover) differs per machine; test_discover covers it
     import dragon_fusion
     mod = importlib.reload(dragon_fusion)
     yield mod

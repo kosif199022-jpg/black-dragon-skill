@@ -23,7 +23,7 @@ Set-Location $here
 Remove-Item -Recurse -Force (Join-Path $here "__pycache__") -ErrorAction SilentlyContinue
 python -m PyInstaller --noconfirm --windowed --name GoldenDragon --icon "$here\ui\golden-dragon.ico" `
   --add-data "$here\ui;ui" --add-data "$here\chrome_extension;chrome_extension" --add-data "$here\mcp_control.py;." --add-data "$here\voice.py;." --add-data "$here\golden;golden" --add-data "$here\fusion;fusion" `
-  --hidden-import keyring.backends.Windows --hidden-import webview.dom --hidden-import control --hidden-import golden_tools --hidden-import dragon_fusion --hidden-import golden_steer `
+  --hidden-import keyring.backends.Windows --hidden-import webview.dom --hidden-import control --hidden-import golden_tools --hidden-import dragon_fusion --hidden-import gd_discover --hidden-import golden_steer `
   --distpath "$work\dist_new" --workpath "$work\build" --specpath $work app.py
 if ($LASTEXITCODE -ne 0) { throw "PyInstaller failed" }
 robocopy "$work\dist_new\GoldenDragon" "$work\dist\GoldenDragon" /MIR /NFL /NDL /NJH /NJS /NP | Out-Null
