@@ -41,6 +41,8 @@
 | `consent` | consent gate: which outward actions this message explicitly approves or forbids («كمل» approves none) |
 | `gold` | Golden Bird: studio list/show/install/cmd · lib find/show/kit/stats · sync · protocol · where · selftest |
 | `think` | think & plan: start, revise, check, time, mistake, mistakes, pipeline-selftest · planning-mind: card, gate, workflow, learn, lessons, types, selftest |
+| `fuse` | v3.4 fusion brain: brief, route, check, tools, protocol, find, show, recipes, lessons, doctor, stats, selftest |
+| `check` | v3.4 critic gate before sending an answer (= fuse check) |
 | `understand` | يفهم الطلب (صوت، كيبورد إنجليزي، غلطات) |
 | `brief` | ملخص JSON: الطريق والمهارات والقدرات للطلب |
 | `plan` | الخطة كاملة للطلب: الطريق والخطوات والمهارات |
@@ -48,11 +50,12 @@
 | `recall` | يفتكر من المحادثات القديمة |
 | `intel` | مستودعات ومعلومات تخص الطلب |
 
-## مهارات المحرك (43)
+## مهارات المحرك (45)
 
 | المسار | بيعمل إيه |
 |---|---|
 | `engine/skills/absolute-creativity` | الإبداع المطلق — محرك ابتكار وإخراج فني كامل بيطلّع أفكار أصلية مش كليشيه، وبيحوّلها لشغل حقيقي في المونتاج والتصوير السينمائي والفوتوغرافي والحبكة ال… |
+| `engine/skills/arabic-captions-khatt` | حرق كابشن عربي صح على الفيديو (حروف متوصّلة، من اليمين للشمال، تشكيل، لام-ألف) بمكتبة khatt (HarfBuzz + FreeType) وffmpeg، من غير Raqm ولا moviepy. |
 | `engine/skills/arena-gate` | الحلبة شرط أساسي في شغل التنين: أي مهمة فيها ذوق أو قرار (تصميم، كتابة، مونتاج، خطة، كود فيه أكتر من حل) تتعمل كحلبة. |
 | `engine/skills/atlas-picks` | Build Awwwards-quality web experiences with spring physics, GLSL shaders, R3F, post-processing, particles, Framer Motion, and interactive 3D. |
 | `engine/skills/black-dragon-cinema` | التنين الأسود — سينما الفوتيج. |
@@ -93,6 +96,7 @@
 | `engine/skills/theme-factory` | Toolkit for styling artifacts with a theme. |
 | `engine/skills/ultra-mind` | العقل الفائق — بروتوكول تفكير مبني على خلاصة كتب التفكير العالمية (Polya، Kahneman، Tetlock، Heuer، Popper، Pearl، Meadows، TRIZ، de Bono) وأبحاث الاس… |
 | `engine/skills/video-grabber` | نزّل فيديو من أي موقع بأمر واحد وبأعلى جودة — تحميل فيديو، حمّل من يوتيوب / تيك توك / انستجرام / فيسبوك / تويتر (X) / فيميو / أي موقع، رابط فيديو، است… |
+| `engine/skills/visible-thinking` | التفكير المرئي — المهارة اللي مستخرجة من التنين الأسود والتنين الذهبي، وبتخلّي Claude يكتب هو بيفكّر في إيه وهو شغال، بالعربي المصري، زي «💭 بيفكّر دلو… |
 | `engine/skills/visual-forge` | مصنع الصورة — بيعمل صور احترافية بـ ChatGPT وفيديوهات حركة بـ Kling بطريقة مبنية على خطة وخطوات: بريف ← 3 كونسبتات ← كتاب لوك ← قايمة لقطات ← برومنتات… |
 | `engine/skills/windows-commands` | فهم ويندوز للأوامر — إزاي PowerShell 5.1 وcmd وGit Bash (MSYS2) والبرنامج نفسه بيقروا الأمر فعلًا، مقاس على الجهاز بالتجربة والهندسة العكسية (ILSpy وG… |
 
@@ -122,7 +126,7 @@
 | `tools/draw-math` | Precise geometry, measurement and proportion calculator for drawing and animating people and scenes (shadow-puppet films, 3D silhouette films, 2D figu… |
 | `tools/link-collector` | collect-links.js: يجمع الروابط من صفحة بمتصفح Chromium حقيقي (--filter، --same-site، --json) |
 
-## مكتبة المهارات الخارجية: `library/` (570 مهارة)
+## مكتبة المهارات الخارجية: `library/` (589 مهارة)
 
 بتتدوّر بـ `rd.py skills find …` وبتتثبت بـ `rd.py skills install NAME --yes`. القايمة كاملة: `references/RD_LIBRARY.md`.
 

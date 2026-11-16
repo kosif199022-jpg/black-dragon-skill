@@ -1,7 +1,7 @@
 {
 "kind": "red-dragon/installed-catalog",
-"date": "2026-11-13",
-"count": 534,
+"date": "2026-11-16",
+"count": 547,
 "_doc_ar": "كل المهارات المتثبتة على لابتوب صاحب الشغل (اسم ووصف بس). rd.py بيستخدمها لما الجهاز اللي شغال عليه مافيهوش ~/.claude/skills. التحديث: rd.py skills snapshot.",
 "skills": [
 {
@@ -365,6 +365,12 @@
 "description": "Comprehensive guide for skill development based on Anthropic's official best practices - use for complex skills requiring detailed structure"
 },
 {
+"name": "arabic-captions-khatt",
+"dir": "arabic-captions-khatt",
+"kind": "library",
+"description": "حرق كابشن عربي صح على الفيديو (حروف متوصّلة، من اليمين للشمال، تشكيل، لام-ألف) بمكتبة khatt (HarfBuzz + FreeType) وffmpeg، من غير Raqm ولا moviepy. بياخد SRT أو sync.json من speech_sync بتاع الطائر الذهبي. Use for «كابشن عربي»، «ترجمة محروقة»، «الحروف العربي مقطّعة/مقلوبة في الفيديو»، «اكتب الدعاء على الريل»، burn Arabic subtitles, shaped Arabic captions on video, RTL captions without Raqm."
+},
+{
 "name": "architect",
 "dir": "architect",
 "kind": "library",
@@ -597,42 +603,6 @@
 "dir": "bioqc-mcp",
 "kind": "library",
 "description": "Automated sequencing quality control and advanced visualization wrapping FastQC, MultiQC, and custom chart generation. Exposes an MCP stdio server for live AI integration alongside a ClawBio CLI runner."
-},
-{
-"name": "black-dragon",
-"dir": "black-dragon",
-"kind": "own",
-"description": "التنين الأسود (Black Dragon): مونتير ومخرج Mahmoud Elkosif لأفلام وريلز 9:16 من فوتيج وأغاني وصوت ودعاء وتلاوة، بمحركات شغالة وبوابة فحص قبل التسليم، وراوتر لكل قدراته واتصالاته (MCP، سحابة Higgsfield المجانية، وكلاء، كروم، التحكم في الجهاز، REA). Use first when the user says «التنين الأسود» or «التنين الاسود»، «Black Dragon»، «قدراتك» or «كل قدراتك»، «فعّل قدرات التنين»، «موشن جرافيك»، «مونتاج» o"
-},
-{
-"name": "black-dragon-2",
-"dir": "black-dragon-2",
-"kind": "package",
-"description": "التنين الأسود (Black Dragon): مونتير ومخرج Mahmoud Elkosif لأفلام وريلز 9:16 من فوتيج وأغاني وصوت ودعاء وتلاوة، بمحركات شغالة وبوابة فحص قبل التسليم (سواد، صوت AAC، طول بالفريم)، وباب لكتالوج KOSIF. Use first when the user says «التنين الأسود» or «التنين الاسود»، «Black Dragon»، «قدراتك»، «فعّل قدرات التنين»، «موشن جرافيك»، «مونتاج» or «مونتاتج»، «اعمل فيديو» or «فديو»، «فيلم لميار»، «على أغنية وط"
-},
-{
-"name": "black-dragon-3",
-"dir": "black-dragon-3",
-"kind": "package",
-"description": "التنين الأسود (Black Dragon): مونتير ومخرج Mahmoud Elkosif لأفلام وريلز 9:16 من فوتيج وأغاني وصوت ودعاء وتلاوة، بمحركات شغالة وبوابة فحص قبل التسليم (سواد، صوت AAC، طول بالفريم)، وباب لكتالوج KOSIF. Use first when the user says «التنين الأسود» or «التنين الاسود»، «Black Dragon»، «قدراتك»، «فعّل قدرات التنين»، «موشن جرافيك»، «مونتاج» or «مونتاتج»، «اعمل فيديو» or «فديو»، «فيلم لميار»، «على أغنية وط"
-},
-{
-"name": "black-dragon-4",
-"dir": "black-dragon-4",
-"kind": "package",
-"description": "التنين الأسود (Black Dragon): مونتير ومخرج Mahmoud Elkosif لأفلام وريلز 9:16 من فوتيج وأغاني وصوت ودعاء وتلاوة، بمحركات شغالة وبوابة فحص قبل التسليم (سواد، صوت AAC، طول بالفريم)، وباب لكتالوج KOSIF. Use first when the user says «التنين الأسود» or «التنين الاسود»، «Black Dragon»، «قدراتك»، «فعّل قدرات التنين»، «موشن جرافيك»، «مونتاج» or «مونتاتج»، «اعمل فيديو» or «فديو»، «فيلم لميار»، «على أغنية وط"
-},
-{
-"name": "black-dragon-5",
-"dir": "black-dragon-5",
-"kind": "package",
-"description": "التنين الأسود (Black Dragon): مونتير ومخرج Mahmoud Elkosif لأفلام وريلز 9:16 من فوتيج وأغاني وصوت ودعاء وتلاوة، بمحركات شغالة وبوابة فحص قبل التسليم (سواد، صوت AAC، طول بالفريم)، وباب لكتالوج KOSIF. Use first when the user says «التنين الأسود» or «التنين الاسود»، «Black Dragon»، «قدراتك»، «فعّل قدرات التنين»، «موشن جرافيك»، «مونتاج» or «مونتاتج»، «اعمل فيديو» or «فديو»، «فيلم لميار»، «على أغنية وط"
-},
-{
-"name": "black-dragon-cinema",
-"dir": "black-dragon-cinema",
-"kind": "own",
-"description": "التنين الأسود — سينما الفوتيج. Turn real footage (reels, news clips, phone videos) plus a song into cinematic 9:16 motion-graphics films, not explainer videos. Arabic kinetic typography (Ruqaa/Cairo/Amiri gold), words that light up with the speaker's own voice, beat-synced cuts, shape-morph transitions, logo/burned-subtitle removal, song ducking under voice, frame-exact canvas render, measured del"
 },
 {
 "name": "blender-addon-development",
@@ -1253,6 +1223,12 @@
 "description": "Use when any cut-as-code request involves understanding, cutting, color grading, adding B-roll, motion graphics, content cards, captions, creating shorts, comparing, rendering, or resuming a Project Protocol V1 video project."
 },
 {
+"name": "cut-the-curve",
+"dir": "cut-the-curve",
+"kind": "library",
+"description": "The technique catalog: five velocity-matched SEAMS (zoom-through, INVERSE zoom-through, cut-the-curve, waterfall cut, rack-focus blur-cut) plus the two in-scene techniques — waterfall ENTRY (staggered arrival cascades for title cards / segment openers) and the nudge curve (slow-fast-slow three-phase group slides). Covers partial-travel (~12% of frame) velocity matching via mirrored power4 eases, t"
+},
+{
 "name": "data-quality-checker",
 "dir": "data-quality-checker",
 "kind": "library",
@@ -1637,6 +1613,12 @@
 "description": "وضعیت سه‌سطری و ادامهٔ خودکار کار ناتمام, بدون شروع دوباره. Triggers: «ادامه», «ادامه بده», «وضعیت چیه», \"go\", \"/go\", resuming after a disconnect."
 },
 {
+"name": "golden-dragon",
+"dir": "golden-dragon",
+"kind": "package",
+"description": "التنين الذهبي (Golden Dragon): التنين الوحيد. اتصهر فيه التنين الأحمر (العقل والذاكرة والخطط) والتنين الأسود (محرك المونتاج والريلز 9:16 والأفلام من فوتيج وأغاني وصوت ودعاء وتلاوة، وبوابة الفحص قبل التسليم) والتنين الأبيض والتنين الأسود الفائق (21 وحدة KOSIF) وسينما الفوتيج (كابشن كاينتك ذهبي وقطع على الإيقاع) والطائر الذهبي والطائر الأبيض. Use first when the user says «التنين الذهبي» or «التنين ا"
+},
+{
 "name": "good-to-great",
 "dir": "good-to-great",
 "kind": "library",
@@ -1802,7 +1784,7 @@
 "name": "hyperframes-cli",
 "dir": "hyperframes-cli",
 "kind": "library",
-"description": "The HyperFrames CLI by job - scaffold, check, look at frames, edit the timeline, preview, render locally or in the cloud, publish, project history - plus reading its JSON and recovering from build or render failures."
+"description": "HyperFrames CLI - scaffold, check frames, edit timelines, preview, render, share and project history; read JSON and recover from failures."
 },
 {
 "name": "hyperframes-registry",
@@ -1947,12 +1929,6 @@
 "dir": "kinocut-repurpose",
 "kind": "library",
 "description": "Use when turning one local video into a platform-ready short. Kinocut builds clip packages with manifests, review artifacts, and human approval gates."
-},
-{
-"name": "kosif-black-dragon-ultra",
-"dir": "kosif-black-dragon-ultra",
-"kind": "own",
-"description": "التنين الأسود الفائق — one front door to all 21 KOSIF modules: video montage, motion/web films, voice-over and subtitles, reels and hooks, Kling prompts, shadow theatre, new visual styles, photo editing (RAW, PSD, background removal), living 3D websites, site snapshots, Instagram research, documents, data, code workflows, reverse engineering with REA, and the Superpowers catalog of 5,800+ powers. "
 },
 {
 "name": "kosif-downloads",
@@ -2309,6 +2285,12 @@
 "description": "Use this skill when something has gone wrong, looks wrong, or needs a second opinion. Triggers on: \"something looks off\", \"this doesn't look right\", \"why is this happening\", \"script error\", \"render artifact\", \"the timing feels wrong\", \"animation looks robotic\", \"AE error\", \"bpy error\", \"Blender crashed\", \"nothing is moving\", \"wrong position\", \"wrong keyframe\", \"expression error\", \"the material loo"
 },
 {
+"name": "motion-doctrine",
+"dir": "motion-doctrine",
+"kind": "library",
+"description": "GATEWAY — load FIRST before composing any HyperFrames animation or video. The high-level motion law that makes a multi-scene video feel like ONE continuous camera move instead of a stack of independently-animated slides. Covers the vector law (how you exit determines how you enter, incl. the Z scale-sign rule), the film's current, carrier elements, causal motion, the Seam Gate (build-gate enforcem"
+},
+{
 "name": "motion-effects",
 "dir": "motion-effects",
 "kind": "library",
@@ -2549,18 +2531,6 @@
 "description": "Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or blind implementation"
 },
 {
-"name": "red-dragon",
-"dir": "red-dragon",
-"kind": "package",
-"description": "التنين الأحمر (Red Dragon): العقل الجامع لكل التنانين. بيفهم الطلب حتى لو مكتوب بالصوت أو والكيبورد إنجليزي، وبيختار الطريق من 38 خطة مهمة (بذاكرة طلبات حقيقية وموضوع المحادثة، وبيقول درجة ثقته) (منها مسرح ظل بدمى عصيان، وحسابات الرسم: نسب الجسم والمسافات والكاميرا)، وبيشوف كل المهارات المتثبتة على الجهاز، وبيوصل لـ 60 قدرة واتصال (MCP، Higgsfield، REA، كروم، التحكم في الجهاز، تطبيق التنين، وكلاء)"
-},
-{
-"name": "red-dragon-2",
-"dir": "red-dragon-2",
-"kind": "package",
-"description": "التنين الأحمر (Red Dragon): العقل الجامع لكل التنانين. بيفهم الطلب حتى لو مكتوب بالصوت أو والكيبورد إنجليزي، وبيختار الطريق من 35 خطة مهمة، وبيوصل لـ 60 قدرة واتصال (MCP، Higgsfield، REA، كروم، التحكم في الجهاز، تطبيق التنين، وكلاء)، وفيه ذاكرة لـ 162 محادثة مع صاحبه (فين الملف، اتقرر إيه) ودروس بتتعلم من كل تصحيح، وحارس ضد جلستين على نفس المجلد، وجواه محرك التنين الأسود كامل. Use first when the u"
-},
-{
 "name": "release-check",
 "dir": "release-check",
 "kind": "library",
@@ -2648,7 +2618,7 @@
 "name": "reverse-any-video",
 "dir": "reverse-any-video",
 "kind": "library",
-"description": "Rebuild any video file as an editable HyperFrames project - motion graphics, talking heads, live action or AI-generated footage. Measure and watch it, rebuild every layer, then check the render against the original frame by frame. Use to reverse, recreate, replicate or copy a video."
+"description": "Rebuild any video file as an editable HyperFrames project - motion graphics, talking heads, live action or AI-generated footage - checked against the original frame by frame. Use to reverse, recreate, remake, replicate or copy a video, or 「复刻这个视频」「照着这个视频做一个」."
 },
 {
 "name": "reverse-engineer-anything",
@@ -2691,6 +2661,12 @@
 "dir": "saas-animation",
 "kind": "own",
 "description": "Make short, high-end SaaS, app, product and brand animations (about 8–20s) with Claude, built as code and rendered to 4K video, without any AI video or image generator. Covers storyboards, one continuous camera, shots that transform into each other, real app UI in 3D space, puppet-animated illustrations, photoreal product shots in Blender, flat black and white silhouette looks, blending an ad into"
+},
+{
+"name": "seam-craft",
+"dir": "seam-craft",
+"kind": "library",
+"description": "Render-correctness doctrine for scene-to-scene seams in HyperFrames launch videos — the prerequisites that make transitions composite correctly on the master timeline. Load when assembling the master timeline / index.html, when a white flash appears at a cut or crossfade seam (especially on dark films), when reasoning about why a transition opacity dip shows through, or when verifying the render-s"
 },
 {
 "name": "secure-workflow-guide",
@@ -2805,6 +2781,30 @@
 "dir": "systematic-debugging",
 "kind": "library",
 "description": "Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes"
+},
+{
+"name": "taste",
+"dir": "taste",
+"kind": "library",
+"description": "Creative-direction layer for music videos and short-form edits in the angelcore / cloud-trance / hyperpop family — a named-genre aesthetic vocabulary, mood + color + light system, beat-synced editing grammar, and a pipeline chaining ECC's video skills from b-roll generation to distribution. Use when a video must feel intentional rather than merely functional — music videos, fancams, moodboard-driv"
+},
+{
+"name": "taste-application",
+"dir": "taste-application",
+"kind": "library",
+"description": "Generate new video against a distilled style pack and cut it into a finished piece - plan takes from the reference's cut rhythm, generate on fal, grade with the pack's measured LUT, cut at the measured cadence, weave in existing footage, composite overlay plates, mint 3D props, and verify the result numerically. Use when the user wants to make a video in a captured style, supplement existing foota"
+},
+{
+"name": "taste-distillation",
+"dir": "taste-distillation",
+"kind": "library",
+"description": "Measure a set of reference videos into a reusable style pack - colour grade as a 3D LUT, cut rhythm as a shot-length distribution, hero stills, screen-blend overlay plates, and a text spec for a generative model. Use when the user wants to capture the look of reference footage, build a repeatable look, mint assets from references, or reproduce someone's grade and pacing."
+},
+{
+"name": "tasteforge-video",
+"dir": "tasteforge-video",
+"kind": "library",
+"description": "Use for file-driven multimodal image, video, and 3D-asset discovery; taste interviews; distill or apply workflows; style-pack validation; editable EDL/FCPXML export; provenance audits; and offline planning that must fail closed before provider generation."
 },
 {
 "name": "teardown",
@@ -3059,6 +3059,84 @@
 "description": "نزّل فيديو من أي موقع بأمر واحد وبأعلى جودة — تحميل فيديو، حمّل من يوتيوب / تيك توك / انستجرام / فيسبوك / تويتر (X) / فيميو / أي موقع، رابط فيديو، استخرج رابط البث (m3u8/mpd)، صوت بس mp3، جزء من الفيديو، ترجمة، متصفح مخفي، تغيير الآي بي، بروكسي. Download video from any site with one command, best quality, reliably: yt-dlp + aria2c + ffmpeg, proxy rotation on 403/429/geo-blocks, a headless \"ghost\" "
 },
 {
+"name": "video-template-frame-decision-tree",
+"dir": "video-template-frame-decision-tree",
+"kind": "library",
+"description": "Use this plugin when the user wants a \"Decision Tree\" HyperFrames motion video — Animated flowchart with branching paths"
+},
+{
+"name": "video-template-frame-kinetic-type",
+"dir": "video-template-frame-kinetic-type",
+"kind": "library",
+"description": "Use this plugin when the user wants a \"Kinetic Type\" HyperFrames motion video — Bold kinetic typography promo"
+},
+{
+"name": "video-template-frame-logo-outro",
+"dir": "video-template-frame-logo-outro",
+"kind": "library",
+"description": "Use this plugin when the user wants a \"Logo Outro Frame\" HyperFrames motion video — Segmented logo assembly, glow bloom, and tagline reveal for video outros or brand closing frames."
+},
+{
+"name": "video-template-frame-nyt-graph",
+"dir": "video-template-frame-nyt-graph",
+"kind": "library",
+"description": "Use this plugin when the user wants a \"NYT Graph\" HyperFrames motion video — Animated data chart in print editorial style"
+},
+{
+"name": "video-template-frame-pentagram-stat",
+"dir": "video-template-frame-pentagram-stat",
+"kind": "library",
+"description": "Use this plugin when the user wants a \"Pentagram Stat Frame\" HyperFrames motion video — Swiss-grid statistic anchor — giant number, red accent, growing bars, black data bar. Rational and editorial."
+},
+{
+"name": "video-template-frame-play-mode",
+"dir": "video-template-frame-play-mode",
+"kind": "library",
+"description": "Use this plugin when the user wants a \"Play Mode\" HyperFrames motion video — Playful elastic animations"
+},
+{
+"name": "video-template-frame-product-promo",
+"dir": "video-template-frame-product-promo",
+"kind": "library",
+"description": "Use this plugin when the user wants a \"Product Promo\" HyperFrames motion video — Multi-scene product showcase with SVG assets"
+},
+{
+"name": "video-template-frame-product-promo-30s",
+"dir": "video-template-frame-product-promo-30s",
+"kind": "library",
+"description": "Use this plugin when the user wants a \"Product Promo · 30s\" HyperFrames motion video — Multi-scene 30-second product promo: problem-type intro, brand reveal, benefits flowchart, product surfaces, value pillars, foundation, CTA outro. Forked from Nate Herk's hyperframes-student-kit (linear-promo-30s); brand-specific copy + assets replaced with generic placeholders."
+},
+{
+"name": "video-template-frame-swiss-grid",
+"dir": "video-template-frame-swiss-grid",
+"kind": "library",
+"description": "Use this plugin when the user wants a \"Swiss Grid\" HyperFrames motion video — Structured grid layout"
+},
+{
+"name": "video-template-frame-takram-organic",
+"dir": "video-template-frame-takram-organic",
+"kind": "library",
+"description": "Use this plugin when the user wants a \"Takram Organic Frame\" HyperFrames motion video — Soft-tech radial node graph as art — frosted rounded card, curved links drawing in, nodes popping outward, gentle float."
+},
+{
+"name": "video-template-frame-vignelli",
+"dir": "video-template-frame-vignelli",
+"kind": "library",
+"description": "Use this plugin when the user wants a \"Vignelli\" HyperFrames motion video — Bold typography with red accents"
+},
+{
+"name": "video-template-frame-warm-grain",
+"dir": "video-template-frame-warm-grain",
+"kind": "library",
+"description": "Use this plugin when the user wants a \"Warm Grain\" HyperFrames motion video — Cream aesthetic with grain texture"
+},
+{
+"name": "video-template-vfx-text-cursor",
+"dir": "video-template-vfx-text-cursor",
+"kind": "library",
+"description": "Use this plugin when the user wants a \"VFX Text Cursor\" HyperFrames motion video — Cursor light trail, chromatic rays, and directional flares for word-by-word quote reveals in video intros."
+},
+{
 "name": "video-to-shorts",
 "dir": "video-to-shorts",
 "kind": "library",
@@ -3077,6 +3155,12 @@
 "description": "Edit any video by conversation. Transcribe, cut, color grade, generate overlay animations, burn subtitles — for talking heads, montages, tutorials, travel, interviews. No presets, no menus. Ask questions, confirm the plan, execute, iterate, persist. Production-correctness rules are hard; everything else is artistic freedom."
 },
 {
+"name": "visible-thinking",
+"dir": "visible-thinking",
+"kind": "own",
+"description": "التفكير المرئي — المهارة اللي مستخرجة من التنين الأسود والتنين الذهبي، وبتخلّي Claude يكتب هو بيفكّر في إيه وهو شغال، بالعربي المصري، زي «💭 بيفكّر دلوقتي…» في تطبيق التنين. فيها حاجتين — (1) تشغيل ملخص التفكير الحقيقي (showThinkingSummaries في Claude Code، أو thinking.display = \"summarized\" في الـ API، أو --thinking-display summarized في سطر الأوامر)، و(2) بروتوكول «فكّر بصوت عالي» اللي بيكتب سطر "
+},
+{
 "name": "visual-forge",
 "dir": "visual-forge",
 "kind": "own",
@@ -3093,12 +3177,6 @@
 "dir": "webapp-testing",
 "kind": "own",
 "description": "Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs."
-},
-{
-"name": "white-dragon",
-"dir": "white-dragon",
-"kind": "package",
-"description": "التنين الأبيض (White Dragon): عقل فائق فوق محرك التنين الأسود. مخطِّط مهام (28 playbook)، سجل 60 قدرة واتصال (MCP، Higgsfield، REA، كروم، التحكم في الجهاز، تطبيق التنين، وكلاء)، هندسة عكسية لأي ملف أو موقع أو مستودع، وذاكرة بتتعلم من كل تصحيح. Use first when the user says «التنين الأبيض» or «التنين الابيض»، «White Dragon»، «كل قدراتك»، «فعّل كل حاجة»، «حلل»، «هندسة عكسية»، «مستودع»، «مونتاج»، «موش"
 },
 {
 "name": "windows-commands",

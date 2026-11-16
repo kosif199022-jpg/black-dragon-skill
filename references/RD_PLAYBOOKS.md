@@ -1,4 +1,4 @@
-# Playbooks التنين الأحمر — v2.13.0
+# Playbooks التنين الأحمر — v3.4.0
 
 متولّد من `mind/playbooks.json` بأمر `rd.py docs`. عدّل الـ JSON وولّد تاني.
 
@@ -271,12 +271,13 @@
 ## مستندات: Word، PDF، PowerPoint، Excel (`docs-office`)
 *documents and spreadsheets* · المجال: docs
 
-1. حمّل المهارة المطابقة: anthropic-skills:docx / pdf / pptx / xlsx.
-2. العربي: اتجاه RTL وخط فيه عربي (Cairo، Amiri، Noto Naskh).
-3. [pc] مكتبات موجودة: python-docx، python-pptx، openpyxl، pymupdf، pandoc.
-4. افتح الناتج واتأكد (صفحات، خطوط، معادلات محسوبة) قبل التسليم.
-5. مستند حي للمشاركة: Claude Docs (بس لو طلب مستند).
-- **مهارات:** anthropic-skills:docx · anthropic-skills:pdf · anthropic-skills:pptx · anthropic-skills:xlsx · doc-coauthoring
+1. لو بعتلك مستند تقراه (PDF، Word، PowerPoint، Excel، HTML، EPUB…): $R md convert FILE --out <مجلد الشغل>/_md الأول، واقرا الـ .md (أرخص وأدق من قراية الملف كصور). PDF عربي مقلوب بيتعدل لوحده. نص فاضي = PDF ممسوح: اقراه كصور.
+2. حمّل المهارة المطابقة: anthropic-skills:docx / pdf / pptx / xlsx.
+3. العربي: اتجاه RTL وخط فيه عربي (Cairo، Amiri، Noto Naskh).
+4. [pc] مكتبات موجودة: python-docx، python-pptx، openpyxl، pymupdf، pandoc.
+5. افتح الناتج واتأكد (صفحات، خطوط، معادلات محسوبة) قبل التسليم.
+6. مستند حي للمشاركة: Claude Docs (بس لو طلب مستند).
+- **مهارات:** doc-reader · anthropic-skills:docx · anthropic-skills:pdf · anthropic-skills:pptx · anthropic-skills:xlsx · doc-coauthoring
 - **✅ بوابة التسليم:** الملف بيفتح · العربي مش مقلوب
 
 ## بناء موقع أو صفحة أو تطبيق ويب (`web-build`)
