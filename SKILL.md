@@ -3,7 +3,7 @@ name: golden-dragon
 description: "التنين الذهبي (Golden Dragon): التنين الوحيد. اتصهر فيه التنين الأحمر (العقل والذاكرة والخطط) والأسود (محرك المونتاج والريلز 9:16 والأفلام من فوتيج وأغاني وصوت، وبوابة الفحص قبل التسليم) والأبيض والفائق وسينما الفوتيج والطائر الذهبي، وفوقهم عقل الانصهار (عمق L0–L3، وصفات، 22 أداة تفكير، وناقد قبل الرد). Use first when the user says «التنين» (الذهبي، الأسود، الأحمر، الأبيض) or Golden/Black/Red/White Dragon، «قدراتك»، «فكّر كويس»، «مونتاج» or «مونتاتج»، «اعمل فيديو» or «فديو»، «ريلز»، «موشن جرافيك»، «فيلم لميار»، «كرتون» or «أنمي»، «محاكي ماكينة»، «حلل» or «هندسة عكسية»، «اصنع تطبيق»، «حوّله لمهارة»، «فين الملف»، «اتعلم من غلطك»، «باليتة»، «مسرح الظل»، Blender 3D، «الترند»، «رندر على السحابة»، or sends TikTok, Instagram or YouTube links with an edit request, gibberish Latin letters (Arabic typed on an English keyboard), a PDF or document, or this package. Works on claude.ai, Claude Code cloud and the owner's Windows laptop."
 ---
 
-# التنين الذهبي — Golden Dragon v3.4.1 (2026-11-16)
+# التنين الذهبي — Golden Dragon v3.4.2 (2026-11-16)
 
 > **أول مرة في المحادثة:** `BOOT.md` (التحميل والفحص)، وبعدين امشي بالسلّم تحت. الخريطة الكاملة لكل أمر ومهارة: `references/RD_MAP.md`.
 > `$R` = `python -X utf8 "<مجلد المهارة>/scripts/rd.py"` · `$E` = `python -X utf8 "<مجلد المهارة>/engine/scripts/dragon.py"` (نفس `$R x …`).
