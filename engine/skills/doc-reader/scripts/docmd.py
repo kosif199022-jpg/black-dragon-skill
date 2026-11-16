@@ -85,11 +85,16 @@ def _table(rows):
     return "\n".join(lines) + "\n"
 
 
+def _lf(s):
+    """One kind of line end. A Windows file keeps \\r\\n, and write_text on Windows then writes \\r\\r\\n (v3.4 fix)."""
+    return s.replace("\r\n", "\n").replace("\r", "\n") if s else s
+
+
 def fallback(p):
     ext = p.suffix.lower()
     raw = p.read_bytes()
     if ext in TEXT_EXT:
-        return raw.decode("utf-8-sig", errors="replace"), "text"
+        return _lf(raw.decode("utf-8-sig", errors="replace")), "text"
     if ext == ".csv":
         return _table(list(csv.reader(io.StringIO(raw.decode("utf-8-sig", errors="replace"))))), "csv"
     if ext in (".json", ".ipynb"):
@@ -146,7 +151,7 @@ def convert_one(p, md_cls=None):
     if md_cls:
         try:
             r = md_cls(enable_plugins=False).convert(str(p))
-            text = r.text_content or ""
+            text = _lf(r.text_content or "")
             if p.suffix.lower() == ".pdf":
                 text, fixed = fix_arabic(text)
                 if fixed:
@@ -260,6 +265,10 @@ def selftest():
         md, _ = fallback(t / "c.json")
         check("JSON ← بلوك كود والعربي سليم", "```json" in md and "تنين" in md)
         check("نص عادي زي ما هو", fallback(t / "d.txt")[0] == "سطر عربي\n")
+        (t / "w.txt").write_bytes("سطر\r\nتاني\r\n".encode("utf-8"))          # a real Windows file (CRLF), v3.4
+        rc_w = run([t / "w.txt"], out=t / "ow", as_json=False)
+        check("ملف ويندوز CRLF ← مفيش \\r\\r في الناتج", fallback(t / "w.txt")[0] == "سطر\nتاني\n" and rc_w == 0
+              and b"\r\r" not in (t / "ow" / "w.txt.md").read_bytes())
         check("صيغة مش معروفة من غير MarkItDown ← رسالة واضحة", _raises(lambda: convert_one(_mk(t / "e.bin"), md_cls=False), "مش عارف أحوّله"))
         check("ملف مش موجود ← رسالة واضحة", _raises(lambda: convert_one(t / "zz.pdf"), "مش موجود"))
         check("الناتج في _md جنب الملف", out_path(t / "a.csv", None) == t / "_md" / "a.csv.md" and out_path(t / "a.html", None) != out_path(t / "a.csv", None))

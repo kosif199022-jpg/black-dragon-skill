@@ -150,15 +150,22 @@ def text_fonts(t):
     return out
 
 
+def _tool(cmd):
+    """stdout of a helper (fontconfig / poppler), or "" when it isn't installed. v3.3.1: on Windows without fontconfig,
+    the Fonts-folder fallback called fc-scan and crashed with FileNotFoundError instead of using the file name."""
+    try:
+        return subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace").stdout or ""
+    except (OSError, subprocess.SubprocessError):
+        return ""
+
+
 def font_file_family(p):
-    r = subprocess.run(["fc-scan", "--format", "%{family[0]}\n", str(p)], capture_output=True, text=True)
-    return (r.stdout.strip().splitlines() or [Path(p).stem])[0]
+    return (_tool(["fc-scan", "--format", "%{family[0]}\n", str(p)]).strip().splitlines() or [Path(p).stem])[0]
 
 
 def pdf_fonts(p):
-    r = subprocess.run(["pdffonts", str(p)], capture_output=True, text=True)
     out = []
-    for line in r.stdout.splitlines()[2:]:
+    for line in _tool(["pdffonts", str(p)]).splitlines()[2:]:
         n = line.split()[0] if line.split() else ""
         n = re.sub(r"^[A-Z]{6}\+", "", n)                                    # subset prefix
         if n and n not in out:
@@ -167,8 +174,7 @@ def pdf_fonts(p):
 
 
 def installed(family):
-    r = subprocess.run(["fc-list", f":family={family}", "file"], capture_output=True, text=True)
-    return (r.stdout.strip().splitlines() or [""])[0].rstrip(":").strip()
+    return (_tool(["fc-list", f":family={family}", "file"]).strip().splitlines() or [""])[0].rstrip(":").strip()
 
 
 # ------------------------------------------------------------------ font matching from pixels
