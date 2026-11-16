@@ -319,6 +319,10 @@ SYSTEM = f"""أنت «التنين الذهبي» (أحدث نسخة من تطب
 - **اكتب تفكيرك:** قبل كل خطوة مهمة اكتب سطر «💭» قصير: فهمت إيه، هتعمل إيه وليه، وإيه اللي اتقاس. تفكيرك بيتعرض لصاحب الشغل وبيراجعه وكيل تاني، فخليه واضح ومحدد (أرقام، أسماء ملفات، الفرضية والبديل).
 - **رسالة تبدأ بـ «[🧐 مراجع التفكير»:** ده وكيل تاني قرا تفكيرك. قيّمها بالدليل مش بالمجاملة: لو صح، قول في سطر «💭 المراجع عنده حق: …» وغيّر اتجاهك. ولو غلط، قول في سطر ليه بالدليل وكمّل. ماتتجاهلهاش.
 
+## 📄 المستندات ← Markdown
+- المرفقات (PDF، Word، PowerPoint، Excel، EPUB) بتوصلك متحوّلة لـ Markdown بـ MarkItDown، ونسختها في «_md» جوه مجلد الشغل. اشتغل على النص ده. لو مكتوب «اتقصّ هنا» اقرا الباقي من الملف المتحفظ.
+- مستند على الجهاز مش مرفق: حوّله الأول بـ `rd.py md convert <الملف> --out <مجلد الشغل>/_md` واقرا الـ .md.
+
 ## عقل التنين الذهبي (تفكير فائق بالعربي والإنجليزي)
 - **افهم بلغتين:** اقرا الطلب بالعربي زي ما صاحبه قاله، بلهجته وغلطات الكتابة بالصوت. وبعدين اكتب لنفسك سطر بالإنجليزي: Task / Deliverable / Constraints / Done-when.
   - لو الصياغتين مختلفين في أي نقطة، يبقى فيه غموض. احسمه من الملفات أو بأمر، ولو ماينفعش، اسأل سؤال واحد بس.
@@ -1344,6 +1348,52 @@ class Session:
         except Exception:
             return False
 
+    # ===== التنين الذهبي 2026-11-16: المرفقات ← Markdown بـ MarkItDown =====
+    GD_MD_EXT = {".pdf", ".docx", ".pptx", ".xlsx", ".xls", ".epub", ".msg"}
+    GD_MD_MAX = 150_000
+
+    @staticmethod
+    def _gd_fix_arabic(text):
+        """Arabic PDF text that pdfminer returns as presentation forms in visual order -> normal letters in reading order."""
+        import unicodedata
+        pf = re.compile(r"[ﭐ-﷿ﹰ-﻿]")
+        if not pf.search(text):
+            return text
+        ltr = re.compile(r"[A-Za-z0-9][A-Za-z0-9 .,:;/_\-+@#&%'\"]*[A-Za-z0-9]|[A-Za-z0-9]")
+        mirror = str.maketrans("()[]{}«»<>", ")(][}{»«><")
+        out = []
+        for line in text.split("\n"):
+            if pf.search(line):
+                line = unicodedata.normalize("NFKC", line[::-1]).translate(mirror)
+                line = ltr.sub(lambda m: m.group(0)[::-1], line)
+            out.append(line)
+        return "\n".join(out)
+
+    def _gd_markdown(self, p):
+        """(saved .md path, text for the model) via MarkItDown, or None to fall back to the old attachment path."""
+        try:
+            import logging
+            from markitdown import MarkItDown
+            logging.getLogger("pdfminer").setLevel(logging.ERROR)
+            text = MarkItDown(enable_plugins=False).convert(str(p)).text_content or ""
+        except Exception:
+            return None
+        if p.suffix.lower() == ".pdf":
+            text = self._gd_fix_arabic(text)
+        if len(text.strip()) < 40:          # a scanned PDF (images only) or an empty file: send it the old way
+            return None
+        try:
+            out = Path(self.wd()) / "_md"
+            out.mkdir(parents=True, exist_ok=True)
+            saved = out / (p.name + ".md")      # a.pdf and a.docx in one chat never overwrite each other
+            saved.write_text(text, encoding="utf-8")
+        except OSError:
+            saved = None
+        if len(text) > self.GD_MD_MAX:
+            text = (text[:self.GD_MD_MAX] + f"\n\n…[اتقصّ هنا: المستند {len(text):,} حرف، والباقي في "
+                    f"{saved or 'الملف الأصلي'}، اقراه من هناك]")
+        return saved, text
+
     def attach_list(self):
         return [{"i": i, "name": Path(p).name, "path": p} for i, p in enumerate(self.attach)]
 
@@ -1409,6 +1459,10 @@ class Session:
             ext = p.suffix.lower()
             if ext in IMAGE_EXT:
                 blocks += [{"type": "text", "text": f"[صورة مرفقة: {p}]"}, image_block(p)]
+            elif ext in self.GD_MD_EXT and p.stat().st_size < 100 * 1024 * 1024 and (gd_md := self._gd_markdown(p)):
+                blocks.append({"type": "text", "text": f"[ملف مرفق (اتحوّل لـ Markdown بـ MarkItDown): {p}]\n"
+                                                       + (f"[نسخة الـ Markdown متحفظة في: {gd_md[0]}]\n" if gd_md[0] else "")
+                                                       + gd_md[1]})
             elif ext == ".pdf" and p.stat().st_size < 30 * 1024 * 1024:
                 blocks += [{"type": "text", "text": f"[PDF مرفق: {p}]"},
                            {"type": "document", "source": {"type": "base64", "media_type": "application/pdf",

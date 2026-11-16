@@ -36,6 +36,7 @@
 | `hypit` | hypit-run: doctor, setup, example, check, plan, render, cli, selftest (the real Hypit SVML video engine, local and free; paid Providers blocked without --allow-paid) |
 | `krita` | krita-draw: render scene.json | layers file.kra | info (draw with code inside the real Krita) |
 | `sync` | sync-guard: words, check, fix, onsets, script, grid, selftest (captions and motion on the spoken word) |
+| `md` | doc-reader (v3.3): convert, batch, doctor, exts, install, selftest (any PDF, Word, PowerPoint, Excel, HTML, EPUB… → Markdown with Microsoft MarkItDown, MIT) |
 | `arena` | arena-gate (v2.19): size, start, jobs, next, collect, advance, winner, skip, gate, selftest (the arena is a required step: competing copies, bracket, judge) |
 | `consent` | consent gate: which outward actions this message explicitly approves or forbids («كمل» approves none) |
 | `gold` | Golden Bird: studio list/show/install/cmd · lib find/show/kit/stats · sync · protocol · where · selftest |
@@ -47,7 +48,7 @@
 | `recall` | يفتكر من المحادثات القديمة |
 | `intel` | مستودعات ومعلومات تخص الطلب |
 
-## مهارات المحرك (41)
+## مهارات المحرك (43)
 
 | المسار | بيعمل إيه |
 |---|---|
@@ -61,6 +62,7 @@
 | `engine/skills/chroma-motion` | كروما موشن — بيحوّل أي صورة (طير، وردة، فراشة، منظر، لوحة، منتج) لهوية بصرية كاملة بألوانها وحركتها. |
 | `engine/skills/claude-mind` | عقل Claude: الطريقة اللي Claude بيفكّر ويشتغل بيها فعلًا، مكتوبة عشان أي موديل في التطبيق يمشي عليها. |
 | `engine/skills/creative-studio` | التنين الأسود — استوديو Blender وPhotoshop وAfter Effects. |
+| `engine/skills/doc-reader` | أي مستند يتحوّل لـ Markdown قبل ما يتقري، بـ Microsoft MarkItDown (MIT): PDF، Word (docx)، PowerPoint (pptx)، Excel (xlsx/xls)، HTML، CSV، JSON، XML، … |
 | `engine/skills/dragon-character-memory` | ذاكرة الشخصية والروتوسكوب الآلي — بيحلل فيديو لشخصية كرتونية واحدة فريم بفريم، يعيد رسم كل فريم كأشكال متجهة (SVG) ويقيس الفرق عن الأصل، ويتتبع الرأس … |
 | `engine/skills/dragon-genius` | عبقرية التنين — نظام تشغيل لـ Claude مستخلص من تحليل 100 مستودع GitHub (55 تفكير ووكلاء وذاكرة ومهارات، 45 مونتاج وصوت وأنيميشن وتحسين صورة). |
 | `engine/skills/expert-council` | مجلس الخبراء — بيجمع مجلس شخصيات خبراء عالميين لأي مجال (عدسات مستوحاة من مبادئ الأساتذة)، كل واحد يدي رأي مستقل، بعدين يتناقشوا ويتحقق المتشكك، والرئ… |
