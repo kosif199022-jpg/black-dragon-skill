@@ -1,12 +1,9 @@
-## Unreleased: approval-gate hotfix candidate — 2026-11-14
-
-- In the White Bird application, risky tools always require explicit confirmation even when auto mode is set.
-- White Bird source generator now repairs known unsafe approval patterns and refuses unknown upstream patterns.
-- Added tests for the privilege guard and generator; this is staged in a review branch and is **not** the complete v2.15.0 distribution.
-- Golden Bird sources are absent in the current GitHub tree and must be synchronized and checked separately; existing SHA manifest also needs full reconciliation before merge.
-- Local tests were run on matching v2.14.0 White Bird files; a full repository selftest and Windows integration test remain pending.
-
 # سجل تغييرات التنين الأحمر
+
+## v3.5.2 — 2026-11-16 (مراجعة الحاجات القديمة)
+- **yt-dlp بيتحدّث لوحده (`engine/skills/video-grabber/scripts/grab.py`):** لينك إنستجرام وقع النهارده بس عشان yt-dlp كان قديم. دلوقتي قبل أول محاولة yt-dlp: لو النسخة عمرها أكتر من 30 يوم بتتحدّث. ولو المحاولة فشلت (`failed` أو `unsupported` أو `forbidden` أو `login_required`) بيتحدّث مرة واحدة في التشغيلة ويعيد المحاولة بس لو النسخة اتغيّرت فعلًا. بيحدّث yt-dlp المتثبّت بس (pip `yt-dlp[default]`، و`yt-dlp -U` للبرنامج المستقل زي winget)، ومابيثبّتش حاجة ناقصة. يتقفل بـ `--no-auto-update` أو `VG_NO_AUTOUPDATE=1` أو `KOSIF_NO_AUTOINSTALL=1`. 4 اختبارات جديدة (24 نجحت و1 متخطّي)، والاختبارات مابتشغّلش pip حقيقي.
+- **الدوكس القديمة:** `SKILL.md` كان لسه عنوانه «الجديد في v3.4.0» وجدول الإصدارات واقف عند v3.4.0؛ اتحدّثوا لـ v3.5.x. ملاحظة «Unreleased: approval-gate hotfix» اللي كانت فوق عنوان الملف ده اتنقلت تحت كتاريخ، لأن فرعها `red-dragon-approval-hotfix-20261114` اتدمج كله في `main`، وسورس الطائر الذهبي اللي كانت بتقول إنه ناقص اتضاف في v3.5.1.
+- **اتراجع ومالقيناش مشكلة:** مفيش مكتبة متثبّتة على نسخة قديمة (`==`) في التنين نفسه بره `library/`، وموديلات Claude في جداول الأسعار (`apps/*/app/app.py`) كلها موجودة.
 
 ## v3.5.1 — 2026-11-16 (كل التطبيقات في المستودع)
 - **`references/APPS_CAPABILITIES.md`:** خريطة واحدة للتنين الأسود والطائر الأبيض والطائر الذهبي والتنين الذهبي والتنين الأحمر: كل واحد مبني على مين، وأدواته ومحركاته، وكوده فين، وإزاي توصل لنفس القدرة من غير التطبيق. ومربوطة من `README.md` و`SKILL.md`.
@@ -23,6 +20,14 @@
 - **قراية بس:** مابيشغّلش ولا بيمسح ولا بينقل حاجة. أي `pc-app` أو `pc-script` أو `pc-tool` تشغيله بموافقة، و`copy`/`archive` معناها مش النسخة المتثبّتة.
 - اتجرّب حي على الجهاز: 599 حاجة زيادة عن الفهرس في حوالي 10 ثواني. الاختبارات: 60 نجحت و1 متخطّي (منهم 6 جداد في `tests/test_discover.py` على جهاز وهمي، وفيهم إن مفيش سر بيتسجّل).
 - `.gd_generated.json` بقى بيكتب مصدر التوليد بـ `%USERPROFILE%` بدل اسم المستخدم.
+
+## 2026-11-14 — approval-gate hotfix (اتدمج)
+- In the White Bird application, risky tools always require explicit confirmation even when auto mode is set.
+- White Bird source generator now repairs known unsafe approval patterns and refuses unknown upstream patterns.
+- Added tests for the privilege guard and generator; this is staged in a review branch and is **not** the complete v2.15.0 distribution.
+- Golden Bird sources are absent in the current GitHub tree and must be synchronized and checked separately; existing SHA manifest also needs full reconciliation before merge.
+- Local tests were run on matching v2.14.0 White Bird files; a full repository selftest and Windows integration test remain pending.
+- (2026-11-16) الفرع اتدمج في `main`، وسورس الطائر الذهبي اتضاف في v3.5.1.
 
 ## v3.4.2 — 2026-11-16 (أدوات صيانة التنين)
 - **`tools/dragon-maint/`:** 8 سكربتات اتعمل بيها v3.4.0 (من `_v340_tools` اللي على اللابتوب) بقوا في المستودع عشان أي تحديث جاي يستخدمها: `inventory.py` و`skilldiff.py` و`diff_tree.py` (جرد ومقارنة اللابتوب بالمستودع)، `lessons_diff.py` (دروس الجهاز اللي مش في البذرة)، `install_plan.py` (تحديث المهارة المتثبتة من غير ما يمسح تعديل محلي)، `manifests.py` (بناء وفحص البصمتين)، `overlay_eval.py` (الوصفة الجديدة ماسرقتش أمثلة غيرها: 140/143 قبل وبعد)، `sanitize_paths.py` (اسم المستخدم بقى `--user` أو `%USERNAME%` بدل ما يكون مكتوب جوه). والشرح في `README.md` جنبهم.

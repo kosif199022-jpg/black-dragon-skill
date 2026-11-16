@@ -50,7 +50,7 @@
 | `recall` | يفتكر من المحادثات القديمة |
 | `intel` | مستودعات ومعلومات تخص الطلب |
 
-## مهارات المحرك (45)
+## مهارات المحرك (46)
 
 | المسار | بيعمل إيه |
 |---|---|
@@ -61,6 +61,7 @@
 | `engine/skills/black-dragon-cinema` | التنين الأسود — سينما الفوتيج. |
 | `engine/skills/blackdragon-desktop-bridge` | جسر اختياري آمن لتشخيص القدرات الموجودة في تطبيق BlackDragon على ويندوز وقراءة معلومات أو التقاط صورة للشاشة بموافقة صريحة. |
 | `engine/skills/blender-pro` | Headless Blender 5.2 control for 3D, drawing and video through JSON recipes or raw bpy scripts. |
+| `engine/skills/camera-director` | مدير التصوير — makes Claude shoot like a cinematographer whenever it composes a video, whatever the engine. |
 | `engine/skills/character-memory` | Dragon Character Memory & Auto Rotoscope — بياخد فيديو لشخصية كرتون واحدة (ألوان مسطحة وخط خارجي واحد، من قدّام، خلفية ثابتة)، ويتتبّع أجزاءها ومفاصله… |
 | `engine/skills/chroma-motion` | كروما موشن — بيحوّل أي صورة (طير، وردة، فراشة، منظر، لوحة، منتج) لهوية بصرية كاملة بألوانها وحركتها. |
 | `engine/skills/claude-mind` | عقل Claude: الطريقة اللي Claude بيفكّر ويشتغل بيها فعلًا، مكتوبة عشان أي موديل في التطبيق يمشي عليها. |
