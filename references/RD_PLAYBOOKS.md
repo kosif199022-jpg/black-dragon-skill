@@ -1,4 +1,4 @@
-# Playbooks التنين الأحمر — v2.8.1
+# Playbooks التنين الأحمر — v2.13.0
 
 متولّد من `mind/playbooks.json` بأمر `rd.py docs`. عدّل الـ JSON وولّد تاني.
 
@@ -12,11 +12,12 @@
 3. $E run dragon_montage plan "<الطلب>" --clip a.mp4 --clip b.mp4 [--music m.mp3] ← بيطلّع PLAN_AR.md و storyboard.jpg
 4. اعرض الستوري بورد ومصفوفة التحركات واستنى «موافق» (إلا لو قال «نفّذ مباشرة»).
 5. $E run dragon_montage go --job <المجلد> --rounds 3
-6. $E tool onscreen check CAPTIONS.ass --words words.json --lyrics lyrics.txt ← لازم PASS
-7. $E mux VIDEO AUDIO OUT.mp4 --duration S --normalize ثم $E verify OUT.mp4 --expect 1080x1920 --duration S --out evidence.json
-8. [pc] اتفرج على 6 فريمات من الناتج بعينك (Read على صور ffmpeg -ss) قبل ما تقول خلص.
-9. [cloud] لو الرندر تقيل: $E tool hf paste <job> ثم sandbox_exec size:xl background:true (0 كريدت).
-10. الكابشن والهاشتاجات: $E tool tags --topic "…" --caption "…" · التسليم: المسار في أول سطر + 6 نقط بأرقام.
+6. لو فيه كلام أو أغنية: اكتب السكربت بعلامات (@{moment!} و@{sel}…@{/sel} و||) و`$R sync script script.txt words.json --out timeline.json --events events.json --ass karaoke.ass`، فالكابشن والموشن يتربطوا بالكلمة مش بالثانية.
+7. $E tool onscreen check CAPTIONS.ass --words words.json --lyrics lyrics.txt ← لازم PASS
+8. $E mux VIDEO AUDIO OUT.mp4 --duration S --normalize ثم $E verify OUT.mp4 --expect 1080x1920 --duration S --out evidence.json
+9. [pc] اتفرج على 6 فريمات من الناتج بعينك (Read على صور ffmpeg -ss) قبل ما تقول خلص.
+10. [cloud] لو الرندر تقيل: $E tool hf paste <job> ثم sandbox_exec size:xl background:true (0 كريدت).
+11. الكابشن والهاشتاجات: $E tool tags --topic "…" --caption "…" · التسليم: المسار في أول سطر + 6 نقط بأرقام.
 - **مهارات:** black-dragon-cinema · montage-arena · dragon-genius
 - **🔒 بموافقة:** أي تحميل من لينك · أي توليد مدفوع
 - **✅ بوابة التسليم:** verify exit 0 (سواد، AAC، فريمات = round(S×30)) · 1080×1920 · 30fps · H.264 High · yuv420p · +faststart · -14 LUFS ±1.5 والذروة ≤ -1.5 · الكريدت «© Mahmoud Elkosif» طول الفيلم
@@ -38,14 +39,15 @@
 *code-built motion graphics rendered to video* · المجال: motion
 
 1. بريف في 3 سطور + ستوري بورد نصي (لقطة، مدة، حركة). استنى «موافق».
-2. $E run web_film plan "<الفكرة>" --duration S --ratio 9:16 --out job ثم scaffold ثم check --html.
-3. الحركة seek-driven (الوقت بيتحسب من رقم الفريم مش من الساعة) عشان الرندر يبقى حتمي.
-4. [pc] $E run web_film render --width 1080 --height 1920 --fps 30 --stills 1,3,5 الأول، وبعدين الرندر الكامل.
-5. [cloud] الرندر على سحابة Higgsfield: Playwright موجود في sandbox_exec؛ $E tool hf paste ثم prender.sh لتقسيم الفريمات على 4 أنوية.
-6. $E tool onscreen lint-web FILE.html (بيمسك fill:'both') ثم $E verify.
-- **مهارات:** saas-animation · frontend-design · theme-factory · absolute-creativity
-- **✅ بوابة التسليم:** stills اتراجعت بالعين · verify exit 0 · الخط العربي متشكّل صح (مش حروف مفصولة)
-- **⚠ فخاخ:** requestAnimationFrame بالساعة = فريمات مكررة · خطوط مش متحمّلة وقت اللقطة: استنى document.fonts.ready
+2. قبل ما تبني (بروتوكول الذهب): $R gold lib find "<الحركة>" (154 مكتبة برخصها). اللي عليه ✓: [pc] $R gold lib kit <مجلد الشغل> ID… بيحط النسخة الجاهزة في vendor/ ومعاها LICENSES.md، فالرندر من غير CDN ولا نت. أي مكتبة commercial_ok بتاعتها مش yes تتقال لصاحب الشغل قبل الشغل التجاري.
+3. $E run web_film plan "<الفكرة>" --duration S --ratio 9:16 --out job ثم scaffold ثم check --html.
+4. الحركة seek-driven (الوقت بيتحسب من رقم الفريم مش من الساعة) عشان الرندر يبقى حتمي.
+5. [pc] $E run web_film render --width 1080 --height 1920 --fps 30 --stills 1,3,5 الأول، وبعدين الرندر الكامل.
+6. [cloud] الرندر على سحابة Higgsfield: Playwright موجود في sandbox_exec؛ $E tool hf paste ثم prender.sh لتقسيم الفريمات على 4 أنوية.
+7. $E tool onscreen lint-web FILE.html (بيمسك fill:'both') ثم $E verify.
+- **مهارات:** saas-animation · frontend-design · theme-factory · absolute-creativity · golden-bird
+- **✅ بوابة التسليم:** stills اتراجعت بالعين · verify exit 0 · الخط العربي متشكّل صح (مش حروف مفصولة) · المكتبات من vendor/ مش CDN، وvendor/LICENSES.md موجود
+- **⚠ فخاخ:** requestAnimationFrame بالساعة = فريمات مكررة · خطوط مش متحمّلة وقت اللقطة: استنى document.fonts.ready · ES module (three.js) من file:// في كروم العادي = CORS: رندر بمحرك التنين (--allow-file-access-from-files) أو سيرفر محلي
 
 ## محاكي 3D لماكينة + فيلم 60 فريم (`machine-sim`)
 *interactive 3D machine simulator + film (teardown)* · المجال: 3d
@@ -102,8 +104,9 @@
 2. تفريغ: $E run voice_studio transcribe IN --lang ar --words --out DIR (أو whisperx على اللابتوب).
 3. تنضيف: [pc] deep-filter IN.wav · فصل: [pc] demucs -n htdemucs IN.wav (على المعالج، بطيء).
 4. تعليق: $E run voice_studio speak --file text.txt --voice VOICE --out vo.wav --words (edge-tts مجاني).
-5. المكساج: $E mix mix.json out.wav (ducking، -14 LUFS).
-6. [cloud] التفريغ التقيل: faster-whisper large-v3 موجود في سحابة Higgsfield.
+5. بق شخصية كرتون على الصوت (lip sync): $R gold studio show rhubarb (للعربي -r phonetic) ← [pc] $R gold studio install rhubarb --yes بعد موافقة صاحب الشغل ← $R gold studio cmd rhubarb -r phonetic -f json -o mouth.json voice.wav.
+6. المكساج: $E mix mix.json out.wav (ducking، -14 LUFS).
+7. [cloud] التفريغ التقيل: faster-whisper large-v3 موجود في سحابة Higgsfield.
 - **🔒 بموافقة:** استنساخ صوت (لازم --i-own-this-voice وموافقة صاحب الصوت) · Suno مدفوع
 - **✅ بوابة التسليم:** -14 LUFS ±1.5 · الترجمة متراجعة قصاد الصوت في 3 نقط
 
@@ -124,10 +127,11 @@
 *trend analysis and reel breakdown* · المجال: research
 
 1. $E tool hf trend live ثم find "<كلمات>" (مجاني).
-2. tiktok_music_trending و get_presets source=genjutsu category=genjutsu-trending (قراية بس).
-3. تفكيك ريل: فريمات كل ثانية (ffmpeg) + scenedetect + تفريغ؛ اكتب: الهوك في أول ثانية، طول اللقطات، البيت، النص.
-4. $E run reel_hooks hook --hook "<السطر>" ← تقييم الهوك على 5 خصائص.
-5. الناتج: جدول «إيه اللي نقدر ناخده» + 3 أفكار بأسلوبه هو.
+2. افهم المرجع بالكلام: `$R sync words ref.mp4` ثم `$R sync grid ref.mp4 --words ref.words.json --out grid.jpg` (كل فريم عليه وقته والكلام اللي بيتقال)، واكتب: الهوك، كل عنصر بيظهر إمتى ومع أي كلمة، وليه ده شادّ.
+3. tiktok_music_trending و get_presets source=genjutsu category=genjutsu-trending (قراية بس).
+4. تفكيك ريل: فريمات كل ثانية (ffmpeg) + scenedetect + تفريغ؛ اكتب: الهوك في أول ثانية، طول اللقطات، البيت، النص.
+5. $E run reel_hooks hook --hook "<السطر>" ← تقييم الهوك على 5 خصائص.
+6. الناتج: جدول «إيه اللي نقدر ناخده» + 3 أفكار بأسلوبه هو.
 - **مهارات:** higgsfield-free · expert-council
 - **🔒 بموافقة:** /katana الإنتاجي و virality_predictor لو بيخصموا: السعر الأول
 
@@ -303,12 +307,13 @@
 *develop, build, install and test the Black Dragon desktop app* · المجال: app
 
 1. [pc] المصدر: ~/OneDrive/Desktop/التنين الأسود/apps/dragon_desktop (app.py، control.py، mcp_*.py، ui/index.html). المتثبت: %LOCALAPPDATA%/BlackDragon. البيانات: %APPDATA%/BlackDragon.
-2. [pc] عدّل بسكربت patch فيه assert count==1، وpy_compile، واختبار من المصدر بـ control.BRIDGE_PORT مختلف.
-3. [pc] الواجهة لوحدها: ui/index.html ملف عادي جوه _internal/ui ← نسخة احتياطية ثم انسخه، من غير بناء.
-4. [pc] الرام الفاضية ≥ 4 جيجا قبل البناء (اتقفل عند 3). powershell -File build.ps1 (~7 د).
-5. [pc] التثبيت والتطبيق مش مشغول: CloseMainWindow ← robocopy _internal /MIR ← copy exe ← start.
-6. [pc] التأكد: $E tool machine app status ← رقم النسخة، ثم send رسالة اختبار واقرا الرد.
-7. عمرك ماتحط settings.json ولا bridge_token في أي حزمة.
+2. [pc] التطبيقات التلاتة: التنين (apps/dragon_desktop) ← الطائر الأبيض (forge/make_white_bird.py) ← الطائر الذهبي (forge/make_golden_bird.py، بيحمّل forge الأبيض ويضيف studio وmotion_lib وspeech_sync). أي تصليح في التنين يوصلهم بإعادة التوليد، وماتعدّلش app\ بإيدك. كودهم في الحزمة: apps/white-bird وapps/golden-bird (من غير خطوط).
+3. [pc] عدّل بسكربت patch فيه assert count==1، وpy_compile، واختبار من المصدر بـ control.BRIDGE_PORT مختلف.
+4. [pc] الواجهة لوحدها: ui/index.html ملف عادي جوه _internal/ui ← نسخة احتياطية ثم انسخه، من غير بناء.
+5. [pc] الرام الفاضية ≥ 4 جيجا قبل البناء (اتقفل عند 3). powershell -File build.ps1 (~7 د).
+6. [pc] التثبيت والتطبيق مش مشغول: CloseMainWindow ← robocopy _internal /MIR ← copy exe ← start.
+7. [pc] التأكد: $E tool machine app status ← رقم النسخة، ثم send رسالة اختبار واقرا الرد.
+8. عمرك ماتحط settings.json ولا bridge_token في أي حزمة.
 - **مهارات:** windows-commands · webapp-testing
 - **🔒 بموافقة:** البناء لو الرام قليلة · قفل التطبيق وفيه محادثة شغالة
 - **✅ بوابة التسليم:** status بيرجّع النسخة الجديدة · رسالة اختبار حقيقية ردّت صح
@@ -331,9 +336,10 @@
 
 1. كونسبت في سطر + 3 اتجاهات (مهارة absolute-creativity: $E tool creativity brief).
 2. رسم وكتابة عربي: $E tool paint new/draw (الكتابة بتطلع متشكّلة).
-3. شيل خلفية: [pc] rembg i IN OUT · تكبير: [pc] upscayl-bin -i IN -o OUT -s 4 · RAW: darktable-cli · متجهات: inkscape.
-4. بوستر فني: مهارة canvas-design · ثيم: theme-factory · PSD: $E tool psd.
-5. افتح الناتج بـ Read واتأكد بعينك من الكتابة والحواف.
+3. رسم بطبقات تتعدّل (ملف .kra) أو رسم إجرائي أو أنيميشن فريم بفريم: `$R krita render scene.json` (مهارة krita-draw، Krita الحقيقي من غير واجهة، على جهاز صاحب الشغل).
+4. شيل خلفية: [pc] rembg i IN OUT · تكبير: [pc] upscayl-bin -i IN -o OUT -s 4 · RAW: darktable-cli · متجهات: inkscape.
+5. بوستر فني: مهارة canvas-design · ثيم: theme-factory · PSD: $E tool psd.
+6. افتح الناتج بـ Read واتأكد بعينك من الكتابة والحواف.
 - **مهارات:** canvas-design · paint-studio · absolute-creativity · theme-factory · algorithmic-art
 - **🔒 بموافقة:** توليد صور AI مدفوع · print / wallpaper (بيغيّروا حاجة بره الصورة)
 - **✅ بوابة التسليم:** النص العربي صح ومقروء (تباين ≥ 4.5:1)
@@ -346,7 +352,7 @@
 3. expert-council للتقييم والنقد: آراء مستقلة ← نقاش ← متشكك ← حكم واحد.
 4. montage-arena لو القرار قرار مونتاج.
 5. الناتج: توصية واحدة + السبب + إيه اللي يغيّر رأيك.
-- **مهارات:** ultra-mind · expert-council · dragon-genius · montage-arena
+- **مهارات:** ultra-mind · expert-council · dragon-genius · montage-arena · claude-mind
 
 ## التعلّم الذاتي وتطوير التنين نفسه (`self-improve`)
 *self-learning loop and upgrading the dragon itself* · المجال: meta

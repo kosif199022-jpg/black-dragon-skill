@@ -803,6 +803,24 @@
     "paint-studio"
    ],
    "cloud_alt": "مفيش Krita على السحابة: PIL/SVG بطبقات PNG، أو paint-studio."
+  },
+  {
+   "id": "skill-golden",
+   "layer": "skill",
+   "ar": "الطائر الذهبي: استوديو 10 برامج سطر أوامر مفتوحة المصدر بأوامرها وبصمة أرشيفها، ومكتبة 154 مكتبة موشن برخصها ونسخ جاهزة من غير نت",
+   "en": "golden-bird (studio of hash-checked open-source CLI programs + motion library catalog with an offline vendor kit)",
+   "triggers": "الطائر الذهبي استوديو البرامج مكتبه موشن مكتبات gsap anime three lottie vendor من غير نت اوفلاين رخصه المكتبه lip sync بق الشخصيه rhubarb handbrake synfig tahoma2d melt whisper-cli oiiotool pencil2d golden bird studio motion library offline kit",
+   "how": "`$R gold lib find \"<كلمات>\"` ثم `show ID` ثم `kit <مجلد الشغل> ID…` (vendor/ + LICENSES.md، وملفات ES module اللي بتتستورد). البرامج: `$R gold studio list|show ID`، والفك `install ID --yes` بموافقة، و`cmd ID args`. البروتوكول: `$R gold protocol`. الدليل: `engine/skills/golden-bird/SKILL.md`.",
+   "cost": "free",
+   "where": "pc",
+   "probe": {
+    "type": "path",
+    "path": "~/OneDrive/Desktop/مهارات"
+   },
+   "skills": [
+    "golden-bird"
+   ],
+   "cloud_alt": "find وshow وprotocol وsync شغالين في أي مكان؛ kit وinstall محتاجين مجلد «مهارات» على اللابتوب. على السحابة: npm install للمكتبة نفسها."
   }
  ],
  "measured": "2026-11-12: references/MACHINE_INVENTORY_20261112.md (helper inventory, every row run on the laptop)"
