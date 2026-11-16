@@ -447,7 +447,7 @@ def search(q, limit=3, per=4, min_terms=1):
 
 # ------------------------------------------------------------------ paths
 def is_owner_pc():
-    return (Path.home() / "OneDrive" / "Desktop" / "التنين الأسود").exists() or (Path.home() / "re-tools" / "retool.py").exists()
+    return (Path.home() / "OneDrive" / "Desktop" / "التنين الأسود").exists() or (Path.home() / "OneDrive" / "Desktop" / "مهارات" / "التنين الأسود").exists() or (Path.home() / "re-tools" / "retool.py").exists()
 
 
 def resolve(p):

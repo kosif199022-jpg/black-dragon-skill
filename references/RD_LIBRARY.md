@@ -1,4 +1,4 @@
-# مكتبة المهارات — أشهر 500 مهارة Claude (2026-11-12)
+# مكتبة المهارات — أشهر 506 مهارة Claude (2026-11-12)
 
 الاختيار: نجوم مستودع المصدر على GitHub يوم القياس، بالدور على المستودعات (14 بالكتير من كل مستودع) عشان مستودع واحد مايملاش القايمة. اتشالت: المهارات الهجومية، واللي من غير رخصة، والمكررة، واللي متثبتة أصلًا.
 اللي اتشال: {'offensive': 94, 'installed': 19, 'no_license': 23, 'no_description': 98, 'duplicate': 675, 'too_big': 18}
@@ -508,3 +508,9 @@
 | 498 | `organize` | 4 | kotsmiltos/mk-cc-resources | mit | — | Spec-level DRY pass between /architect and /build. Clusters the current sprint's task specs across sub-architects, surfaces overlapping functionality  |
 | 499 | `triage` | 4 | kotsmiltos/mk-cc-resources | mit | — | Route findings to the right phase. Reads items from /research, /review, or /verify (gaps, findings, drift) and categorizes each — one disposition per  |
 | 500 | `verify` | 4 | kotsmiltos/mk-cc-resources | mit | — | Spec compliance audit before shipping. Walks SPEC.md top to bottom; for every design decision, reads code at the cited locator and verifies implementa |
+| 501 | `algorithmic-art` | 194,030 | anthropics/skills | apache-2.0 | exec | Creating algorithmic art using p5.js with seeded randomness and interactive parameter exploration. Use this when users request creating art using code |
+| 502 | `canvas-design` | 194,030 | anthropics/skills | apache-2.0 | — | Create beautiful visual art in .png and .pdf documents using design philosophy. You should use this skill when the user asks to create a poster, piece |
+| 503 | `frontend-design` | 194,030 | anthropics/skills | apache-2.0 | — | Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and |
+| 504 | `mcp-builder` | 194,030 | anthropics/skills | apache-2.0 | network، secrets-read | Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools.  |
+| 505 | `web-artifacts-builder` | 194,030 | anthropics/skills | apache-2.0 | network | Suite of tools for creating elaborate, multi-component claude.ai HTML artifacts using modern frontend web technologies (React, Tailwind CSS, shadcn/ui |
+| 506 | `webapp-testing` | 194,030 | anthropics/skills | apache-2.0 | exec، network | Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, ca |

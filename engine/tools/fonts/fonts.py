@@ -61,6 +61,7 @@ LICENCE = "OFL-1.1"
 DEFAULT_ROOTS = [
     HOME / "kosif-own" / "black-dragon",                       # the original engine copy (byte-identical fonts)
     HOME / "OneDrive" / "Desktop" / "التنين الأسود",
+    HOME / "OneDrive" / "Desktop" / "مهارات" / "التنين الأسود",   # the folder moved into «مهارات» on 2026-11-15
     HOME / ".claude" / "skills" / "black-dragon-cinema",
     HOME / ".claude" / "skills" / "canvas-design" / "canvas-fonts",
     HOME / "kosif-tool",

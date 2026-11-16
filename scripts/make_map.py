@@ -32,8 +32,8 @@ def section(title,base,depth=1):
         if not sk.is_file():
             c=sorted(d_.rglob('SKILL.md'))
             if c: sk=c[0]
-        if sk.is_file(): rows.append(f"| `{d_.relative_to(R)}` | {desc(sk)} |")
-        elif d_.name in EXTRA: rows.append(f"| `{d_.relative_to(R)}` | {EXTRA[d_.name]} |")
+        if sk.is_file(): rows.append(f"| `{d_.relative_to(R).as_posix()}` | {desc(sk)} |")
+        elif d_.name in EXTRA: rows.append(f"| `{d_.relative_to(R).as_posix()}` | {EXTRA[d_.name]} |")
     if rows: L.extend(["",f"## {title} ({len(rows)})","","| المسار | بيعمل إيه |","|---|---|"]+rows)
 section("مهارات المحرك",R/'engine/skills')
 section("مكتبة المهارات المدمجة جوه المحرك",R/'engine/skills/library')

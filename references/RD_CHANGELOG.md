@@ -1,19 +1,42 @@
 # سجل تغييرات التنين الأحمر
 
-## v2.14.0 — 2026-11-14 (Hypit secure execution)
-- Existing Hypit 0.3.2 bridge hardened: missing/unknown provider cost or preflight failures cannot trigger rendering.
-- The raw Hypit CLI is inspection-only, so build cannot bypass the provider-price gate.
-- Rendering refuses to overwrite an existing output. Priced external providers still require explicit user approval and --allow-paid.
-- Added offline regression tests; no Hypit source was copied or third-party service called.
-- Full end-to-end rendering, Windows verification and the full Red Dragon selftest remain pending.
+## v2.14.0 — 2026-11-14 (طوّر تفكيره وذكائه)
+- **بوابة الموافقة** `consent()` + `$R consent` + سطر في `brief` و`plan` + key `consent` في JSON (المفاتيح القديمة زي ما هي).
+  - تحليل بالجذر والصيغة لكل جملة لوحدها، وأسماء الأفعال، والمعرّب، والنفي (والنفي اللي بيكمّل بعد «ولا»)، والتأجيل («بكره»، «مش دلوقتي»، «غير بعد ما»، «لما اشوفه»)، وسؤال الاختيار، وفخاخ التعديل.
+  - مجموعة عمياء 1 (70، رسايل قصيرة): 56/70 أول قياس. مجموعة عمياء 2 (40، رسايل طويلة): 19/40 أول قياس، منهم 3 موافقات غلط بس. الاتنين اتصلّحوا ودخلوا الاختبارات (179 حالة، selftest بيشغّلهم). مجموعة 3 بعد التجميد: 31/45 مطابقة تمامًا (69%)، فيها 4 موافقات غلط و9 منع ماتمسكش و4 موافقات ماتشافتش (آمنة: بيسأل تاني)؛ بعدها اتصلّحت ودخلت الاختبارات، ومفيش مجموعة رابعة قاست اللي بعد التصليح.
+- **understand:** الاختصارات الإنجليزي (don't، it's…) وكلمات أوامر (push، merge، yet، go ahead…) مابقتش تتفك كعربي. اختبارين جداد (18).
+- **الراوتر:** قاعدة «تطوير التنين نفسه» بقت تمسك «تفكيره/ذكائه/عقله» و«عقل الطائر». موافقة رفع صريحة في رسالة قصيرة = دفعة لـ `ship` (دليل dev: «ارفعه على واعطيني الرابط» = ship). dev old/fresh قبل وبعد متطابقين. اختبارين جداد في route_tests (40).
+- **ذاكرة:** دروس s57–s60، وs09 اتكرر (seen 2). أخطاء M10–M13 في `planning-mind/data/mistakes_seed.jsonl`.
 
-## v2.13.0 — 2026-11-14 (Hypit بيشتغل فعلًا)
-- **جديد: `engine/skills/hypit-run`** و`rd.py hypit doctor|setup|example|check|plan|render|cli|selftest`. كود تغليف أصلي حوالين حزمة npm `@hypit/hypit` المنشورة؛ ولا سطر من كود Hypit اتنسخ (نفس قرار v2.12.0 بسبب الرخصة).
-  - `setup`: تثبيت في `~/.hypit-rd` بـ `--ignore-scripts`.
-  - `example`: بيجيب مثال من المستودع (sparse clone)، ويبدّل `workspace:*` بنسخ npm، ويبني المكوّنات بـ tsc، ويوجّه `chromePath` لمتصفح موجود (Hypit كان بيدوّر على متصفح مش متنزّل ويقف بـ MANAGED_PROGRAM_DOWN).
-  - `render`: بيقرا `plan` الأول؛ أي مزوّد مش محلي ← exit 3 لحد «موافق» و`--allow-paid`.
-- **اتجرّب:** `semantic-composition/chat.svrun` من الصفر: تجهيز 30 ث، render 19 ث ← MP4 h264+aac، 540×960، 30fps، 8.0 ث، وشبكة الفريمات اتشافت بالعين.
-- selftest بتاع hypit-run (4 فحوص، أوفلاين) دخل في `rd.py selftest`.
+## v2.13.0 — 2026-11-14 (الطائر الذهبي)
+- **طلب صاحب الشغل:** «طوّره للطائر الذهبي». الطائر الذهبي = الطائر الأبيض + اللي طلع من الهندسة العكسية لمجلد «مهارات» (studio وmotion_lib وspeech_sync).
+- **`apps/golden-bird`** (45 ملف): forge وapp وtests من `Desktop\الطائر الذهبي`، توليد 12:13 (فيه «عقل الطائر الذهبي» من جلسة تانية: تفكير بلغتين، وسلّم 7 درجات، ومستوى تفكير xhigh/max، وبحث مكتبة بيشيل «ال» وحروف العطف) + تصليح `kit` تحت. اتشال ملفين `.woff2` (سياسة الخطوط). اختبار البصمات بيتخطّى ملف الخط الناقص بس، وأي ملف تاني ناقص لسه بيوقّعه. **43/43 اختبار عدّوا** (pytest على اللابتوب، والنسخة اللي في المستودع نفس الملفات من غير الخطوط).
+  - مفيش أسرار: مفيش إيميل صاحب الشغل ولا توكنات. الإيميل الوحيد هو عنوان الترخيص التجاري المنشور لمكتبة Lemomo.
+  - الكتالوجات فيها مسارات لابتوب صاحب الشغل (`C:\Users\…\مهارات`)، زي 139 ملف موجودين في المستودع قبل كده.
+- **`engine/skills/golden-bird`** + **`$R gold`**: بيشغّل نفس `golden_tools.py` بتاع التطبيق. زيادات المهارة:
+  - `protocol`، و`where`، و`selftest` (20 فحص).
+  - `studio install` محتاج `--yes`.
+- **تصليح في الطائر الذهبي نفسه (`forge/modules/golden_tools.py` ← توليد ← `app/golden_tools.py`):** `lib_kit` كان بينسخ `three.module.js` من غير `three.core.js`، فالفيلم كان بيرجع 404 أوفلاين (اتقاس بسيرفر محلي). دلوقتي بيتتبّع الـ imports النسبية لأي ES module ويحطها بنفس مساراتها، وأي import برّه فولدر المكتبة بيبقى فشل صريح بدل ✓، وبيطبع تنبيه `file://`.
+  - الاختبار الجديد `test_kit_copies_es_module_imports`. إعادة التوليد غيّرت `golden_tools.py` والختم بس (كود التنين والـ forge بتاع الأبيض ماتغيّروش). احتياطي قبل التعديل: `%APPDATA%\GoldenBird\source_backups\20261114-125956-before-kit-esm`.
+  - `GoldenBird.exe` المتثبت ماتبناش: الرام الفاضية كانت 2 جيجا (الحد 4). بياخد التصليح بعد البناء وزرار «حدّث دلوقتي».
+- **اتجرّب فعلًا:** `kit` لـ gsap وlottie-web وthree-js، وصفحة HTML اترندرت في Chromium والنت مقفول (مفيش ولا طلب برّه الجهاز)، والـ seek ثابت (0 ← 0.51 ← 1).
+  - `file://` عادي بيمنع ES modules.
+  - `--allow-file-access-from-files` (اللي `render.cjs` بيستخدمه) أو سيرفر محلي بيشغّلوه.
+- **`syncguard.py` `align_units` ← محاذاة DP** (فكرة الذهبي، ومعاها تقسيم وقت الكلمة المدموجة على الحروف):
+  - وكيل مستقل قارن الاتنين على 10 حالات و50 فقرة عشوائية.
+  - العلامات الصح: B كان 15/20، والذهبي 20/20، وB بعد التعديل 20/20.
+  - أقصى خطأ في «ما فيش ← مافيش»: الذهبي 0.27 ث، وB الجديد 0.042 ث.
+  - اختبارات جديدة في selftest: كلمة ماتقالتش وليها تكرار بعدها، و«عبدالله ← عبد الله»، و«ما فيش ← مافيش». النسخة القديمة بتفشل فيهم (اللحظة 1.7 بدل 1.0)، والجديدة بتعدّي. sync-guard بقى 20/20.
+- **playbooks:**
+  - `motion-code`: خطوة `gold lib find`/`kit`، وبوابة «vendor/ مش CDN»، وفخ ES module من `file://`.
+  - `voice`: lip sync بـ Rhubarb.
+  - `app-dev`: التطبيقات التلاتة.
+  - triggers مااتغيّرتش.
+- **القدرة `skill-golden`** (52 قدرة). `RD_RULES.md` §11 بروتوكول الذهب.
+- **`docs`:**
+  - عدد القدرات في `RD_CONNECTIONS.md` بقى بيتحسب (كان 50 ثابت).
+  - `RD_LIBRARY.md` اتولّد من جديد (506 مهارة، كانت متأخرة من v2.10).
+- **البصمات:** `count` رجع يساوي عدد الملفات (من v2.11 كان واقف على 6120/1992).
 
 ## v2.12.0 — 2026-11-13 (أفكار hypit-ai/hypit)
 - اتدرس `hypit-ai/hypit` (commit `6bacce0`، 1,721 ملف TypeScript). الكود ماتنسخش: رخصته Apache-2.0 بشروط (ممنوع البيع أو التشغيل كخدمة لناس تانية، ولازم نفس الرخصة لأي نسخة معدّلة). اللي اتاخد أفكار، واتكتبت بكود بايثون بتاعنا.

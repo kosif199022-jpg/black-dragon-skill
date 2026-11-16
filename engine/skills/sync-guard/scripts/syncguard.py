@@ -359,20 +359,80 @@ def parse_script(text):
     return units, marks, breaks
 
 
+def _edit_ratio(a, b):
+    """Levenshtein distance / longer length (0 = same, 1 = nothing in common)."""
+    if a == b:
+        return 0.0
+    prev = list(range(len(b) + 1))
+    for i, ca in enumerate(a, 1):
+        cur = [i]
+        for j, cb in enumerate(b, 1):
+            cur.append(min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ca != cb)))
+        prev = cur
+    return min(1.0, prev[-1] / max(len(a), len(b), 1))
+
+
+COST_MISS, COST_EXTRA, COST_SPLIT, NEAR = 0.5, 0.35, 0.055, 0.5
+
+
 def align_units(units, words):
-    """Each script unit (one or more spoken tokens) gets the start of its first word and the end of its last."""
-    nw = [norm(w["word"]) for w in words]
-    j, out = 0, []
-    for u in units:
-        span = []
-        for tk in u["spoken"]:
-            k = j
-            while k < len(words) and k < j + 6 and not _same(nw[k], tk):
-                k += 1
-            if k < len(words) and k < j + 6:
-                span.append(k)
-                j = k + 1
-        out.append(dict(u, start=words[span[0]]["start"], end=words[span[-1]]["end"]) if span else dict(u, start=None, end=None))
+    """Each script unit (one or more spoken tokens) gets the start of its first word and the end of its last.
+    v2.13 (from the Golden Bird's speech_sync): one monotone DP over the whole script instead of a greedy 6-word look-ahead,
+    so an unsaid word costs a «miss» and no longer makes the next tokens jump to a later repeat. Steps: same/near word
+    (edit ratio < 0.5 counts as said: مبسوط/مبصوط, مسؤول/مسئول), miss, extra spoken word, one script token said as two
+    (عبدالله ← عبد الله) and two said as one (ما فيش ← مافيش: the spoken word's time is split by letter count)."""
+    S = [(ui, tk) for ui, u in enumerate(units) for tk in u["spoken"]]
+    T = [norm(w["word"]) for w in words]
+    n, m = len(S), len(T)
+    out = [dict(u, start=None, end=None) for u in units]
+    if not n or not m:
+        return out
+    INF = float("inf")
+    band = max(60, abs(n - m) + 60)
+    cost = [[INF] * (m + 1) for _ in range(n + 1)]
+    back = [[None] * (m + 1) for _ in range(n + 1)]
+    cost[0][0] = 0.0
+    for i in range(n + 1):
+        centre = i * m // n
+        for j in range(max(0, centre - band), min(m, centre + band) + 1):
+            c = cost[i][j]
+            if c == INF:
+                continue
+            steps = []
+            if i < n and j < m:
+                steps.append((i + 1, j + 1, 0.0 if _same(T[j], S[i][1]) else _edit_ratio(S[i][1], T[j]), "sub"))
+            if i < n:
+                steps.append((i + 1, j, COST_MISS, "miss"))
+            if j < m:
+                steps.append((i, j + 1, COST_EXTRA, "extra"))
+            if i < n and j + 1 < m and S[i][1] == T[j] + T[j + 1]:
+                steps.append((i + 1, j + 2, COST_SPLIT, "1:2"))
+            if i + 1 < n and j < m and S[i][1] + S[i + 1][1] == T[j]:
+                steps.append((i + 2, j + 1, COST_SPLIT, "2:1"))
+            for a, b, k, kind in steps:
+                if c + k < cost[a][b]:
+                    cost[a][b], back[a][b] = c + k, (i, j, kind)
+    took = [[] for _ in range(n)]          # per script token: (spoken index, from, to) as fractions of that word's time
+    i, j = n, m
+    while (i, j) != (0, 0):
+        pi, pj, kind = back[i][j]
+        if kind == "sub" and (_same(T[pj], S[pi][1]) or _edit_ratio(S[pi][1], T[pj]) < NEAR):
+            took[pi].append((pj, 0.0, 1.0))
+        elif kind == "1:2":
+            took[pi] += [(pj, 0.0, 1.0), (pj + 1, 0.0, 1.0)]
+        elif kind == "2:1":
+            f = len(S[pi][1]) / max(1, len(S[pi][1]) + len(S[pi + 1][1]))
+            took[pi].append((pj, 0.0, f))
+            took[pi + 1].append((pj, f, 1.0))
+        i, j = pi, pj
+    for ti, (ui, _) in enumerate(S):
+        for k, f0, f1 in took[ti]:
+            w = words[k]
+            d = w["end"] - w["start"]
+            s, e = round(w["start"] + f0 * d, 3), round(w["start"] + f1 * d, 3)
+            o = out[ui]
+            o["start"] = s if o["start"] is None else min(o["start"], s)
+            o["end"] = e if o["end"] is None else max(o["end"], e)
     return out
 
 
@@ -604,6 +664,16 @@ def cmd_selftest(a):
     t("events resolve + bad anchor reported", len(ev) == 3 and ev[0]["t"] == 4.5 and ev[2]["end"] == 5.4 and len(errs) == 1)
     slow = [dict(w, start=w["start"] * 1.3 + 0.2, end=w["end"] * 1.3 + 0.2) for w in words]
     t("re-flow: slower voice moves the moment", abs(compile_script(sc, slow)["moments"]["big"] - (4.5 * 1.3 + 0.2)) < 1e-6)
+    # v2.13 (DP from the Golden Bird): an unsaid word that repeats later must not drag the next words to the repeat
+    w2 = [{"word": w, "start": s, "end": e} for w, s, e in [("انا", 0.3, 0.5), ("رايح", 0.6, 0.9), ("البيت", 1.0, 1.4), ("في", 1.5, 1.6),
+          ("الاخر", 1.7, 2.1), ("مع", 2.2, 2.3), ("عبد", 2.4, 2.6), ("الله", 2.62, 2.95)]]
+    c2 = compile_script("انا رايح في @{h!}البيت || في الاخر مع @{n}عبدالله@{/n}", w2)
+    t("script: unsaid repeated word stays missing (DP)", c2["moments"].get("h") == 1.0 and c2["missing"] == ["في"])
+    t("script: one word said as two (عبد الله)", c2["selections"].get("n") == [2.4, 2.95])
+    c3 = compile_script("ده @{z}ما فيش@{/z} حد", [{"word": "ده", "start": 0.2, "end": 0.4}, {"word": "مافيش", "start": 0.5, "end": 1.1},
+                                                {"word": "حد", "start": 1.2, "end": 1.5}])
+    t("script: two words said as one (مافيش), time split by letters", c3["selections"].get("z") == [0.5, 1.1]
+      and [c["words"][1]["end"] for c in c3["cues"]] == [0.74])
     ka = karaoke_ass(comp["cues"])
     t("karaoke ass has \\kf per word", ka.count("\\kf") == 10 and "Dialogue:" in ka)
     vid = tmp / "v.mp4"

@@ -1,4 +1,4 @@
-# اتصالات التنين الأحمر — v2.8.1
+# اتصالات التنين الأحمر — v2.13.0
 
 الاتصالات اللي التنين الأحمر بيضيفها فوق سجل المحرك (`engine/tools/powers/powers.json`، 50 قدرة). كل بند: إزاي تتأكد إنه موجود في الجلسة دي، إزاي تستخدمه بالظبط، والبديل لو مش موجود. اتقاس على لابتوب صاحب التنين 2026-11-12. أدوات الجلسة (MCP، كروم، وكلاء) مابتتشافش من بايثون: اتأكد منها بـ ToolSearch.
 
@@ -53,5 +53,5 @@
 - **إزاي تستخدمه:** لأي برنامج: (1) `PROGRAM --help` و `--version` واحفظ الخيارات. (2) هل ليه وضع من غير واجهة؟ blender -b -P script.py · gimp-console-3.2 -i --batch-interpreter python-fu-eval -b · inkscape --export-type=png · kritarunner -s SCRIPT · melt project.mlt -consumer avformat:out.mp4 · NatronRenderer -w Write1 1-100 proj.ntp · darktable-cli IN OUT · magick. (3) صيغة ملف المشروع (XML/JSON؟) تتولّد بالكود. (4) ملوش CLI: mcp__blackdragon__computer (صورة ← فعل ← تأكيد). (5) سجّل اللي اشتغل: $R learn.
 - **لو مش موجود:** ffmpeg / ImageMagick / Blender (بعد تنزيل بموافقة) في sandbox_exec.
 
-## باقي القدرات (50 قدرة من سجل المحرك)
+## باقي القدرات (52 قدرة من سجل المحرك)
 `references/ENGINE_POWERS.md` (نسخة من `engine/references/ALL_POWERS_*.md`) أو `$R map`.
