@@ -163,6 +163,8 @@ def scholars_section():
     if not f.is_file():
         raise SystemExit(f"✗ صندوق أدوات التفكير مش موجود: {f}")
     tk = json.loads(f.read_text(encoding="utf-8"))
+    from build_fusion import merge_books        # + the tools and «سبل التفكير» distilled from king's books (data\\thinking_books.json)
+    tk = merge_books(tk)
     tools, proto = tk.get("tools") or [], tk.get("protocol_ar") or []
     if len(proto) != 8 or len(tools) < 12:      # the protocol in fusion_section is written for these 8 steps
         raise SystemExit(f"✗ thinking_toolkit.json اتغيّر شكله: {len(proto)} خطوة و{len(tools)} أداة (المتوقع 8 خطوات)")
@@ -172,7 +174,9 @@ def scholars_section():
         return (head if len(head.split()) >= 2 else n).replace("\\", "\\\\").replace("{", "(").replace("}", ")")
     names = "، ".join(f"«{short(t)}»" for t in tools)
     return (f"\n- **أدوات العلماء ({len(tools)}، من كتب التفكير والمهارات اللي على الجهاز):** {names}. "
-            "`fusion brief` بيختار 2 أو 3 منها لكل طلب بخطواتها وسؤال الناقد بتاعها، و`fusion check` بيسألك أسئلة الناقد قبل الرد.")
+            "`fusion brief` بيختار 2 أو 3 منها لكل طلب بخطواتها وسؤال الناقد بتاعها، و`fusion check` بيسألك أسئلة الناقد قبل الرد."
+            "\n- **سبل التفكير (`fusion think`):** سبيل الخيال، والتفكير العميق، والإبداعي، والمنطق والاحتمال، وخطوة بخطوة، "
+            "والتحليل، والقرار. لو الطلب فيه «تخيّل» أو «بعمق» أو «احتمال» أو «خطوة بخطوة»، `fusion brief` بيجيب أدوات السبيل ده الأول.")
 
 
 def mind_additions(lessons):
@@ -201,11 +205,12 @@ FUSION_TOOL = '''    tool("fusion", "Golden Dragon fusion core: ONE index of eve
          "approvals, ambiguity warning. 'check' = LAST, before replying: self-critique of your draft answer (query = the request, "
          "draft = your answer). 'find' (optional kind: skill, tool, engine, studio, lib, program, re, mcp, playbook, cmd, power, "
          "or pc / pc-skill, pc-plugin, pc-mcp, pc-app, pc-script, pc-tool, pc-repo, pc-pack for what discover found on this PC), "
-         "'show' one id, 'recipes', 'doctor' (live check of this PC), 'lessons'. 'discover' = walk the owner's folders now and "
+         "'show' one id, 'recipes', 'doctor' (live check of this PC), 'lessons', 'think' (the Arabic thinking paths from the books: "
+         "imagination, deep, creative, logic/probability, step by step, analysis, decision; query = a path or empty for the map). 'discover' = walk the owner's folders now and "
          "add every skill, plugin, MCP server, program, shortcut, script, tool folder, repo and skill archive to the index (run it "
          "when doctor says the PC catalog is missing or stale, or the owner added something); 'local' = list that catalog "
          "(optional kind). Read-only except discover, which writes only its own catalog in %APPDATA%\\\\GoldenDragon.",
-         {"action": {"type": "string", "enum": ["brief", "route", "check", "find", "show", "recipes", "doctor", "lessons", "stats",
+         {"action": {"type": "string", "enum": ["brief", "route", "check", "find", "show", "recipes", "doctor", "lessons", "think", "stats",
                                                 "discover", "local"]},
           "query": S, "draft": S, "id": S, "kind": S, "limit": {"type": "integer", "minimum": 1, "maximum": 30}}, ["action"]),
 '''
@@ -236,13 +241,15 @@ FUSION_DISPATCH = '''def fusion_dispatch(a):
             return fz.md_doctor(), False
         if act == "lessons":
             return fz.md_lessons(q, int(a.get("limit") or 8)), False
+        if act == "think":
+            return fz.md_think(q), False
         if act == "stats":
             return json.dumps(fz.stats(), ensure_ascii=False), False
         if act == "discover":
             return fz.md_discover(), False
         if act == "local":
             return fz.md_local(a.get("kind") or None, int(a.get("limit") or 40)), False
-        raise ValueError("INVALID_JSON: action must be brief, route, check, find, show, recipes, doctor, lessons, stats, discover or local")
+        raise ValueError("INVALID_JSON: action must be brief, route, check, find, show, recipes, doctor, lessons, think, stats, discover or local")
     except (KeyError, FileNotFoundError) as e:
         return f"✗ {e.args[0] if e.args else e}", True
 

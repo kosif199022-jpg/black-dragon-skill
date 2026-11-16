@@ -22,7 +22,9 @@
 CLI (the subscription mode runs commands instead of app tools):
   python -X utf8 dragon_fusion.py brief "..." | route "..." | find "..." [--kind K] [--limit N] | show ID | recipes
                                   | doctor | stats | lessons "..." | check --request "..." --draft FILE|-
-                                  | discover | local [KIND]
+                                  | discover | local [KIND] | think ["سبيل"]
+  think    «سبل التفكير» (من كتب Kahneman وGreetham وJaynes والمسرحية والـ IFRS): الخيال، العميق، الإبداعي، المنطق والاحتمال،
+           خطوة بخطوة، التحليل، القرار. بدون كلمة = خريطة السبل؛ بكلمة = خطوات أدوات السبيل وسؤال الناقد بتاعها.
 Standard library only. Data: .\\fusion\\index.json, recipes.json, lessons.json (made by forge\\build_fusion.py).
 """
 import bisect
@@ -553,6 +555,8 @@ def md_brief(request):
         risks.append(f"البوابة الأضعف: «{top['steps'][-1].get('gate_ar', '')}». اتأكد إنها هتتقاس فعلًا مش هتتوصف بس")
     out.append("- **تشريح قبل الفشل (أرجح أسباب الرفض، اقفل كل واحد بخطوة):**\n" + "\n".join(f"  - {x}" for x in risks[:5]))
     tools = thinking_for(request, top)
+    for p in thinking_paths(request)[:2]:
+        out.append(f"- 🧭 **{p['name_ar']}:** {p.get('hint_ar', '')} (`fusion think {p['id']}` للسبيل كله)")
     if tools:
         out.append("- **أدوات تفكير للطلب ده (من كتب العلماء والتفكير):**\n" + "\n".join(
             f"  - **{t.get('name_ar', t['id'])}** ({_src_label(t)}): " + " ← ".join(t.get("steps_ar", [])[:3])
@@ -611,6 +615,20 @@ TOOL_PRIORITY = {
 }
 
 
+def thinking_paths(request):
+    """The Arabic «سبل التفكير» (thinking.json paths: الخيال، العميق، الإبداعي، المنطق، خطوة بخطوة، التحليل، القرار) whose
+    trigger words appear in the request, best first. Lets «تخيّل…» or «فكّر بعمق» pull that path's tools to the top."""
+    words = set(query_tokens(request))
+    norm = _norm(request)
+    hits = []
+    for p in thinking().get("paths") or []:
+        trig = p.get("trigger_words") or []
+        n = len(words & set(query_tokens(" ".join(trig)))) + sum(1 for w in trig if " " in w and _norm(w) in norm)
+        if n:
+            hits.append((n, p))
+    return [p for _, p in sorted(hits, key=lambda x: -x[0])]
+
+
 def thinking_for(request, top, limit=3):
     """2-3 thinking tools for this request: one for understanding, then the rest. Score = the task type's priority
     order (TOOL_PRIORITY) + whether use_when has the task type + the request's own trigger words (capped, so one long
@@ -621,11 +639,17 @@ def thinking_for(request, top, limit=3):
     ttype = TASK_TYPE.get(top["id"], "create") if top else "plan"
     pri = TOOL_PRIORITY.get(ttype, [])
     words = set(query_tokens(request))
+    paths = thinking_paths(request)
+    on_path = {}
+    for p in paths[:2]:                       # the request's own «سبيل»: its tools in order, the first path weighs more
+        for i, tid in enumerate(p.get("tools") or []):
+            on_path.setdefault(tid, (3.0 if p is paths[0] else 2.0) - i * 0.3)
 
     def score(t):
         trig = set(query_tokens(" ".join(t.get("trigger_words") or [])))
         rank = len(pri) - pri.index(t["id"]) if t["id"] in pri else 0
-        return rank + (ttype in (t.get("use_when") or [])) * 0.5 + min(len(words & trig), 2) * 2.5
+        return (rank + (ttype in (t.get("use_when") or [])) * 0.5 + min(len(words & trig), 2) * 2.5
+                + on_path.get(t["id"], 0))
     first = next((t for t in sorted(tools, key=score, reverse=True) if "understand" in (t.get("use_when") or [])), None)
     rest = [t for t in sorted(tools, key=score, reverse=True) if t is not first and score(t) > 0]
     return ([first] if first else []) + rest[: limit - (1 if first else 0)]
@@ -751,6 +775,33 @@ def md_check(request, draft):
         out.append("- **أسئلة الناقد (من كتب العلماء): جاوب كل سؤال بـ«أيوه» ودليل من ردك، أو صلّح الرد:**\n"
                    + "\n".join(f"  - {q} ({n})" for n, q in qs))
     out.append("- الفحص ده بيراجع الشكل والتغطية بس، مش صحة المحتوى. الصحة بتثبت بالقياس اللي في الرد.")
+    return "\n".join(out)
+
+
+def md_think(query=""):
+    """«سبل التفكير»: one path with its tools' steps and critic question (by id, Arabic name or trigger word), or the map
+    of all paths when nothing matches. Easy recall: «سبيل الخيال»، «التفكير العميق»، «الإبداعي»، «المنطق»، «خطوة بخطوة»."""
+    paths = thinking().get("paths") or []
+    if not paths:
+        return "✗ مفيش سبل تفكير في fusion\\thinking.json (ابني تاني بـ build_fusion.py)."
+    by = {t["id"]: t for t in thinking().get("tools") or []}
+    q = _norm(query)
+    pick = [p for p in paths if q and (q == p["id"] or q in _norm(p["name_ar"]))] or (thinking_paths(query) if q else [])
+    if not pick:
+        out = ["## 🧭 سبل التفكير (اكتب `fusion think <السبيل>` عشان خطواته):"]
+        for p in paths:
+            names = "، ".join(by[x].get("name_ar", x).split(":")[0] for x in p["tools"] if x in by)
+            out.append(f"- **{p['name_ar']}** (`{p['id']}`): {p.get('hint_ar', '')}\n  - {names}")
+        return "\n".join(out)
+    p = pick[0]
+    out = [f"## 🧭 {p['name_ar']}: {p.get('hint_ar', '')}"]
+    for x in p["tools"]:
+        t = by.get(x)
+        if not t:
+            continue
+        out.append(f"- **{t.get('name_ar', x)}** ({_src_label(t)}):\n" + "\n".join(f"  {i}. {st}" for i, st in
+                                                                                 enumerate(t.get("steps_ar") or [], 1))
+                   + (f"\n  - ✔ {t['check_ar']}" if t.get("check_ar") else ""))
     return "\n".join(out)
 
 
@@ -902,6 +953,8 @@ def main(argv):
             print(json.dumps(stats(), ensure_ascii=False))
         elif act == "lessons":
             print(md_lessons(" ".join(rest)))
+        elif act == "think":
+            print(md_think(" ".join(rest)))
         elif act == "brief" and rest:
             print(md_brief(" ".join(rest)))
         elif act == "check" and "--request" in rest and "--draft" in rest:

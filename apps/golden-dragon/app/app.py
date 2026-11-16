@@ -309,7 +309,8 @@ SYSTEM = f"""أنت «التنين الذهبي» (أحدث نسخة من تطب
   ⑥ **نفّذ صغير بالوصفة:** اقرا SKILL.md بتاع مهارات الخطوة، واعمل عيّنة رخيصة الأول. كل API أو خيار من المصدر مش من الذاكرة، والباج: إعادة إنتاج مصغّرة، وبعدين السبب الجذري. وكل بوابة تتقاس قبل اللي بعدها. وقبل أي فعل برّه الجهاز (نشر، رفع، مسح، صرف): `rd.py consent "<رسالة صاحب الشغل>"`، ولو مفيش موافقة صريحة وقّف واسأل.
   ⑦ **اكسر حلّك:** تشريح قبل الفشل (كلاين): كل خطر في brief يتقفل بخطوة. اعكس (مانجر): إيه اللي يضمن الفشل؟ كذّب (بوبر): إيه الملاحظة اللي لو ظهرت تهدّ استنتاجك؟ ودوّر عليها فعلًا. وللحاجات الغالية: ناقد مستقل، وكيل ماشافش استنتاجك.
   ⑧ **اتحقق وسلّم واتعلّم:** افحص بطريقة غير اللي طلّعت الناتج. وبعدين `fusion check` (query = الطلب، draft = ردك): صلّح كل ✗، وجاوب أسئلة الناقد بدليل من ردك. النتيجة في أول سطر، وكل جملة مهمة متعلّم عليها: ✅ اتقاس، 🟡 استنتاج، ❓ مجهول (تيتلوك: المعايرة). ولو صاحب الشغل صحّح: `rd.py teach` للتوجيه، و`rd.py learn` للدرس.
-- **أدوات العلماء (22، من كتب التفكير والمهارات اللي على الجهاز):** «مراحل بوليا الأربعة»، «أعد صياغة الطلب»، «سجل القيود والكلمات اللي بتقلب المعنى»، «بوابة: أسأل ولا أفترض؟»، «ابدأ من الآخر»، «المبادئ الأولى»، «النظرة من برّه»، «تقدير فيرمي»، «تحليل الفرضيات المتنافسة (ACH)»، «التكذيب: الملاحظة اللي لو ظهرت تهدّ استنتاجك»، «اعكس: إيه اللي يضمن الفشل؟»، «تشريح قبل الفشل (Pre-mortem)»، «ولّد بدائل قبل ما تختار، واختار بمعايير»، «الفريق الأحمر ومجلس محامي الشيطان»، «السبب الجذري»، «إعادة إنتاج مصغّرة (Minimal Reproducible Example)»، «الـ API والأوامر من المصدر، مش من الذاكرة»، «تحقق مستقل»، «اشرحها ببساطة عشان تتأكد إنك فاهم (Feynman)»، «عاير ثقتك وحدّثها بالدليل بس»، «النتيجة الأول»، «مراجعة ما بعد الفعل». `fusion brief` بيختار 2 أو 3 منها لكل طلب بخطواتها وسؤال الناقد بتاعها، و`fusion check` بيسألك أسئلة الناقد قبل الرد.
+- **أدوات العلماء (44، من كتب التفكير والمهارات اللي على الجهاز):** «مراحل بوليا الأربعة»، «أعد صياغة الطلب»، «سجل القيود والكلمات اللي بتقلب المعنى»، «بوابة: أسأل ولا أفترض؟»، «ابدأ من الآخر»، «المبادئ الأولى»، «النظرة من برّه»، «تقدير فيرمي»، «تحليل الفرضيات المتنافسة (ACH)»، «التكذيب: الملاحظة اللي لو ظهرت تهدّ استنتاجك»، «اعكس: إيه اللي يضمن الفشل؟»، «تشريح قبل الفشل (Pre-mortem)»، «ولّد بدائل قبل ما تختار، واختار بمعايير»، «الفريق الأحمر ومجلس محامي الشيطان»، «السبب الجذري»، «إعادة إنتاج مصغّرة (Minimal Reproducible Example)»، «الـ API والأوامر من المصدر، مش من الذاكرة»، «تحقق مستقل»، «اشرحها ببساطة عشان تتأكد إنك فاهم (Feynman)»، «عاير ثقتك وحدّثها بالدليل بس»، «النتيجة الأول»، «مراجعة ما بعد الفعل»، «السريع والبطيء»، «هل جاوبت سؤال أسهل؟»، «اللي مش قدامك»، «حارس المرساة»، «الرجوع للمتوسط»، «اقلب الإطار»، «امتى تصدّق إحساسك»، ««نقصد إيه بـ…؟»»، «من الحالات للفكرة»، «اربط بسبع طرق»، «قايمة الأسئلة المحفّزة»، «رتّب الأفكار»، «التشبيه بثلاث أسئلة»، «اكسر القالب»، «القرار الكويس»، «دفتر المعقولية»، «القصة ضد الاحتمال»، «مُحوّل الزمن»، «مسرح الخيال»، «الجوهر قبل الشكل»، «فلتر الأهمية النسبية»، «اعترف الأول وبعدين قيس». `fusion brief` بيختار 2 أو 3 منها لكل طلب بخطواتها وسؤال الناقد بتاعها، و`fusion check` بيسألك أسئلة الناقد قبل الرد.
+- **سبل التفكير (`fusion think`):** سبيل الخيال، والتفكير العميق، والإبداعي، والمنطق والاحتمال، وخطوة بخطوة، والتحليل، والقرار. لو الطلب فيه «تخيّل» أو «بعمق» أو «احتمال» أو «خطوة بخطوة»، `fusion brief` بيجيب أدوات السبيل ده الأول.
 - **قواعد الفهرس:**
   - استخدم أحدث إصدار من أي مهارة.
   - لو المهارة «ناقصها ملفات»، ماتخترعش الناقص.
@@ -864,11 +865,12 @@ TOOLS = [
          "approvals, ambiguity warning. 'check' = LAST, before replying: self-critique of your draft answer (query = the request, "
          "draft = your answer). 'find' (optional kind: skill, tool, engine, studio, lib, program, re, mcp, playbook, cmd, power, "
          "or pc / pc-skill, pc-plugin, pc-mcp, pc-app, pc-script, pc-tool, pc-repo, pc-pack for what discover found on this PC), "
-         "'show' one id, 'recipes', 'doctor' (live check of this PC), 'lessons'. 'discover' = walk the owner's folders now and "
+         "'show' one id, 'recipes', 'doctor' (live check of this PC), 'lessons', 'think' (the Arabic thinking paths from the books: "
+         "imagination, deep, creative, logic/probability, step by step, analysis, decision; query = a path or empty for the map). 'discover' = walk the owner's folders now and "
          "add every skill, plugin, MCP server, program, shortcut, script, tool folder, repo and skill archive to the index (run it "
          "when doctor says the PC catalog is missing or stale, or the owner added something); 'local' = list that catalog "
          "(optional kind). Read-only except discover, which writes only its own catalog in %APPDATA%\\GoldenDragon.",
-         {"action": {"type": "string", "enum": ["brief", "route", "check", "find", "show", "recipes", "doctor", "lessons", "stats",
+         {"action": {"type": "string", "enum": ["brief", "route", "check", "find", "show", "recipes", "doctor", "lessons", "think", "stats",
                                                 "discover", "local"]},
           "query": S, "draft": S, "id": S, "kind": S, "limit": {"type": "integer", "minimum": 1, "maximum": 30}}, ["action"]),
     tool("rebuild_app", "Self-development: after editing this app's own source (" + str(APP_SOURCE).replace("\\", "/") + "), back it up, "
@@ -2627,13 +2629,15 @@ def fusion_dispatch(a):
             return fz.md_doctor(), False
         if act == "lessons":
             return fz.md_lessons(q, int(a.get("limit") or 8)), False
+        if act == "think":
+            return fz.md_think(q), False
         if act == "stats":
             return json.dumps(fz.stats(), ensure_ascii=False), False
         if act == "discover":
             return fz.md_discover(), False
         if act == "local":
             return fz.md_local(a.get("kind") or None, int(a.get("limit") or 40)), False
-        raise ValueError("INVALID_JSON: action must be brief, route, check, find, show, recipes, doctor, lessons, stats, discover or local")
+        raise ValueError("INVALID_JSON: action must be brief, route, check, find, show, recipes, doctor, lessons, think, stats, discover or local")
     except (KeyError, FileNotFoundError) as e:
         return f"✗ {e.args[0] if e.args else e}", True
 
