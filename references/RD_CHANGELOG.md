@@ -8,6 +8,23 @@
 
 # سجل تغييرات التنين الأحمر
 
+## v3.4.0 — 2026-11-16 (عقل الانصهار جوه المهارة + سلّم التفكير + كل المميزات اللي كانت على الجهاز بس)
+- **عقل الانصهار في المهارة نفسها:** `scripts/rd_fusion.py` بيحمّل `apps/golden-dragon/app/dragon_fusion.py` جوه نفس العملية وبيدّيله قراية التنين الأحمر (understand + route) مباشرة. قبل كده كان بيشتغل من التطبيق بس، وبيدوّر على `rd.py` في `~/.claude/skills/golden-dragon` وبيشغّل `python` بالاسم، فعلى claude.ai أو لينكس كان بيرجع للكلمات لوحده من غير ما يقول. الأوامر: `rd.py fuse brief|route|tools|protocol|find|show|recipes|lessons|doctor|stats|selftest` و`rd.py check --request … --draft …`.
+- **`plan` فيه قسم 🧠 سلّم التفكير:** العمق (L0–L3) و3 أدوات تفكير بسؤال الناقد بتاع كل واحدة، وسطر `check` قبل الرد. بيتحسب من غير البحث في الـ 1101 وحدة. و`plan --json` فيه مفتاح `thinking`.
+- **وصفة «تطوير التنين نفسه»** (`mind/fusion_overlay.json`، فوق بيانات التطبيق المولّدة من غير ما تتلمس): «طور قدرات المستودع… وطور تفكيره» كانت بتروح لـ `app-self-develop` بثقة «قوية» وبوابات forge وpytest. أمثلة الـ 42 وصفة الأصلية بتروح لوصفتها: 140/143 قبل الطبقة وبعدها (أول نسخة سرقت «طوّر التطبيق بالقدرات دي» واتصلّحت).
+- **ناقد مستقل:** `agents/rd-critic.md` (sonnet، أدوات قراية بس)، نسخة Claude Code من «🧐 مراجع التفكير» في التطبيق، بوضعين: review للتفكير وverify للناتج من غير استنتاج الوكيل.
+- **SKILL.md:** من 284 سطر لـ 107، وأوله سلّم «صح من أول مرة» بأوامره. الوصف كان 1,347 حرف والحد الرسمي 1,024 (`quick_validate.py` بتاع skill-creator)؛ بقى 935، والفاحص قال «Skill is valid!». التاريخ اتنقل بالحرف لـ `references/RD_HISTORY.md` (224 سطر).
+- **BOOT.md وCLAUDE.md:** كانوا بيحمّلوا فرع `red-dragon` (واقف على v2.19.0) وهم بيقولوا v3.3.0. التحميل بقى من `main` في `$HOME/golden-dragon` (النسخ القديمة في `$HOME/red-dragon` بتفضل زي ما هي)، ومكان المهارة في Claude Code `~/.claude/skills/golden-dragon`. وقاعدتين جداد: `check` قبل أي رد نهائي، والناقد المستقل للحاجات الغالية. §5 (الرفع) زي ما هي.
+- **doc-reader:** ملف `.txt` من ويندوز (CRLF) كان بيطلع `.md` فيه `\r\r\n`، وselftest على `main` كان 13/14. اتوحّدت نهايات السطور، واختبار جديد بملف CRLF حقيقي: 15/15.
+- **مهارات جديدة في `engine/skills`:** `visible-thinking` (التفكير المرئي) و`arabic-captions-khatt` (كابشن عربي محروق صح؛ كودنا، وkhatt MIT وfreetype-py BSD، والخطوط مش منسوخة).
+- **المكتبة 570 ← 589:** 19 مهارة (motion-doctrine وcut-the-curve وseam-craft من hyperframes 0.9.43، وtaste وtaste-application وtaste-distillation وtasteforge-video من ECC، و12 قالب فيديو من open-design)، ومع كل واحدة `LICENSE` من أرشيفها. و5 اتحدّثت لـ HyperFrames 0.9.43 (hyperframes، hyperframes-cli، media-use، reverse-any-video، style-sampling). اتساب `video-template-frame-product-promo-30s` لأن رخصته (MIT باسم صاحب student-kit) مش على الجهاز، واتشال 32 خط woff2 و6 ملفات pyc.
+- **الذاكرة:** 26 درس جديد في `mind/lessons_seed.jsonl`: 21 اتعلمهم التنين على اللابتوب ومكانوش بيسافروا مع المستودع، و5 من الشغل ده (s61–s65). و`mind/installed_catalog.json` بقى 547 مهارة بدل 534.
+- **مراجع:** `references/REPOS_PILOT_40.md` و7 تقارير `REPOS_BATCH_*` (جرد قدرات 390 مستودع)، والمسارات فيها `%USERPROFILE%` بدل اسم المستخدم.
+- **مسارات:** `creative-studio` و`kosif-downloads` بيشاوروا على `Desktop\مهارات\التنين الأسود` (أو `%BLACK_DRAGON_HOME%`). و`font_lab.py` في المستودع اتساب زي ما هو، لأنه بيدوّر في فولدرات خطوط النظام و`DRAGON_FONT_DIRS` بدل مسارات ثابتة.
+- **البصمات:** بصمة `engine/` في v3.3.0 كان ناقصها 3 ملفات (`doc-reader` و`app/اقرأني.md`) وعدّادها 2026 والملفات 2035؛ اتعادت كلها.
+- **selftest:** فحوص جديدة: عقل الانصهار (العدد، brief، العمق، check، وصفات الطبقة وتوجيهها)، و`plan` في 3 حالات (العقل شغال، مقفول بـ `RD_NO_FUSION=1`، ملفه بايظ) في ذاكرة مؤقتة. النتيجة ok، والراوتر زي ما هو على test: old 66/72/80، fresh 58.9/72.3/80.4.
+- **ماتجربش:** التشغيل على لينكس نضيف (سحابة Higgsfield كانت مفصولة)، وzip لـ claude.ai فيه `SKILL.md` واحد (المستودع فيه مئات الـ SKILL.md، والفاحص الرسمي بيرفضها في رفع واحد)، والوصفة الجديدة ماتنقلتش لمصنع التطبيق (`apps/golden-dragon/forge/recipes.py`).
+
 ## v3.3.0 — 2026-11-16 (أي مستند ← Markdown)
 - مهارة جديدة `engine/skills/doc-reader` (كودنا) فوق Microsoft MarkItDown (MIT، بيتثبت بـ pip، مش منسوخ): `rd.py md convert|batch|doctor|exts|install|selftest`.
 - تصليح الـ PDF العربي اللي pdfminer بيطلّعه بالحروف المعروضة ومقلوب: NFKC بعد قلب السطر، والكلام اللاتيني والأرقام بيرجعوا لاتجاههم. اتجرّب على PDF حقيقي.
