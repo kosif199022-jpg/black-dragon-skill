@@ -131,7 +131,8 @@ def fusion_section(c, n_recipes):
 ## التنين الذهبي: الانصهار وبروتوكول الصح من أول مرة (2026-11-15)
 - **أداة `fusion`:** فهرس واحد منصهر فيه {total} قدرة: {c.get('skill', 0)} مهارة، و{c.get('playbook', 0)} playbook و{c.get('cmd', 0)} أمر من التنين الأحمر، و{c.get('power', 0)} أداة سوبر باور، و{c.get('tool', 0)} أداة في التطبيق، و{c.get('engine', 0)} محرك تنين، و{c.get('lib', 0)} مكتبة ومستودع، و{c.get('studio', 0)} برامج استوديو، و{c.get('program', 0)} برنامج، و{c.get('re', 0)} أداة تحليل، و{c.get('mcp', 0)} خوادم MCP. وفوقهم {n_recipes} وصفة منصهرة.
   - الموجّه بيفهم الطلب بعقل التنين الأحمر كمان (بيفك الكتابة بالكيبورد الإنجليزي وغلطات الصوت، وبيستخدم الأمثلة اللي اتعلمها). {acc}
-  - الأوامر: `brief` و`route` و`check`، و`find` و`show` و`recipes` و`doctor` و`lessons`.
+  - الأوامر: `brief` و`route` و`check`، و`find` و`show` و`recipes` و`doctor` و`lessons`، و`discover` و`local`.
+  - **كل اللي على الجهاز دلوقتي (2026-11-16):** `fusion discover` بيلف على الفولدرات اللي صاحب الجهاز شغّال فيها (سطح المكتب وجواه، والتنزيلات، والمستندات، وقايمة ابدأ، و~/.claude) ويضيف اللي لقاه لنفس الفهرس بأنواع `pc-*`: مهارات برّه المتثبّت، وإضافات Claude، وخوادم MCP، وبرامج واختصارات، وسكربتات، وفولدرات أدوات، ومستودعات، وأرشيفات مهارات. بعدها `find` و`show` و`route` بيشوفوهم (`find` بالنوع `pc` = كل اللي على الجهاز). الفولدرات والقايمة على الجهاز بس (`%APPDATA%/GoldenDragon/discover.json` و`local_units.json`). لو `doctor` قال الكتالوج قديم أو مش موجود، أو صاحب الجهاز قال «نزّلت/حطيت حاجة جديدة»: `discover` الأول. أي `pc-app` أو `pc-script` أو `pc-tool` تشغيله محتاج موافقة، والسكربت يتقري قبل ما يشتغل، و`copy` أو `archive` معناها مش النسخة المتثبّتة.
 - **بروتوكول الصح من أول مرة: عقل العلماء وأدوات التنين في سلّم واحد (لأي طلب فيه أكتر من خطوة):**
   ① **افهم وصنّف:** `fusion brief` بالطلب **كامل بكلامك ومعاه سياقه** (مش «كمل» أو «أيوه»). بيقولك العمق: L0 سؤال أو أمر قصير (① و⑧ بس)، وL1 وصفة معروفة (① ② ③ ⑥ ⑧)، وL2 وL3 البروتوكول كله، ومعاه خطة على الديسك بـ `rd.py think start` لو الشغل طويل. اكتب Task وDeliverable وConstraints وDone-when، وسجّل كل كلمة بتقلب المعنى (بوليا: إيه المجهول، وإيه المعطى، وإيه الشرط).
   ② **أسأل ولا أفترض:** الخطر = الأثر × عدم اليقين، كل واحد من 0 لـ 3. لو 6 أو أكتر: سؤال واحد باختيارات، أولها مقترحك ⭐. لو أقل: افترض، وقول الافتراض في أول الرد. واللي يتعرف من ملف أو أمر في أقل من دقيقة ماتسألش عليه.
@@ -198,9 +199,14 @@ FUSION_TOOL = '''    tool("fusion", "Golden Dragon fusion core: ONE index of eve
          "multi-step task: the request as understood, the intent sheet to fill, three alternatives, a pre-mortem from the Red "
          "Dragon's known pitfalls and the owner's lessons, thinking tools, the gates. 'route' = the recipe(s) with steps, gates, "
          "approvals, ambiguity warning. 'check' = LAST, before replying: self-critique of your draft answer (query = the request, "
-         "draft = your answer). 'find' (optional kind: skill, tool, engine, studio, lib, program, re, mcp, playbook, cmd, power), "
-         "'show' one id, 'recipes', 'doctor' (live check of this PC), 'lessons'. Read-only.",
-         {"action": {"type": "string", "enum": ["brief", "route", "check", "find", "show", "recipes", "doctor", "lessons", "stats"]},
+         "draft = your answer). 'find' (optional kind: skill, tool, engine, studio, lib, program, re, mcp, playbook, cmd, power, "
+         "or pc / pc-skill, pc-plugin, pc-mcp, pc-app, pc-script, pc-tool, pc-repo, pc-pack for what discover found on this PC), "
+         "'show' one id, 'recipes', 'doctor' (live check of this PC), 'lessons'. 'discover' = walk the owner's folders now and "
+         "add every skill, plugin, MCP server, program, shortcut, script, tool folder, repo and skill archive to the index (run it "
+         "when doctor says the PC catalog is missing or stale, or the owner added something); 'local' = list that catalog "
+         "(optional kind). Read-only except discover, which writes only its own catalog in %APPDATA%\\\\GoldenDragon.",
+         {"action": {"type": "string", "enum": ["brief", "route", "check", "find", "show", "recipes", "doctor", "lessons", "stats",
+                                                "discover", "local"]},
           "query": S, "draft": S, "id": S, "kind": S, "limit": {"type": "integer", "minimum": 1, "maximum": 30}}, ["action"]),
 '''
 
@@ -232,7 +238,11 @@ FUSION_DISPATCH = '''def fusion_dispatch(a):
             return fz.md_lessons(q, int(a.get("limit") or 8)), False
         if act == "stats":
             return json.dumps(fz.stats(), ensure_ascii=False), False
-        raise ValueError("INVALID_JSON: action must be brief, route, check, find, show, recipes, doctor, lessons or stats")
+        if act == "discover":
+            return fz.md_discover(), False
+        if act == "local":
+            return fz.md_local(a.get("kind") or None, int(a.get("limit") or 40)), False
+        raise ValueError("INVALID_JSON: action must be brief, route, check, find, show, recipes, doctor, lessons, stats, discover or local")
     except (KeyError, FileNotFoundError) as e:
         return f"✗ {e.args[0] if e.args else e}", True
 
@@ -240,8 +250,8 @@ FUSION_DISPATCH = '''def fusion_dispatch(a):
 def skills_index():'''
 
 CC_FUSION = ("\n- fusion: `python -X utf8 \"{APP_SOURCE}\\\\dragon_fusion.py\" brief \"<الطلب>\" | route \"...\" | find \"...\" "
-             "[--kind K] | show ID | recipes | doctor | lessons \"...\" | check --request \"...\" --draft FILE`. brief أول خطوة "
-             "في أي طلب فيه أكتر من خطوة، وcheck قبل الرد.")
+             "[--kind K] | show ID | recipes | doctor | lessons \"...\" | check --request \"...\" --draft FILE | discover | local [KIND]`. "
+             "brief أول خطوة في أي طلب فيه أكتر من خطوة، وcheck قبل الرد، وdiscover لما الكتالوج المحلي قديم.")
 
 MCP_REPO_OLD = '''if not REPO.exists():
     REPO = HOME / "Desktop" / "التنين الأسود"
@@ -336,7 +346,7 @@ def patch_build(t):
     codes_gd = ",".join(f"0x{ord(c):x}" for c in NAME_GD)
     t = sub(t, codes_gb, codes_gd, 1, "shortcut name")
     t = sub(t, '--add-data "$here\\golden;golden"', '--add-data "$here\\golden;golden" --add-data "$here\\fusion;fusion"', 1, "bundle fusion data")
-    t = sub(t, "--hidden-import golden_tools", "--hidden-import golden_tools --hidden-import dragon_fusion", 1, "bundle dragon_fusion")
+    t = sub(t, "--hidden-import golden_tools", "--hidden-import golden_tools --hidden-import dragon_fusion --hidden-import gd_discover", 1, "bundle dragon_fusion")
     return t
 
 
@@ -458,6 +468,7 @@ def main():
     for mod in sorted(gb.MODULES.glob("golden_*.py")):                # the Golden Bird modules, renamed (studio home etc.)
         write(tmp / mod.name, rename(read(mod), mod.name))
     shutil.copy2(FORGE / "modules" / "dragon_fusion.py", tmp / "dragon_fusion.py")
+    shutil.copy2(FORGE / "modules" / "gd_discover.py", tmp / "gd_discover.py")      # 2026-11-16: «discover» (PC catalog)
     (tmp / "golden").mkdir()
     for f in ("library.json", "studio.json"):
         shutil.copy2(gb.DATA / f, tmp / "golden" / f)
@@ -496,7 +507,7 @@ def main():
     files = {p.relative_to(tmp).as_posix(): sha(p) for p in tmp.rglob("*") if p.is_file()}
     files = {k: v for k, v in files.items() if k not in UNTRACKED}
     (tmp / ".gd_generated.json").write_text(json.dumps({
-        "generated": time.strftime("%Y-%m-%d %H:%M:%S"), "source": str(SRC), "source_app_sha256": sha(SRC / "app.py"),
+        "generated": time.strftime("%Y-%m-%d %H:%M:%S"), "source": str(SRC).replace(str(Path.home()), "%USERPROFILE%"), "source_app_sha256": sha(SRC / "app.py"),
         "white_bird_forge_sha256": sha(wb.FORGE / "make_white_bird.py"), "golden_bird_forge_sha256": sha(GB_FORGE),
         "fusion_index_sha256": sha(FUSION / "index.json"), "fusion_counts": counts, "recipes": n_recipes,
         "lessons": len(lessons), "files": files}, ensure_ascii=False, indent=1), encoding="utf-8")

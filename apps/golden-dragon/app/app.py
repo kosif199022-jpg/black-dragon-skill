@@ -298,7 +298,8 @@ SYSTEM = f"""أنت «التنين الذهبي» (أحدث نسخة من تطب
 ## التنين الذهبي: الانصهار وبروتوكول الصح من أول مرة (2026-11-15)
 - **أداة `fusion`:** فهرس واحد منصهر فيه 1101 قدرة: 546 مهارة، و38 playbook و29 أمر من التنين الأحمر، و212 أداة سوبر باور، و24 أداة في التطبيق، و15 محرك تنين، و154 مكتبة ومستودع، و10 برامج استوديو، و32 برنامج، و34 أداة تحليل، و7 خوادم MCP. وفوقهم 42 وصفة منصهرة.
   - الموجّه بيفهم الطلب بعقل التنين الأحمر كمان (بيفك الكتابة بالكيبورد الإنجليزي وغلطات الصوت، وبيستخدم الأمثلة اللي اتعلمها). اتقاس على طلباتك الحقيقية المخفية: الأولى صح 53% و66%، والصح في أول 3 بنسبة 72% و94%. يعني مرشد قوي مش حكم نهائي.
-  - الأوامر: `brief` و`route` و`check`، و`find` و`show` و`recipes` و`doctor` و`lessons`.
+  - الأوامر: `brief` و`route` و`check`، و`find` و`show` و`recipes` و`doctor` و`lessons`، و`discover` و`local`.
+  - **كل اللي على الجهاز دلوقتي (2026-11-16):** `fusion discover` بيلف على الفولدرات اللي صاحب الجهاز شغّال فيها (سطح المكتب وجواه، والتنزيلات، والمستندات، وقايمة ابدأ، و~/.claude) ويضيف اللي لقاه لنفس الفهرس بأنواع `pc-*`: مهارات برّه المتثبّت، وإضافات Claude، وخوادم MCP، وبرامج واختصارات، وسكربتات، وفولدرات أدوات، ومستودعات، وأرشيفات مهارات. بعدها `find` و`show` و`route` بيشوفوهم (`find` بالنوع `pc` = كل اللي على الجهاز). الفولدرات والقايمة على الجهاز بس (`%APPDATA%/GoldenDragon/discover.json` و`local_units.json`). لو `doctor` قال الكتالوج قديم أو مش موجود، أو صاحب الجهاز قال «نزّلت/حطيت حاجة جديدة»: `discover` الأول. أي `pc-app` أو `pc-script` أو `pc-tool` تشغيله محتاج موافقة، والسكربت يتقري قبل ما يشتغل، و`copy` أو `archive` معناها مش النسخة المتثبّتة.
 - **بروتوكول الصح من أول مرة: عقل العلماء وأدوات التنين في سلّم واحد (لأي طلب فيه أكتر من خطوة):**
   ① **افهم وصنّف:** `fusion brief` بالطلب **كامل بكلامك ومعاه سياقه** (مش «كمل» أو «أيوه»). بيقولك العمق: L0 سؤال أو أمر قصير (① و⑧ بس)، وL1 وصفة معروفة (① ② ③ ⑥ ⑧)، وL2 وL3 البروتوكول كله، ومعاه خطة على الديسك بـ `rd.py think start` لو الشغل طويل. اكتب Task وDeliverable وConstraints وDone-when، وسجّل كل كلمة بتقلب المعنى (بوليا: إيه المجهول، وإيه المعطى، وإيه الشرط).
   ② **أسأل ولا أفترض:** الخطر = الأثر × عدم اليقين، كل واحد من 0 لـ 3. لو 6 أو أكتر: سؤال واحد باختيارات، أولها مقترحك ⭐. لو أقل: افترض، وقول الافتراض في أول الرد. واللي يتعرف من ملف أو أمر في أقل من دقيقة ماتسألش عليه.
@@ -553,7 +554,7 @@ CC_NOTE = f"""## وضع الاشتراك
 - studio / studio_run: `python -X utf8 "{APP_SOURCE}\\golden_tools.py" studio list|show ID|install ID|cmd ID [args...]`. الأمر `cmd` بيطبع الأمر الكامل للبرنامج المتفكوك، وبعدين شغّله في مجلد الشغل.
 - motion_lib: `python -X utf8 "{APP_SOURCE}\\golden_tools.py" lib find "..." | show ID | kit "<مجلد الشغل>" ID...`.
 - speech_sync: `python -X utf8 "{APP_SOURCE}\\golden_tools.py" sync SCRIPT.txt WORDS.json "<مجلد الشغل>\\sync" [--fps 30]`.
-- fusion: `python -X utf8 "{APP_SOURCE}\\dragon_fusion.py" brief "<الطلب>" | route "..." | find "..." [--kind K] | show ID | recipes | doctor | lessons "..." | check --request "..." --draft FILE`. brief أول خطوة في أي طلب فيه أكتر من خطوة، وcheck قبل الرد.
+- fusion: `python -X utf8 "{APP_SOURCE}\\dragon_fusion.py" brief "<الطلب>" | route "..." | find "..." [--kind K] | show ID | recipes | doctor | lessons "..." | check --request "..." --draft FILE | discover | local [KIND]`. brief أول خطوة في أي طلب فيه أكتر من خطوة، وcheck قبل الرد، وdiscover لما الكتالوج المحلي قديم.
 - عندك كمان كل اللي Claude Code متوصّل بيه على الجهاز ده: خوادم MCP (زي mcp__rea__* للهندسة العكسية، وHiggsfield وSuno للتوليد، وClaude Docs)، والوكلاء المساعدين (Task/Agent)، والبحث على النت. استخدمهم لما يكونوا أنسب أداة. أدوات التوليد المدفوعة (Higgsfield، Suno) ممنوعة من غير موافقة صريحة من المستخدم في الشات.
 - اشرح كل خطوة: قبلها سطر بيقول هتعمل إيه وليه، وبعدها سطر بيقول طلع إيه. وفي آخر الرد اكتب «اللي اتعمل» في نقط.
 
@@ -861,9 +862,14 @@ TOOLS = [
          "multi-step task: the request as understood, the intent sheet to fill, three alternatives, a pre-mortem from the Red "
          "Dragon's known pitfalls and the owner's lessons, thinking tools, the gates. 'route' = the recipe(s) with steps, gates, "
          "approvals, ambiguity warning. 'check' = LAST, before replying: self-critique of your draft answer (query = the request, "
-         "draft = your answer). 'find' (optional kind: skill, tool, engine, studio, lib, program, re, mcp, playbook, cmd, power), "
-         "'show' one id, 'recipes', 'doctor' (live check of this PC), 'lessons'. Read-only.",
-         {"action": {"type": "string", "enum": ["brief", "route", "check", "find", "show", "recipes", "doctor", "lessons", "stats"]},
+         "draft = your answer). 'find' (optional kind: skill, tool, engine, studio, lib, program, re, mcp, playbook, cmd, power, "
+         "or pc / pc-skill, pc-plugin, pc-mcp, pc-app, pc-script, pc-tool, pc-repo, pc-pack for what discover found on this PC), "
+         "'show' one id, 'recipes', 'doctor' (live check of this PC), 'lessons'. 'discover' = walk the owner's folders now and "
+         "add every skill, plugin, MCP server, program, shortcut, script, tool folder, repo and skill archive to the index (run it "
+         "when doctor says the PC catalog is missing or stale, or the owner added something); 'local' = list that catalog "
+         "(optional kind). Read-only except discover, which writes only its own catalog in %APPDATA%\\GoldenDragon.",
+         {"action": {"type": "string", "enum": ["brief", "route", "check", "find", "show", "recipes", "doctor", "lessons", "stats",
+                                                "discover", "local"]},
           "query": S, "draft": S, "id": S, "kind": S, "limit": {"type": "integer", "minimum": 1, "maximum": 30}}, ["action"]),
     tool("rebuild_app", "Self-development: after editing this app's own source (" + str(APP_SOURCE).replace("\\", "/") + "), back it up, "
          "check it (Python syntax, JS syntax) and build a new version. The user then sees «حدّث دلوقتي». Needs approval.",
@@ -2623,7 +2629,11 @@ def fusion_dispatch(a):
             return fz.md_lessons(q, int(a.get("limit") or 8)), False
         if act == "stats":
             return json.dumps(fz.stats(), ensure_ascii=False), False
-        raise ValueError("INVALID_JSON: action must be brief, route, check, find, show, recipes, doctor, lessons or stats")
+        if act == "discover":
+            return fz.md_discover(), False
+        if act == "local":
+            return fz.md_local(a.get("kind") or None, int(a.get("limit") or 40)), False
+        raise ValueError("INVALID_JSON: action must be brief, route, check, find, show, recipes, doctor, lessons, stats, discover or local")
     except (KeyError, FileNotFoundError) as e:
         return f"✗ {e.args[0] if e.args else e}", True
 
