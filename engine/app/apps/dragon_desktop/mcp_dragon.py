@@ -7,7 +7,7 @@ Exposes the full Black Dragon ecosystem as native Model Context Protocol (MCP) t
 - blackdragon_retool / blackdragon_rea (Reverse-engineering & deep static analysis)
 - blackdragon_computer / blackdragon_browser (PC screen/mouse/keyboard & Chrome control, either via running BlackDragon app or standalone)
 """
-import json, os, re, shutil, subprocess, sys, urllib.error, urllib.request
+import json, os, re, shutil, subprocess, sys, time, urllib.error, urllib.request
 from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8")
@@ -47,10 +47,20 @@ def python_exe():
 
 
 def run_cmd(cmd, cwd=None, timeout=600):
-    p = subprocess.run(cmd, cwd=str(cwd or REPO), capture_output=True, text=True,
-                       encoding="utf-8", errors="replace", timeout=timeout,
-                       env=child_env(), creationflags=NO_WINDOW)
-    out = (p.stdout or "") + ("\n" + p.stderr if p.stderr else "")
+    p = subprocess.Popen(cmd, cwd=str(cwd or REPO), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                         text=True, encoding="utf-8", errors="replace", env=child_env(), creationflags=NO_WINDOW)
+    try:
+        so, se = p.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        # kill the whole tree: subprocess.run would kill only the direct child and then wait on pipes that
+        # ffmpeg/blender grandchildren keep open, so the timeout never fired and the render kept going
+        subprocess.run(["taskkill", "/T", "/F", "/PID", str(p.pid)], capture_output=True, creationflags=NO_WINDOW)
+        try:
+            p.communicate(timeout=10)
+        except subprocess.TimeoutExpired:
+            pass
+        raise
+    out = (so or "") + ("\n" + se if se else "")
     return p.returncode, out.strip()
 
 
@@ -148,6 +158,10 @@ def run_computer_standalone(a):
         op = {"window_move": "move", "window_resize": "resize"}.get(act, act[7:])
         t = c.window(a.get("target") or a.get("text", ""), op, a.get("x"), a.get("y"), a.get("width"), a.get("height"))
         return [{"type": "text", "text": f"{op}: «{t}»"}], False
+    if act == "wait":
+        secs = max(0.0, min(30.0, float(a.get("seconds") or a.get("amount") or 1)))
+        time.sleep(secs)
+        return [{"type": "text", "text": f"waited {secs:g}s"}], False
     return [{"type": "text", "text": f"unknown action: {act}"}], True
 
 
@@ -491,6 +505,8 @@ def execute_tool(name, a):
         if not re.fullmatch(r"[\w.-]{1,80}", nm):
             return [{"type": "text", "text": "pass the skill name (see action=list)"}], True
         root = (SKILLS_DIR / nm).resolve()
+        if nm.startswith(".") or root == SKILLS_DIR.resolve() or not root.is_relative_to(SKILLS_DIR.resolve()):
+            return [{"type": "text", "text": "pass the skill name (see action=list)"}], True     # «..» would reach ~/.claude
         f = (root / str(a.get("file") or "SKILL.md")).resolve()
         if not f.is_relative_to(root) or not f.is_file():
             files = [str(p.relative_to(root)).replace("\\", "/") for p in sorted(root.rglob("*")) if p.is_file()][:120] if root.is_dir() else []
