@@ -1107,7 +1107,7 @@ class Session:
         self.files = {}          # every file this chat created or changed (any type), for the «الملفات» panel
         self.workdir = workdir or ""
         self.busy = False
-        self.auto = bool(api._settings.get("auto_approve", True))  # approve every command unless the user turned it off
+        self.auto = bool(api._settings.get("auto_approve", False))  # approve every command unless the user turned it off
         self.stop = threading.Event()
         self.sent_workdir, self.cost, self.run_start = None, 0.0, 0.0
         self.title, self.created = "", datetime.now().isoformat(timespec="seconds")
@@ -1681,7 +1681,7 @@ class Session:
                 raise ValueError("INVALID_JSON")
             need = name in NEEDS_APPROVAL or (name in ("write_file", "edit_file") and not self.inside_workdir(args.get("path", ""))
                                               and not self.in_app_source(args.get("path", "")))
-            if need and not self.auto and not self.ask(cid, name, args):
+            if need and not self.ask(cid, name, args):
                 out, err = "المستخدم رفض تشغيل الأداة دي.", True
             else:
                 out, err = self.dispatch(name, args, cid)

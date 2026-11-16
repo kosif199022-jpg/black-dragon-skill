@@ -15,6 +15,8 @@ argument-hint: "[--agents N | --quick] [--seed S] <task>"
 
 # arena
 
+> **في التنين (v2.19):** الحلبة بقت شرط أساسي، مش بس لما المستخدم يزعل. الحجم والموديلات والبوابة في `engine/skills/arena-gate/SKILL.md` (`rd.py arena size|start|jobs|gate`). الـ 100 وكيل بس بالاسم وبموافقة؛ الافتراضي 4 أو 8 أو 16 على قد المهمة، والجولة الأولى على Haiku، والحكام على الموديل الأساسي.
+
 For when Claude keeps giving a bad answer. Instead of asking again and again, this runs a tournament:
 N sub-agents get the exact same task, each attacks it with a different reasoning mode, workflow and
 strategy, and then they attack each other in a bracket until one solution is left. You are the

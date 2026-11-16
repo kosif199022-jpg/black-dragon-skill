@@ -30,8 +30,13 @@
 | `desktop` | guarded BlackDragon desktop bridge: catalog, doctor, read, snapshot |
 | `ref` | reference-lock: lock, show, verify, fontmatch, list, selftest (same font/colours = exactly the same) |
 | `mind` | claude-mind: brief, gate, learn, lessons, types (how Claude thinks and checks before delivery) |
+| `insta` | insta-reader: doctor, profile, top, post, download, login, selftest (Instagram via instaloader, MIT) |
+| `ig` | instagram-agent-skill tools (library/ig-*, MIT): list, hooks, beats, caption, humanize, detect, swipe, voice |
+| `agents` | subagents: list, install, check (rd-runner = cheap Haiku worker for routine steps) |
+| `hypit` | hypit-run: doctor, setup, example, check, plan, render, cli, selftest (the real Hypit SVML video engine, local and free; paid Providers blocked without --allow-paid) |
 | `krita` | krita-draw: render scene.json | layers file.kra | info (draw with code inside the real Krita) |
 | `sync` | sync-guard: words, check, fix, onsets, script, grid, selftest (captions and motion on the spoken word) |
+| `arena` | arena-gate (v2.19): size, start, jobs, next, collect, advance, winner, skip, gate, selftest (the arena is a required step: competing copies, bracket, judge) |
 | `consent` | consent gate: which outward actions this message explicitly approves or forbids («كمل» approves none) |
 | `gold` | Golden Bird: studio list/show/install/cmd · lib find/show/kit/stats · sync · protocol · where · selftest |
 | `think` | think & plan: start, revise, check, time, mistake, mistakes, pipeline-selftest · planning-mind: card, gate, workflow, learn, lessons, types, selftest |
@@ -42,11 +47,12 @@
 | `recall` | يفتكر من المحادثات القديمة |
 | `intel` | مستودعات ومعلومات تخص الطلب |
 
-## مهارات المحرك (39)
+## مهارات المحرك (41)
 
 | المسار | بيعمل إيه |
 |---|---|
 | `engine/skills/absolute-creativity` | الإبداع المطلق — محرك ابتكار وإخراج فني كامل بيطلّع أفكار أصلية مش كليشيه، وبيحوّلها لشغل حقيقي في المونتاج والتصوير السينمائي والفوتوغرافي والحبكة ال… |
+| `engine/skills/arena-gate` | الحلبة شرط أساسي في شغل التنين: أي مهمة فيها ذوق أو قرار (تصميم، كتابة، مونتاج، خطة، كود فيه أكتر من حل) تتعمل كحلبة. |
 | `engine/skills/atlas-picks` | Build Awwwards-quality web experiences with spring physics, GLSL shaders, R3F, post-processing, particles, Framer Motion, and interactive 3D. |
 | `engine/skills/black-dragon-cinema` | التنين الأسود — سينما الفوتيج. |
 | `engine/skills/blackdragon-desktop-bridge` | جسر اختياري آمن لتشخيص القدرات الموجودة في تطبيق BlackDragon على ويندوز وقراءة معلومات أو التقاط صورة للشاشة بموافقة صريحة. |
@@ -63,6 +69,8 @@
 | `engine/skills/hf-blender-render` | التنين الأسود — تجربة Blender على Higgsfield Sandbox بوضع تجريبي، رندر CPU مع الموافقة والقياس أولًا. |
 | `engine/skills/higgsfield-cloud` | سحابة هيجز المجانية — بتشغّل جهاز لينكس Higgsfield المجاني (sandbox_exec عادي وXL) كمزرعة رندر وتفريغ وتصفّح جنب ويندوز من غير كريدت. |
 | `engine/skills/higgsfield-free` | هيجز فيلد ببلاش — استغلال كل الإمكانيات المجانية في Higgsfield من غير ما يتصرف كريدت: سحابة لينكس للرندر والترميز والتفريغ (sandbox_exec)، Blender مست… |
+| `engine/skills/hypit-run` | تشغيل Hypit الحقيقي (hypit-ai/hypit) من التنين: فيديو مكتوب كـ SVML (مكوّنات HTML/CSS/SVG + Timeline مربوط بالكلمة) بيترندر MP4 محليًا ببلاش في Chromi… |
+| `engine/skills/insta-reader` | قراية وتحميل من إنستجرام بـ instaloader (MIT): بيانات حساب (متابعين، بايو، عدد بوستات)، آخر البوستات بلايكاتها وكومنتاتها ومشاهداتها وكابشنها، أعلى ال… |
 | `engine/skills/kosif-black-dragon-ultra` | التنين الأسود الفائق — one front door to all 21 KOSIF modules: video montage, motion/web films, voice-over and subtitles, reels and hooks, Kling promp… |
 | `engine/skills/kosif-downloads` | KOSIF «كوسيف» — مدير تحميل مسرّع زي Internet Download Manager مدموج في التنين الأسود. |
 | `engine/skills/krita-draw` | Draw and paint with code through the real Krita installed on this PC, with no GUI. |
@@ -112,7 +120,7 @@
 | `tools/draw-math` | Precise geometry, measurement and proportion calculator for drawing and animating people and scenes (shadow-puppet films, 3D silhouette films, 2D figu… |
 | `tools/link-collector` | collect-links.js: يجمع الروابط من صفحة بمتصفح Chromium حقيقي (--filter، --same-site، --json) |
 
-## مكتبة المهارات الخارجية: `library/` (506 مهارة)
+## مكتبة المهارات الخارجية: `library/` (570 مهارة)
 
 بتتدوّر بـ `rd.py skills find …` وبتتثبت بـ `rd.py skills install NAME --yes`. القايمة كاملة: `references/RD_LIBRARY.md`.
 

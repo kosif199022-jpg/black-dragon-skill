@@ -1,4 +1,53 @@
+## Unreleased: approval-gate hotfix candidate — 2026-11-14
+
+- In the White Bird application, risky tools always require explicit confirmation even when auto mode is set.
+- White Bird source generator now repairs known unsafe approval patterns and refuses unknown upstream patterns.
+- Added tests for the privilege guard and generator; this is staged in a review branch and is **not** the complete v2.15.0 distribution.
+- Golden Bird sources are absent in the current GitHub tree and must be synchronized and checked separately; existing SHA manifest also needs full reconciliation before merge.
+- Local tests were run on matching v2.14.0 White Bird files; a full repository selftest and Windows integration test remain pending.
+
 # سجل تغييرات التنين الأحمر
+
+## v3.2.0 — 2026-11-16 (التنين الذهبي + GitHub v2.15–v2.19)
+- دمج 3 اتجاهات من v2.14 (`ddbb6de`): نسخة الجهاز (v3.0 الانصهار، v3.1 الفهم من أول مرة) + `main` على GitHub (v2.15–v2.19). مفيش ملف اتشال من الناحيتين.
+- `rd.py`: الأوامر من الناحيتين (`gold`، `consent`، `insta`، `ig`، `agents`، `hypit`، `arena`)، وselftest بيفحص golden-bird وhypit-run وinsta-reader وarena-gate.
+- SKILL.md وREADME وBOOT وCLAUDE بقوا باسم التنين الذهبي v3.2.0، والتاريخ القديم كله محفوظ.
+
+## v2.19.0 — 2026-11-14 (الحلبة شرط أساسي)
+- مهارة جديدة `engine/skills/arena-gate` (كودنا) فوق `engine/tools/arena/bracket.py` (arena-skill، MIT): size، start، jobs، skip، gate، selftest، والباقي بيروح للـ bracket زي ما هو.
+- `agents/rd-fighter.md`: مقاتل Haiku للحلول والجولة الأولى. بيكتب جوه `.arena/` بس، وممنوع يحكم.
+- `think.py`: خطوة الحلبة بقت جزء من أي خطة فيها ذوق أو قرار، وسطر الحلبة بيظهر حتى في الطلب المباشر. `rd.py selftest` بيشغّل `arena selftest` (10 حالات حجم + bracket حقيقي بـ 4 وكلاء).
+- LIB_AR: حلبه، يتنافسوا، يتعاركوا.
+
+## v2.18.0 — 2026-11-14 (دفعة الصور التانية + أحدث المهارات)
+- المكتبة 537 ← 570. من الصور: grill-me (+13 من mattpocock/skills، MIT). frontend-design وHyperFrames (9) كانوا موجودين. Playwright MCP وFigma MCP وphone-harness إعداد بس في `library/mcp_servers.json`.
+- أحدث حاجات (اتعملت بين أغسطس ونوفمبر 2026): google/elephant-goldfish-model (7، Apache-2.0)، Ryze open-seo (5، MIT)، huashu-motion، oil-ui، oil-motion، stack-diagram، answer-me-with-html، pinky (MIT/Apache).
+- phone-harness وpinky: SKILL.md والتعليمات بس، من غير الكود، وعليهم `device-control`.
+- اتسابوا: logo-design-skill وanidoodle (أكبر من حد المكتبة)، reverify (مافيهوش SKILL.md)، scenario-labs (توليد بفلوس).
+- DEV_KIT بقى 7 فئات. LIB_AR: 13 كلمة جديدة.
+
+## v2.17.0 — 2026-11-14 (مهارات الصور)
+- المكتبة 509 ← 537: vercel-labs/skills (find-skills)، nextlevelbuilder/ui-ux-pro-max-skill (ui-ux-pro-max، من غير tests)، upstash/context7 (context7-cli، context7-mcp، find-docs)، DietrichGebert/ponytail (6)، addyosmani/agent-skills (14 من 25)، usestrix/strix (2 دفاعية؛ مهارات الاختراق الـ 7 اتسابت حسب سياسة المكتبة)، Graphify-Labs/graphify (skills/claude + skill.md).
+- أداة «برومت بسيط ← احترافي» من الريل مالهاش اسم ظاهر؛ المكتبة فيها prompt-master من قبل.
+- LIB_AR: 15 كلمة عربي جديدة للبحث. `references/DEV_KIT.md` جديد.
+
+## v2.16.0 — 2026-11-14 (instagram-agent-skill)
+- `Jakeschincariol/instagram-agent-skill` (commit `d03c56b`، MIT): 10 من الـ 13 مهارة كانوا في المكتبة من 2.7.1 ومطابقين (الفرق نهايات السطور بس). اتضاف ig-viral وig-story وig-repurpose في `library/` و`index.json` (509 مهارة)، و`LICENSE` في الـ 13، و`library/ig-plan/voice.md`.
+- جديد: `engine/skills/insta-reader/scripts/ig.py` و`rd.py ig`، و`insta swipe` (instaloader ← TSV ← swipe.py). selftest insta بقى 14.
+- السكربتات بتاعتهم stdlib بس ومن غير نت (اتفحصت).
+
+## v2.15.0 — 2026-11-14 (rd-runner + insta-reader)
+- جديد: `agents/rd-runner.md` (Haiku)، `scripts/rd_agents.py` (`rd.py agents list|install|check`)، وselftest بيفحص صيغة الـ agents.
+- think.py: `ROUTINE`/`TASTE` بيحددوا الخطوات اللي تروح لـ rd-runner، وسطر 🤖 في الخطة. think_cases: 10.
+- جديد: `engine/skills/insta-reader` (`insta.py`، 11 فحص من غير نت)، و`rd.py insta`. instaloader 4.16 اتجرّب: كل الخصايص اللي الكود بيستخدمها موجودة. الطلبات الحقيقية لإنستجرام اتحظرت من السحابة، فماتجرّبتش على حساب حقيقي.
+- مبني فوق v2.14.0 اللي اترفعت من اللابتوب (hypit-run).
+
+## v2.14.0 — 2026-11-14 (Hypit secure execution)
+- Existing Hypit 0.3.2 bridge hardened: missing/unknown provider cost or preflight failures cannot trigger rendering.
+- The raw Hypit CLI is inspection-only, so build cannot bypass the provider-price gate.
+- Rendering refuses to overwrite an existing output. Priced external providers still require explicit user approval and --allow-paid.
+- Added offline regression tests; no Hypit source was copied or third-party service called.
+- Full end-to-end rendering, Windows verification and the full Red Dragon selftest remain pending.
 
 ## v2.14.0 — 2026-11-14 (طوّر تفكيره وذكائه)
 - **بوابة الموافقة** `consent()` + `$R consent` + سطر في `brief` و`plan` + key `consent` في JSON (المفاتيح القديمة زي ما هي).

@@ -64,6 +64,24 @@ def write(p, text):
     Path(p).write_text(text, encoding="utf-8", newline="")
 
 
+
+# Safety guard for the two bird apps generated from the desktop source.
+def enforce_approval_gate(text):
+    old = 'self.auto = bool(api._settings.get("auto_approve", True))'
+    new = 'self.auto = bool(api._settings.get("auto_approve", False))'
+    if old in text:
+        text = text.replace(old, new)
+    if new not in text:
+        raise SystemExit("approval gate: missing safe auto_approve default")
+    old_gate = 'if need and not self.auto and not self.ask(cid, name, args):'
+    new_gate = 'if need and not self.ask(cid, name, args):'
+    if old_gate in text:
+        text = text.replace(old_gate, new_gate)
+    if new_gate not in text:
+        raise SystemExit("approval gate: mandatory confirmation missing")
+    return text
+
+
 # ---------------------------------------------------------------- app.py
 SYSTEM_PROTOCOL = """
 ## بروتوكول الطائر الأبيض (الذكاء الفائق)
@@ -181,7 +199,7 @@ def patch_app(t):
     t = sub(t, "def main():", WB_BG, 1, "theme-aware window color + black box")
     t = sub(t, WB_START_OLD, WB_START_NEW, 1, "lifecycle log around the window")
     t = sub(t, "    api = Api()\n    win = webview.create_window(", "    _wb_seed()\n    api = Api()\n    win = webview.create_window(", 1, "first-run data copy")
-    return t
+    return enforce_approval_gate(t)
 
 
 def patch_control(t):

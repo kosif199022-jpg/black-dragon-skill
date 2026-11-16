@@ -23,7 +23,7 @@ It reads and advises; it never installs, publishes, spends or deletes."""
 import argparse, datetime, hashlib, json, math, os, re, shutil, subprocess, sys
 from pathlib import Path
 
-VERSION = "3.1.0"
+VERSION = "3.2.0"
 ROOT = Path(__file__).resolve().parent.parent
 ENGINE = ROOT / "engine"
 MIND = ROOT / "mind"
@@ -871,6 +871,12 @@ LIB_AR = {"مونتاج": "video edit editing montage cut", "فيديو": "video
           "ظل": "shadow silhouette", "ظلال": "shadow silhouette", "دمي": "puppet puppetry", "دميه": "puppet puppetry", "عرائس": "puppet marionette puppetry",
           "مسافه": "distance measure", "مسافات": "distance measure", "رياضه": "math geometry", "رياضيه": "math geometry", "نسب": "proportion anthropometry",
           "زاويه": "angle geometry", "منظور": "perspective camera", "فيزيا": "physics", "فيزياء": "physics", "قياس": "measure", "روتوسكوب": "rotoscope trace", "شخصيه": "character", "كرتون": "cartoon character", "تتبع": "tracking",
+          "حلبه": "arena compete tournament", "يتنافسوا": "arena compete", "يتعاركوا": "arena compete fight", "موبايل": "phone android iphone control", "تليفون": "phone android iphone", "فيجما": "figma design", "سيو": "seo keyword search", "كلمات مفتاحيه": "keyword research seo",
+          "اسئله": "grill interview questions", "اسالني": "grill-me interview", "موشن": "motion animation graphics", "انيميشن": "animation motion", "معماريه": "architecture diagram codebase",
+          "شرح": "explain teach html", "تسليم": "handoff summary", "متصفح": "playwright browser test",
+          "توثيق": "documentation docs library api", "مكتبات": "library documentation api", "ثغرات": "security vulnerabilities", "ثغره": "security vulnerability",
+          "تبسيط": "simplify simplification lazy", "مراجعه كود": "code review", "اختبارات": "test testing tdd", "باج": "debugging bug error", "واجهات": "ui ux design interface",
+          "جراف": "graph knowledge codebase", "خريطه": "graph map codebase", "مهاره": "skill skills find", "مهارات": "skills find install", "مواصفات": "spec specification",
           "كريتا": "krita paint layered", "طبقات": "layers layered", "طبقه": "layer layered", "لوحه": "painting illustration", "تلوين": "paint painting"}
 
 
@@ -1654,8 +1660,13 @@ def main():
     s = sub.add_parser("desktop", help="guarded BlackDragon desktop bridge: catalog, doctor, read, snapshot"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("ref", help="reference-lock: lock, show, verify, fontmatch, list, selftest (same font/colours = exactly the same)"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("mind", help="claude-mind: brief, gate, learn, lessons, types (how Claude thinks and checks before delivery)"); s.add_argument("args", nargs=argparse.REMAINDER)
+    s = sub.add_parser("insta", help="insta-reader: doctor, profile, top, post, download, login, selftest (Instagram via instaloader, MIT)"); s.add_argument("args", nargs=argparse.REMAINDER)
+    s = sub.add_parser("ig", help="instagram-agent-skill tools (library/ig-*, MIT): list, hooks, beats, caption, humanize, detect, swipe, voice"); s.add_argument("args", nargs=argparse.REMAINDER)
+    s = sub.add_parser("agents", help="subagents: list, install, check (rd-runner = cheap Haiku worker for routine steps)"); s.add_argument("args", nargs=argparse.REMAINDER)
+    s = sub.add_parser("hypit", help="hypit-run: doctor, setup, example, check, plan, render, cli, selftest (the real Hypit SVML video engine, local and free; paid Providers blocked without --allow-paid)"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("krita", help="krita-draw: render scene.json | layers file.kra | info (draw with code inside the real Krita)"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("sync", help="sync-guard: words, check, fix, onsets, script, grid, selftest (captions and motion on the spoken word)"); s.add_argument("args", nargs=argparse.REMAINDER)
+    s = sub.add_parser("arena", help="arena-gate (v2.19): size, start, jobs, next, collect, advance, winner, skip, gate, selftest (the arena is a required step: competing copies, bracket, judge)"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("consent", help="consent gate: which outward actions this message explicitly approves or forbids («كمل» approves none)"); s.add_argument("q")
     s = sub.add_parser("gold", help="Golden Bird: studio list/show/install/cmd · lib find/show/kit/stats · sync · protocol · where · selftest"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("think", help="think & plan: start, revise, check, time, mistake, mistakes, pipeline-selftest · planning-mind: card, gate, workflow, learn, lessons, types, selftest"); s.add_argument("args", nargs=argparse.REMAINDER)
@@ -1869,10 +1880,15 @@ def main():
         if not dm.is_file():
             raise SystemExit(f"مفيش draw-math: {dm}")
         raise SystemExit(subprocess.call([sys.executable, "-X", "utf8", str(dm)] + (a.args or ["--help"])))
-    elif a.cmd in ("dcm", "desktop", "think", "ref", "sync", "krita", "mind", "gold"):
+    elif a.cmd == "ig":
+        raise SystemExit(subprocess.call([sys.executable, "-X", "utf8", str(ROOT / "engine" / "skills" / "insta-reader" / "scripts" / "ig.py")] + (a.args or ["--help"])))
+    elif a.cmd == "agents":
+        raise SystemExit(subprocess.call([sys.executable, "-X", "utf8", str(ROOT / "scripts" / "rd_agents.py")] + (a.args or ["list"])))
+    elif a.cmd in ("dcm", "desktop", "think", "ref", "sync", "krita", "mind", "hypit", "insta", "arena", "gold"):
         sk = {"dcm": ("dragon-character-memory", "dcm.py"), "desktop": ("blackdragon-desktop-bridge", "bridge.py"), "think": ("planning-mind", "plan.py"),
               "ref": ("reference-lock", "reflock.py"), "sync": ("sync-guard", "syncguard.py"),
-              "krita": ("krita-draw", "krita_draw.py"), "mind": ("claude-mind", "mind.py"), "gold": ("golden-bird", "gold.py")}[a.cmd]
+              "krita": ("krita-draw", "krita_draw.py"), "mind": ("claude-mind", "mind.py"), "hypit": ("hypit-run", "hypit_rd.py"),
+              "insta": ("insta-reader", "insta.py"), "arena": ("arena-gate", "arena_gate.py"), "gold": ("golden-bird", "gold.py")}[a.cmd]
         if a.cmd == "think" and a.args and a.args[0] in ("start", "revise", "check", "time", "mistake", "mistakes", "pipeline-selftest"):
             sk = ("planning-mind", "think.py")      # v2.9: the think-and-plan pipeline; the other words go to plan.py
             if a.args[0] == "pipeline-selftest":
@@ -1961,13 +1977,17 @@ def main():
                     bad.append(f"blind chats eval: top-3 {t3}/{len(blind)} < 85%")
         except Exception as e:
             bad.append(f"rd_chats: {e}")
-        for sk, sc in (("reference-lock", "reflock.py"), ("sync-guard", "syncguard.py"), ("golden-bird", "gold.py")):    # v2.9.1 guards + v2.13 Golden Bird
+        for sk, sc in (("reference-lock", "reflock.py"), ("sync-guard", "syncguard.py"), ("hypit-run", "hypit_rd.py"), ("insta-reader", "insta.py"), ("arena-gate", "arena_gate.py"), ("golden-bird", "gold.py")):    # v2.9.1: exact reference + caption sync guards
             gp = ROOT / "engine" / "skills" / sk / "scripts" / sc
             if gp.is_file():
                 r = subprocess.run([sys.executable, "-X", "utf8", str(gp), "selftest"], capture_output=True, text=True, encoding="utf-8", errors="replace",
                                    timeout=300, env=dict(os.environ, PYTHONDONTWRITEBYTECODE="1"))
                 if r.returncode:
                     bad.append(f"{sk}: " + (r.stdout.strip().splitlines() or [r.stderr.strip()[-200:] or "?"])[-1][:200])
+        if (ROOT / "agents").is_dir():          # v2.15: subagent files must stay valid
+            r = subprocess.run([sys.executable, "-X", "utf8", str(ROOT / "scripts" / "rd_agents.py"), "check"], capture_output=True, text=True, encoding="utf-8", errors="replace")
+            if r.returncode:
+                bad.append("agents: " + r.stdout.strip()[:200])
         tp = ROOT / "engine" / "skills" / "planning-mind" / "scripts" / "think.py"
         if tp.is_file():                     # v2.9: the think-and-plan pipeline must still catch the known mistakes (M01: things on faces)
             r = subprocess.run([sys.executable, "-X", "utf8", str(tp), "selftest"], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=300,
