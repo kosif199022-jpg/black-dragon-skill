@@ -6,6 +6,8 @@
 
 **🦅 الطائر الذهبي:** `python -X utf8 scripts/rd.py gold …` فيه مكتبة 154 مكتبة موشن برخصها، واستوديو 10 برامج مفتوحة المصدر، وبروتوكول الذهب ([`engine/skills/golden-bird/SKILL.md`](engine/skills/golden-bird/SKILL.md)). وكود التطبيق نفسه في [`apps/golden-bird`](apps/golden-bird).
 
+**🐉 التنين الذهبي (التطبيق):** أحدث تطبيق، فيه كل الطائر الذهبي والأبيض ومعاه **🧐 مراجع التفكير** (وكيل تاني بيراجع تفكير التنين وهو شغال ويصحّحه)، والبحث في المحادثات وتثبيتها، وفحص التسليم ✅/❌. الكود في [`apps/golden-dragon`](apps/golden-dragon).
+
 - الخريطة: [`references/RD_MAP.md`](references/RD_MAP.md)
 - التغييرات: [`references/RD_CHANGELOG.md`](references/RD_CHANGELOG.md)
 - سجل الدمج: [`references/MERGE_V271.md`](references/MERGE_V271.md)
