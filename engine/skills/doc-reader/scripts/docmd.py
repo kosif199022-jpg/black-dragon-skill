@@ -176,6 +176,11 @@ def out_path(p, out):
     return d / (Path(p).name + ".md")      # report.pdf -> report.pdf.md, so report.docx in the same folder never collides
 
 
+def write_md(dst, text):
+    """Every engine and fallback goes through here: one kind of line end, so Windows never writes \\r\\r\\n (v3.4)."""
+    dst.write_text(_lf(text), encoding="utf-8")
+
+
 def run(files, out=None, show=False, max_chars=0, as_json=False):
     res, bad = [], 0
     md_cls = markitdown()
@@ -183,7 +188,7 @@ def run(files, out=None, show=False, max_chars=0, as_json=False):
         try:
             text, eng = convert_one(f, md_cls)
             dst = out_path(f, out)
-            dst.write_text(text, encoding="utf-8")
+            write_md(dst, text)
             row = {"file": str(f), "md": str(dst), "engine": eng, "chars": len(text), "ok": True}
             if show:
                 row["text"] = text[:max_chars] if max_chars else text
@@ -269,6 +274,9 @@ def selftest():
         rc_w = run([t / "w.txt"], out=t / "ow", as_json=False)
         check("ملف ويندوز CRLF ← مفيش \\r\\r في الناتج", fallback(t / "w.txt")[0] == "سطر\nتاني\n" and rc_w == 0
               and b"\r\r" not in (t / "ow" / "w.txt.md").read_bytes())
+        write_md(t / "mixed.md", "أ\r\nب\rج\n")                            # HTML/XML/CSV fallbacks keep \r: the writer fixes all
+        check("الكتابة بتوحّد نهايات السطور لأي محرك", b"\r\r" not in (t / "mixed.md").read_bytes()
+              and (t / "mixed.md").read_text(encoding="utf-8") == "أ\nب\nج\n")
         check("صيغة مش معروفة من غير MarkItDown ← رسالة واضحة", _raises(lambda: convert_one(_mk(t / "e.bin"), md_cls=False), "مش عارف أحوّله"))
         check("ملف مش موجود ← رسالة واضحة", _raises(lambda: convert_one(t / "zz.pdf"), "مش موجود"))
         check("الناتج في _md جنب الملف", out_path(t / "a.csv", None) == t / "_md" / "a.csv.md" and out_path(t / "a.html", None) != out_path(t / "a.csv", None))

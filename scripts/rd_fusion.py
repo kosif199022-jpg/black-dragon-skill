@@ -21,6 +21,8 @@ import importlib.util
 import json
 import os
 import sys
+import tempfile
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -111,12 +113,36 @@ def load(rd):
 
 
 CHECK_CMD = '`rd.py check --request "<الطلب>" --draft <ملف الرد>`'
+DRAFT_HEAD, DRAFT_TAIL = 30_000, 10_000      # characters of a very long answer the critic reads (~0.12 s per KB)
+
+
+def read_draft(src):
+    """(text, warning) of the answer to check: a file, or - for stdin, read as bytes so the console code page never
+    garbles Arabic. UTF-16 with a BOM (PowerShell 5.1 `>`), else UTF-8 with or without BOM, else cp1256."""
+    raw = sys.stdin.buffer.read() if src == "-" else Path(src).read_bytes()
+    if raw[:2] in (b"\xff\xfe", b"\xfe\xff"):
+        return raw.decode("utf-16"), ""
+    try:
+        return raw.decode("utf-8-sig"), ""
+    except UnicodeDecodeError:
+        return raw.decode("cp1256", errors="replace"), "⚠ ملف الرد مش UTF-8، فاتقري كـ cp1256 (لو العربي باين غلط احفظه UTF-8)."
+
+
+def _opt(args, name):
+    """--name VALUE or --name=VALUE; None when it is missing or has no value."""
+    for i, a in enumerate(args):
+        if a == name:
+            return args[i + 1] if i + 1 < len(args) else None
+        if a.startswith(name + "="):
+            return a[len(name) + 1:]
+    return None
 
 
 def _skill_words(text):
     """The app's wording -> the skill's commands."""
     return (text.replace("`fusion check` على ردك (query = الطلب، draft = الرد)", CHECK_CMD + " على ردك")
                 .replace("`fusion check`", CHECK_CMD)
+                .replace("في draft، والطلب في query", "في --draft، والطلب في --request")
                 .replace("studio_run install", "rd.py gold studio install --yes")
                 .replace("forge\\build_fusion.py", "apps/golden-dragon/forge/build_fusion.py"))
 
@@ -133,7 +159,17 @@ def route_md(rd, request):
 def check_md(rd, request, draft):
     df = load(rd)
     df.rd_info(request)                    # md_check reuses the cached reading
-    return _skill_words(df.md_check(request, draft))
+    note = ""
+    if len(draft or "") > DRAFT_HEAD + DRAFT_TAIL:   # its word coverage costs ~0.12 s per KB: read the head and the tail
+        note = (f"\n- ⚠ الرد طويل ({len(draft) // 1024} KB): الفحص اتعمل على أول {DRAFT_HEAD // 1000} ألف حرف "
+                f"وآخر {DRAFT_TAIL // 1000} آلاف بس.")
+        draft = draft[:DRAFT_HEAD] + "\n" + draft[-DRAFT_TAIL:]
+    return _skill_words(df.md_check(request, draft)) + note
+
+
+def failed(check_output):
+    """True when the critic found something to fix (a «- ✗» line, or the empty-answer message)."""
+    return check_output.startswith("✗") or any(ln.startswith("- ✗ ") for ln in check_output.splitlines())
 
 
 def _route_light(df, request):
@@ -249,6 +285,20 @@ def problems(rd):
         good = check_md(rd, "اعمل فيديو ريل للمنتج", good_draft)
         if "✗" in good:
             bad.append("fusion check: a well-formed answer got ✗: " + " | ".join(x for x in good.splitlines() if "✗" in x)[:200])
+        if not failed(weak) or failed(good) or not failed(check_md(rd, "اعمل فيديو ريل للمنتج", "")):
+            bad.append("fusion check: the exit status would not follow the ✗ lines")
+        with tempfile.TemporaryDirectory(prefix="rd-fuse-") as tmp:     # PowerShell 5.1 `>` writes UTF-16; old editors cp1256
+            for name, data in (("u16.txt", "خلص ✅".encode("utf-16")), ("ansi.txt", "خلص".encode("cp1256")),
+                               ("bom8.txt", "﻿خلص".encode("utf-8"))):
+                p = Path(tmp) / name
+                p.write_bytes(data)
+                text, _ = read_draft(str(p))
+                if not text.startswith("خلص"):
+                    bad.append(f"fusion read_draft {name}: {text[:20]!r}")
+        t0 = time.perf_counter()
+        long_out = check_md(rd, "اعمل فيديو ريل للمنتج", good_draft + "كلام كتير " * 6000)
+        if "الرد طويل" not in long_out or time.perf_counter() - t0 > 60:
+            bad.append(f"fusion check: a long answer took {time.perf_counter() - t0:.0f} s or was not marked as cut")
     except Exception as e:
         bad.append(f"fusion: {type(e).__name__}: {str(e)[:200]}")
     return bad
@@ -274,11 +324,13 @@ def main(argv, rd):
             print(route_md(rd, " ".join(rest)))
         elif act == "check":
             req, src = _opt(rest, "--request"), _opt(rest, "--draft")
-            if not req or not src:
-                print('✗ لازم الاتنين: fuse check --request "<الطلب>" --draft <ملف الرد أو ->')
+            if req is None or src is None:
+                print('✗ الاستخدام: rd.py check --request "<الطلب>" --draft FILE|-   (ملف اسمه بيبدأ بـ - : --draft=./-x.txt)')
                 return 2
-            draft = sys.stdin.read() if src == "-" else Path(src).read_text(encoding="utf-8-sig")
-            print(check_md(rd, req, draft))
+            draft, warn = read_draft(src)
+            out = check_md(rd, req, draft) + (f"\n- {warn}" if warn else "")
+            print(out)
+            return 1 if failed(out) else 0
         elif act == "protocol":
             print(protocol_md(rd))
         elif act == "tools":
@@ -289,13 +341,10 @@ def main(argv, rd):
         else:
             print(__doc__)
             return 2
-    except (KeyError, OSError, ValueError) as e:          # v3.4.0: any unreadable draft (folder, no permission) = a clear line
-        print(f"✗ {type(e).__name__}: {e.args[-1] if e.args else e}")
+    except OSError as e:                  # a missing file, a folder given as the draft, no permission
+        print(f"✗ {e.strerror}: {e.filename}" if e.strerror else f"✗ {e.args[0] if e.args else e}")
+        return 1
+    except (KeyError, ValueError) as e:
+        print(f"✗ {e.args[0] if e.args else e}")
         return 1
     return 0
-
-
-def _opt(rest, name):
-    """The value after `name`, or "" when it's missing or another flag (was an IndexError traceback)."""
-    i = rest.index(name) + 1 if name in rest else len(rest)
-    return rest[i] if i < len(rest) and not rest[i].startswith("--") else ""
