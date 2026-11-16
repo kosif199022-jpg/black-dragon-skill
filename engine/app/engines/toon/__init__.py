@@ -188,6 +188,7 @@ def video(src, dst, style="3d", fps=12, max_side=720, seconds=None, deflicker=Tr
                 el = time.time() - t0
                 progress(f"frame {i}/{len(frames)}  {el / i:.2f}s/frame  ETA {el / i * (len(frames) - i):.0f}s")
         rate = fps or _source_fps(src)
+        from ..deliver import fit_audio   # exact length: -shortest ended films frames short (v12 rule)
         post = ["deflicker=mode=pm:size=5"] if deflicker else []
         post += ["scale=trunc(iw/2)*2:trunc(ih/2)*2", "format=yuv420p"]
         dst.parent.mkdir(parents=True, exist_ok=True)
@@ -195,7 +196,8 @@ def video(src, dst, style="3d", fps=12, max_side=720, seconds=None, deflicker=Tr
                         *(["-t", str(seconds)] if seconds else []), "-i", str(src),
                         "-map", "0:v", "-map", "1:a?", "-vf", ",".join(post), "-c:v", "libx264", "-preset", "slow", "-crf", "17",
                         "-x264-params", "colorprim=bt709:transfer=bt709:colormatrix=bt709", "-r", str(rate),
-                        "-c:a", "aac", "-b:a", "256k", "-shortest", "-movflags", "+faststart", str(dst)], check=True)
+                        "-frames:v", str(len(frames)), "-af", fit_audio(len(frames) / float(rate)),
+                        "-c:a", "aac", "-b:a", "256k", "-movflags", "+faststart", str(dst)], check=True)
         return {"out": str(dst), "style": style, "frames": len(frames), "fps": rate, "seconds_per_frame": round((time.time() - t0) / len(frames), 2)}
     finally:
         shutil.rmtree(work, ignore_errors=True)

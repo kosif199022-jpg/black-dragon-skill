@@ -40,6 +40,11 @@
 - **من غير التطبيق:** `python -X utf8 apps/golden-dragon/app/dragon_fusion.py brief "…" | route "…" | find "…" | discover`.
 - ⚠ **مفتوح لقرار صاحب الشغل:** التطبيق المتولّد هنا لسه `auto_approve` افتراضيًا شغال (اتولّد من forge الجهاز اللي مافيهوش تصليح الأمان). تصليح الأمان موجود في `apps/white-bird/forge`، وأول توليد من المستودع هيطبّقه.
 
+## التحكم في التنين الذهبي اللي على الجهاز (gd-remote)
+- **`tools/gd-remote/connect.py --apply`:** بيسجّل خادم MCP اسمه `golden-dragon` في Claude Code وClaude Desktop على الجهاز، فأي جلسة Claude هناك تاخد أداة `blackdragon_app` (status، chats، read، send، ask، reply، stop) على محادثات التنين الذهبي.
+- **`tools/gd-remote/gd_remote.py`:** نفس الحاجة من الترمنال (`ping`، `status`، `ask "…"`، `reply --sid`، `stop --sid`).
+- الباب على `127.0.0.1:47851` وبكود ربط بيتقري من إعدادات التطبيق وقت التشغيل بس. صلاحيات التطبيق وبوابة الموافقة هي اللي بتحكم، والماوس والكيبورد مش متاحين من برّه. Claude في المتصفح أو السحابة مايقدرش يوصل له: لازم Claude يكون شغّال على الجهاز نفسه.
+
 ## 5) التنين الأحمر (المهارة نفسها)
 - **الكود:** `SKILL.md` و`BOOT.md` و`scripts/rd.py` و`mind/` و`references/`.
 - **أوامر `rd.py`:** start، selftest، think (خطة على الديسك)، check، fuse، route/map/show، teach وlearn وlessons وoutcome (يتعلم من التصحيح)، memory وmind (ذاكرة)، character (ذاكرة الشخصيات)، math، re/repo/repos (هندسة عكسية ومستودعات)، skills، insta/ig، agents، hypit، krita، sync، md، arena، consent (بوابة الموافقة)، gold (أدوات الطائر الذهبي)، desktop، ref، dcm، x.
