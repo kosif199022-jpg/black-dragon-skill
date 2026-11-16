@@ -9,7 +9,7 @@ $work = Join-Path $env:TEMP "bd_build"
 Set-Location $here
 (Get-Date -Format "yyyy.MM.dd-HHmm") | Set-Content -Encoding ascii (Join-Path $here "ui\version.txt")
 Remove-Item -Recurse -Force (Join-Path $here "__pycache__") -ErrorAction SilentlyContinue
-python -m PyInstaller --noconfirm --windowed --name BlackDragon `
+python -m PyInstaller --noconfirm --windowed --name BlackDragon --icon "$here\ui\red-dragon.ico" `
   --add-data "$here\ui;ui" --add-data "$here\chrome_extension;chrome_extension" --add-data "$here\mcp_control.py;." --add-data "$here\voice.py;." `
   --hidden-import keyring.backends.Windows --hidden-import webview.dom --hidden-import control `
   --distpath "$work\dist_new" --workpath "$work\build" --specpath $work app.py

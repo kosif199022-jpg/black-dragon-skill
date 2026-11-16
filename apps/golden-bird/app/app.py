@@ -21,6 +21,7 @@ except Exception:          # non-Windows / import problem: the rest of the app s
 
 import anthropic
 import brain
+import golden_steer
 import keyring
 import webview
 
@@ -44,9 +45,18 @@ def read_version(root):
 VERSION = read_version(HERE / "ui") or "dev"
 EXT_DIR = (INSTALL_DIR / "chrome_extension") if FROZEN and INSTALL_DIR and (INSTALL_DIR / "chrome_extension").exists() \
     else (HERE / "chrome_extension")
-REPO = Path(os.environ.get("BLACK_DRAGON_HOME", Path.home() / "OneDrive" / "Desktop" / REPO_DIRNAME))
-APP_SOURCE = Path(os.environ.get("GOLDEN_BIRD_HOME", Path.home() / "OneDrive" / "Desktop" / "الطائر الذهبي")) / "app"        # this app's own source (self-development)
-MONTAGE = Path.home() / "OneDrive" / "Desktop" / "المونتاج"
+def _home_of(env, name):
+    """A sibling folder wherever it lives now: $env, else Desktop\\<name>, else Desktop\\مهارات\\<name> (the dragon folders were
+    moved into «مهارات» on 2026-11-15), OneDrive's Desktop first. Unknown -> the «مهارات» spot, so messages point there."""
+    if os.environ.get(env):
+        return Path(os.environ[env])
+    cands = [base / sub / name for base in (Path.home() / "OneDrive" / "Desktop", Path.home() / "Desktop") for sub in ("", "مهارات")]
+    return next((c for c in cands if c.is_dir()), cands[1])
+
+
+REPO = _home_of("BLACK_DRAGON_HOME", REPO_DIRNAME)
+APP_SOURCE = _home_of("GOLDEN_BIRD_HOME", "الطائر الذهبي") / "app"        # this app's own source (self-development)
+MONTAGE = _home_of("DRAGON_MONTAGE_HOME", "المونتاج")
 SUPERPOWERS_HUB = Path.home() / "kosif-tool" / ".claude" / "skills" / "kosif-superpowers" / "scripts" / "hub.py"
 DRAGON_ULTRA = Path.home() / ".claude" / "skills" / "kosif-black-dragon-ultra" / "scripts" / "dragon.py"
 RETOOL = Path.home() / "re-tools" / "retool.py"      # front door to the reverse-engineering toolbox (DiE, capa, FLOSS, UPX, jadx…)
@@ -308,6 +318,17 @@ SYSTEM = f"""أنت «الطائر الذهبي» (أحدث نسخة من تطب
   - ولو اكتشفت إنك غلطت قبل كده، قولها صريحة وصلّحها.
 - **اتعلّم:** أي تصحيح من صاحب الشغل يتسجّل في نفس الدور بـ `rd.py learn "<إيه اللي حصل ← إيه اللي يتعمل>"`.
 
+## تغيير المسار وأنت شغال (جديد)
+- **رسالة وصلت في نص الشغل:** اقراها قبل أي أداة تانية، وصنّفها:
+  - **إضافة:** كمّل شغلك وضيفها للخطة.
+  - **تصحيح:** وقّف الطريق الحالي، واكتب سطر واحد: «اتغيّر كذا، وهسيب كذا زي ما هو»، وكمّل على الجديد. ماترجعش للخطة القديمة.
+  - **سؤال:** جاوب في سطرين وكمّل اللي كنت فيه.
+- **لو اتقاطعت (⚡):** الخطوة اللي كانت شغالة وقفت في نصها. افحص ناتجها (ملف ناقص، رندر مقطوع) قبل ما تبني عليه، وامسح الناقص.
+- **راجع اتجاهك لوحدك:** كل 5 أو 6 خطوات، وبعد أي فشلين ورا بعض، اسأل نفسك: «أنا لسه ماشي ناحية Done-when؟».
+  - نفس الخطأ اتكرر مرتين: غيّر الطريقة، وماتعيدش نفس الأمر مرة تالتة.
+  - لقيت نفسك بتعمل حاجة صاحب الشغل ماطلبهاش: ارجع للطلب الأصلي.
+- **قول اتجاهك بدري:** في أول الشغل الطويل اكتب خطتك في 3 سطور قبل أول أداة تقيلة، علشان صاحب الشغل يلحق يصحّحك قبل ما الوقت يتصرف.
+
 ## عقل التنين الأحمر
 لو أول الرسالة فيها بلوك «[عقل التنين الأحمر …]»: ده ملخص اتحسب على الجهاز (الطلب بعد فك الكتابة، الطريق المقترح بخطواته، الموافقات، بوابة التسليم، ودروس من تصحيحات قديمة). استخدمه كنقطة بداية، ولو الطلب واضح إنه حاجة تانية امشي ورا الطلب.
 - الطلب لو حروف إنجليزي مالهاش معنى يبقى عربي متكتب والكيبورد إنجليزي: اشتغل على النص المفكوك اللي في البلوك، وماتطلبش منه يعيد الكتابة.
@@ -338,7 +359,7 @@ SYSTEM = f"""أنت «الطائر الذهبي» (أحدث نسخة من تطب
   - **مستندات وأرشيف:** `pandoc`، `7z`، `jq`، و`rg` للبحث في الملفات.
   - **بايثون:** فيه numpy وopencv وmediapipe وlibrosa وmoviepy وPillow وtorch وplaywright وpython-pptx وpython-docx وopenpyxl وPyMuPDF وpydub.
   - **التنين نفسه:** `python -m dragon …` من {REPO}، والتنين القديم `python "{DRAGON_ULTRA}" route|cycle|exec`، وسوبر باور `python "{SUPERPOWERS_HUB}" run <id>`.
-  - المسارات الكاملة لكل برنامج مكتوبة في `{MONTAGE / "CLAUDE.md"}`.
+  - المسار الكامل لأي برنامج: `where.exe <الاسم>` (ملف `المونتاج\\CLAUDE.md` القديم مش موجود من 2026-11-15).
 - **GitHub** (أداة `gh` الرسمية، والمستخدم مسجّل بيها): `gh repo list --limit 100`، و`gh repo view OWNER/REPO`، و`gh repo clone OWNER/REPO` (جوه مجلد الشغل)، و`gh issue list`، و`gh pr list`، و`gh api ...`. ممنوع تعمل push أو تنشر أو تمسح مستودعات أو تفتح issues وPRs من غير ما المستخدم يوافق في الشات.
 - **الإنترنت** (web_search / web_fetch): دوّر على صور وفيديوهات ومراجع بأعلى جودة، وعلى أغاني ومعلومات، واقرا أي صفحة. وبعدين نزّل اللي تحتاجه بـ yt-dlp أو aria2c. حط مصادر الصور والفيديوهات اللي بتنزّلها في ملف `sources.txt` في مجلد الشغل.
 - **الملفات**: list_dir، read_text_file، view_image (تشوف الصورة أو الفريم بعينك)، write_file، verify_media (المدة والأبعاد والـ LUFS والذروة).
@@ -1184,6 +1205,8 @@ class Session:
         self.procs = []        # running child programs (killed by «إيقاف»)
         self.queue = []        # messages the user sent while the agent was working
         self.qlock = threading.Lock()
+        self.steer = threading.Event()   # «⚡ قاطعه دلوقتي»: the queued message takes over now (cleared by drain_queue)
+        self.cc_chan = None              # golden_steer.Channel: the open stdin of the running Claude Code (subscription)
         ad = api._settings.get("agents", {})
         self.helpers = [m for m in ad.get("models", []) if m in MODELS][:int(ad.get("count", 0))]
         self.sent_team = None
@@ -1386,16 +1409,57 @@ class Session:
             blocks.insert(0, {"type": "text", "text": sk})
         self.emit("user", text=text, atts=[Path(p).name for p in self.attach], queued=True)
         self.attach = []
+        now = golden_steer.urgent(text)      # «وقف»، «غلط»، «استنى»… at the start: do not wait for the running step
+        chan = self.cc_chan
+        if chan and chan.send(golden_steer.wrap(self._text_of(blocks), now), payload=blocks, now=now):
+            if now:
+                self.api._emit("steer", sid=self.id)
+            return                           # Claude Code reads it at its next step; the echo ticks the badge
         with self.qlock:
             self.queue.append(blocks)
+        if now:
+            self.steer_now()
+
+    def steer_now(self):
+        """«⚡ قاطعه دلوقتي»: stop the running step so the message that is waiting is read now, not at the next step."""
+        if not self.busy:
+            return False
+        chan = self.cc_chan
+        if chan:
+            ok = chan.interrupt()
+        else:
+            with self.qlock:
+                ok = bool(self.queue)
+            if ok:
+                self.steer.set()
+                self.kill_procs()
+        if ok:
+            self.api._emit("steer", sid=self.id)
+        return ok
+
+    def run_calls(self, calls):
+        """This turn's tool calls, in order. Once the owner has written (or pressed «⚡»), the calls that did not start
+        yet are answered with «read the new message first», so the model sees the message before it does more work."""
+        out = []
+        for c in calls:
+            with self.qlock:
+                waiting = bool(self.queue)
+            if waiting or self.steer.is_set():
+                self.emit("tool", id=c.id, name=c.name, args={})
+                self.emit("tool_result", id=c.id, error=True, text=golden_steer.SKIPPED)
+                out.append({"type": "tool_result", "tool_use_id": c.id, "content": golden_steer.SKIPPED, "is_error": True})
+            else:
+                out.append(self.run_tool(c))
+        return out
 
     def drain_queue(self):
+        self.steer.clear()
         with self.qlock:
             q, self.queue = self.queue, []
         if not q:
             return []
         self.emit("queued_in", n=len(q))
-        out = [{"type": "text", "text": "[رسالة جديدة من المستخدم وأنت شغال، خدها في اعتبارك من دلوقتي:]"}]
+        out = [{"type": "text", "text": golden_steer.NOTE}]
         for blocks in q:
             out += blocks
         return out
@@ -1643,7 +1707,7 @@ class Session:
                     ) as stream:
                         self.emit("turn_start")
                         for ev in stream:
-                            if self.stop.is_set():
+                            if self.stop.is_set() or self.steer.is_set():
                                 break
                             if ev.type == "text":
                                 self.emit("text", text=ev.text)
@@ -1653,6 +1717,14 @@ class Session:
                                 self.emit("progress", id="", text="", web=ev.content_block.name)
                         if self.stop.is_set():
                             break  # partial turn dropped; history still ends on a user turn
+                        if self.steer.is_set():      # «⚡»: drop the half-written reply and hand the new message over now
+                            extra = self.drain_queue()
+                            if extra:
+                                last = self.messages[-1]
+                                c = last["content"]
+                                last["content"] = (list(c) if isinstance(c, list) else [{"type": "text", "text": str(c)}]) + extra
+                            self.emit("turn_continue")
+                            continue
                         msg = stream.get_final_message()
                     json_retries = 0
                 except ValueError:
@@ -1686,7 +1758,7 @@ class Session:
                         for c in calls]})
                     self.emit("error", text="الرد اتقطع قبل ما الأداة تكمل؛ جرّب طلب أصغر.")
                     break
-                results = [self.run_tool(c) for c in calls]
+                results = self.run_calls(calls)
                 self.messages.append({"role": "user", "content": results + self.team_note() + self.drain_queue()})
         except anthropic.AuthenticationError:
             self.emit("error", text="المفتاح مرفوض. غيّره من الإعدادات.")
@@ -1813,7 +1885,8 @@ class Session:
                 self.emit("error", text="Claude Code مش متثبت. ثبّته بـ npm i -g @anthropic-ai/claude-code وسجّل دخول باشتراكك بـ claude ثم /login.")
                 return
             model = self.api._settings.get("model", MODEL)
-            cmd = [exe, "-p", "--output-format", "stream-json", "--verbose", "--include-partial-messages",
+            cmd = [exe, "-p", "--input-format", "stream-json", "--replay-user-messages",
+                   "--output-format", "stream-json", "--verbose", "--include-partial-messages",
                    "--model", model, "--append-system-prompt-file", str(cc_system_file()),
                    # Claude Code's own "auto" mode: routine actions run without asking, risky ones are reviewed by its
                    # safety classifier. Permission checks are never bypassed.
@@ -1874,8 +1947,9 @@ class Session:
                                  stderr=subprocess.PIPE, env=env, creationflags=NO_WINDOW)
             drain_stderr(p)
             self.procs.append(p)
-            p.stdin.write(prompt.encode("utf-8"))
-            p.stdin.close()
+            chan = golden_steer.Channel(p.stdin)     # stdin stays open: messages written while it works go straight in
+            chan.first(prompt)
+            self.cc_chan = chan
             started, tools, cur_live = False, {}, None
             for raw in p.stdout:
                 if self.stop.is_set():
@@ -1887,6 +1961,7 @@ class Session:
                 t = e.get("type")
                 sub_agent = "وكيل" if e.get("parent_tool_use_id") else ""
                 if t == "system" and e.get("subtype") == "init":
+                    chan.begin()
                     self.cc_session = e.get("session_id") or self.cc_session
                     if e.get("mcp_servers"):
                         self.api._mcp = [{"name": m.get("name", ""), "state": m.get("status", "unknown"), "target": ""} for m in e["mcp_servers"]]
@@ -1897,7 +1972,7 @@ class Session:
                     ev = e.get("event", {})
                     et = ev.get("type")
                     if et == "message_start":
-                        self.emit("turn_start"); started = True
+                        self.emit("turn_start"); started = True; chan.begin()
                     elif et == "content_block_delta":
                         d = ev.get("delta", {})
                         if d.get("type") == "text_delta":
@@ -1918,6 +1993,12 @@ class Session:
                         elif sub_agent and b.get("type") == "text" and b.get("text"):
                             self.emit("agent", id=e.get("parent_tool_use_id"), k="", model="", state="run", text=b["text"][:400])
                 elif t == "user":
+                    for txt in ([] if sub_agent else golden_steer.echo_texts(e)):
+                        got = chan.ack(txt)          # Claude Code printed our message back = it has just read it
+                        if got is not None:
+                            self.messages.append({"role": "user", "content": got})
+                            self.cc_sent = len(self.messages)
+                            self.emit("queued_in", n=1)
                     for b in (e.get("message", {}).get("content") or []):
                         if isinstance(b, dict) and b.get("type") == "tool_result":
                             c = b.get("content")
@@ -1938,12 +2019,13 @@ class Session:
                     self.emit("usage", input=(e.get("usage") or {}).get("input_tokens", 0), output=(e.get("usage") or {}).get("output_tokens", 0),
                               cache_read=(e.get("usage") or {}).get("cache_read_input_tokens", 0), cost=round(est, 4), plan=True,
                               session_cost=round(self.cost, 4), **self.api._balance())
-                    if e.get("is_error"):
+                    if e.get("is_error") and not chan.expected_stop(e.get("subtype")):
                         self.emit("error", text="Claude Code وقف: " + str(e.get("subtype")) + " " + " ".join(map(str, e.get("errors") or []))[:300])
-                    if e.get("result") is not None:
-                        self.messages.append({"role": "assistant", "content": [{"type": "text", "text": e.get("result") or ""}]})
+                    if e.get("result"):
+                        self.messages.append({"role": "assistant", "content": [{"type": "text", "text": e["result"]}]})
+                    chan.finish()                    # closes stdin when no message is unread; else the next turn reads it
             p.wait(timeout=30)
-            if p.returncode not in (0, None) and not self.stop.is_set():
+            if p.returncode not in (0, None) and not self.stop.is_set() and not self.steer.is_set():
                 err = err_tail(p)
                 if "login" in err.lower() or "auth" in err.lower():
                     err = "Claude Code مش مسجّل دخول. افتح Terminal واكتب claude وبعدين /login باشتراكك. " + err
@@ -1952,6 +2034,12 @@ class Session:
         except Exception as e:
             self.emit("error", text=f"{type(e).__name__}: {e}")
         finally:
+            chan, self.cc_chan = self.cc_chan, None
+            if chan:
+                unread = chan.close()                # written but never read (the run ended first): send them again
+                if unread and not self.stop.is_set():
+                    with self.qlock:
+                        self.queue[:0] = unread
             self.kill_procs()
             leftover = [] if self.stop.is_set() else self.drain_queue()
             if leftover:
@@ -2118,7 +2206,7 @@ class Session:
             p.wait(timeout=30)
             if final:
                 self.messages.append({"role": "assistant", "content": [{"type": "text", "text": "".join(final)}]})
-            if p.returncode not in (0, None) and not self.stop.is_set():
+            if p.returncode not in (0, None) and not self.stop.is_set() and not self.steer.is_set():
                 err = err_tail(p)
                 low = err.lower()
                 if any(k in low for k in ("login", "auth", "credential", "not logged")):
@@ -3079,6 +3167,11 @@ class Api:
         except Exception as e:
             return {"ok": False, "error": f"مقدرتش أقرا المرفق: {e}"}
         return {"ok": True}
+
+    def steer_now(self, sid):
+        """«⚡ قاطعه دلوقتي» button under a message that was sent while the chat works."""
+        s = self._sessions.get(sid)
+        return {"ok": bool(s and s.steer_now())}
 
     def stop(self, sid):
         s = self._sessions.get(sid)

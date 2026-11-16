@@ -296,18 +296,28 @@ class System:
     @staticmethod
     def ps(script, timeout=60, stdin=None):
         import subprocess
-        p = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command",
-                            "[Console]::OutputEncoding=[Console]::InputEncoding=New-Object Text.UTF8Encoding $false; $ProgressPreference='SilentlyContinue'; " + script],
-                           capture_output=True, timeout=timeout, input=stdin.encode("utf-8") if stdin is not None else None,
-                           creationflags=0x08000000)
-        out = p.stdout.decode("utf-8", "replace").strip()
-        err = p.stderr.decode("utf-8", "replace").strip()
+        cmd = ["powershell", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command",
+               "[Console]::OutputEncoding=[Console]::InputEncoding=New-Object Text.UTF8Encoding $false; $ProgressPreference='SilentlyContinue'; " + script]
+        p = subprocess.Popen(cmd, stdin=subprocess.PIPE if stdin is not None else subprocess.DEVNULL,
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=0x08000000)
+        try:
+            so, se = p.communicate(input=stdin.encode("utf-8") if stdin is not None else None, timeout=timeout)
+        except subprocess.TimeoutExpired:
+            # subprocess.run kills only powershell itself, then waits on pipes its children (winget, msiexec) still hold
+            subprocess.run(["taskkill", "/T", "/F", "/PID", str(p.pid)], capture_output=True, creationflags=0x08000000)
+            try:
+                p.communicate(timeout=10)
+            except subprocess.TimeoutExpired:
+                pass
+            raise
+        out = (so or b"").decode("utf-8", "replace").strip()
+        err = (se or b"").decode("utf-8", "replace").strip()
         return (out + ("\n" + err if err else "")).strip() or ("تم" if p.returncode == 0 else f"exit {p.returncode}"), p.returncode != 0
 
     @staticmethod
     def q(s):
-        """A PowerShell single-quoted literal."""
-        return "'" + str(s).replace("'", "''") + "'"
+        """A PowerShell single-quoted literal. PowerShell also ends a literal at the curly quotes ‘ ’ ‚ ‛, so all of them are doubled."""
+        return "'" + re.sub("['‘’‚‛]", lambda m: m.group() * 2, str(s)) + "'"
 
     def _vk(self, vk, n=1):
         for _ in range(n):
@@ -348,7 +358,7 @@ class System:
                     return "ده التطبيق نفسه", True
                 return ps(f"Stop-Process -Id {int(t)} -Force -PassThru | ForEach-Object {{ \"stopped $($_.ProcessName) ($($_.Id))\" }}")
             name = t[:-4] if t.lower().endswith(".exe") else t
-            if name.lower() in ("blackdragon", "explorer", "csrss", "winlogon", "lsass", "services", "smss", "wininit", "system", "svchost", "dwm"):
+            if name.lower() in ("blackdragon", "whitebird", "explorer", "csrss", "winlogon", "lsass", "services", "smss", "wininit", "system", "svchost", "dwm"):
                 return f"«{name}» من أساسيات ويندوز أو التطبيق نفسه، مش هتتقفل من هنا", True
             return ps(f"Get-Process -Name {q(name)} -ErrorAction Stop | Stop-Process -Force -PassThru | ForEach-Object {{ \"stopped $($_.ProcessName) ($($_.Id))\" }}")
         if act == "apps":
@@ -458,7 +468,7 @@ class System:
             if not t:
                 return "اكتب نص الإشعار في text", True
             return ps("Add-Type -AssemblyName System.Windows.Forms; $n=New-Object System.Windows.Forms.NotifyIcon; $n.Icon=[System.Drawing.SystemIcons]::Information; "
-                      f"$n.Visible=$true; $n.ShowBalloonTip(6000, 'التنين الأسود', {q(t[:240])}, 'Info'); Start-Sleep 6; $n.Dispose(); 'notified'", timeout=20)
+                      f"$n.Visible=$true; $n.ShowBalloonTip(6000, 'التنين الأحمر', {q(t[:240])}, 'Info'); Start-Sleep 6; $n.Dispose(); 'notified'", timeout=20)
         return f"unknown system action {act}. المتاح: {', '.join(self.ACTIONS)}", True
 
 
