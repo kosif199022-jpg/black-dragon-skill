@@ -3,7 +3,7 @@
 
   doctor                                    MarkItDown متثبت؟ وأنهي صيغ شغالة؟ ولو لأ يقولك تثبّته إزاي
   convert FILE [FILE ...] [--out DIR] [--print] [--max-chars N] [--json]
-                                            كل ملف ← DIR/<الاسم>.md (الافتراضي: مجلد _md جنب الملف)
+                                            كل ملف ← DIR/<الاسم بامتداده>.md (الافتراضي: مجلد _md جنب الملف)
   batch DIR [--out DIR] [--recursive] [--json]
                                             كل المستندات اللي في المجلد
   exts                                      الصيغ اللي بيحوّلها
@@ -168,7 +168,7 @@ def convert_one(p, md_cls=None):
 def out_path(p, out):
     d = Path(out) if out else Path(p).parent / "_md"
     d.mkdir(parents=True, exist_ok=True)
-    return d / (Path(p).stem + ".md")
+    return d / (Path(p).name + ".md")      # report.pdf -> report.pdf.md, so report.docx in the same folder never collides
 
 
 def run(files, out=None, show=False, max_chars=0, as_json=False):
@@ -262,10 +262,10 @@ def selftest():
         check("نص عادي زي ما هو", fallback(t / "d.txt")[0] == "سطر عربي\n")
         check("صيغة مش معروفة من غير MarkItDown ← رسالة واضحة", _raises(lambda: convert_one(_mk(t / "e.bin"), md_cls=False), "مش عارف أحوّله"))
         check("ملف مش موجود ← رسالة واضحة", _raises(lambda: convert_one(t / "zz.pdf"), "مش موجود"))
-        check("الناتج في _md جنب الملف", out_path(t / "a.csv", None) == t / "_md" / "a.md")
+        check("الناتج في _md جنب الملف", out_path(t / "a.csv", None) == t / "_md" / "a.csv.md" and out_path(t / "a.html", None) != out_path(t / "a.csv", None))
         rc = run([t / "a.csv", t / "d.txt"], out=t / "o", as_json=False)
-        check("convert بيكتب ملفات .md", rc == 0 and (t / "o" / "a.md").is_file() and (t / "o" / "d.md").is_file())
-        check("batch بيتجاهل _md ونفسه", batch(t, out=t / "o2") == 0 and not (t / "o2" / "a.md").read_text(encoding="utf-8") == "")
+        check("convert بيكتب ملفات .md", rc == 0 and (t / "o" / "a.csv.md").is_file() and (t / "o" / "d.txt.md").is_file())
+        check("batch بيتجاهل _md ونفسه", batch(t, out=t / "o2") == 0 and not (t / "o2" / "a.csv.md").read_text(encoding="utf-8") == "")
         M = markitdown()
         if M:
             md, eng = convert_one(t / "b.html", M)

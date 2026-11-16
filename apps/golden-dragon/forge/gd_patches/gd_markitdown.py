@@ -49,7 +49,7 @@ APP_METHODS = r'''    # ===== التنين الذهبي 2026-11-16: المرفق
         try:
             out = Path(self.wd()) / "_md"
             out.mkdir(parents=True, exist_ok=True)
-            saved = out / (p.stem + ".md")
+            saved = out / (p.name + ".md")      # a.pdf and a.docx in one chat never overwrite each other
             saved.write_text(text, encoding="utf-8")
         except OSError:
             saved = None

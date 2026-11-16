@@ -61,7 +61,7 @@ def test_with_markitdown_a_word_file_becomes_markdown(tmp_path):
     c = C()
     c.wd = lambda: tmp_path / "work"
     saved, text = c._gd_markdown(f)
-    assert "# تقرير التنين" in text and saved == tmp_path / "work" / "_md" / "r.md" and saved.read_text(encoding="utf-8") == text
+    assert "# تقرير التنين" in text and saved == tmp_path / "work" / "_md" / "r.docx.md" and saved.read_text(encoding="utf-8") == text
     c.GD_MD_MAX = 30
     _, cut = c._gd_markdown(f)
     assert "اتقصّ هنا" in cut and str(saved) in cut

@@ -12,7 +12,7 @@ description: >-
 R="python -X utf8 scripts/rd.py"
 $R md doctor                                   # MarkItDown متثبت؟ وأنهي صيغ شغالة؟
 $R md install --yes                            # pip install "markitdown[all]" (مرة واحدة)
-$R md convert report.pdf                       # ← _md/report.md جنب الملف
+$R md convert report.pdf                       # ← _md/report.pdf.md جنب الملف
 $R md convert a.docx b.pptx c.xlsx --out D:\work\_md
 $R md convert book.pdf --print --max-chars 4000   # يكتب الملف ويطبع أوله
 $R md batch D:\inbox --recursive               # كل المستندات اللي في المجلد ← D:\inbox\_md
