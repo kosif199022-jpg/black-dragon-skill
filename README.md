@@ -4,6 +4,8 @@
 
 **الاستخدام في أي محادثة مع Claude:** ابعت لينك المستودع ده، أو ابعت ملف [`BOOT.md`](BOOT.md)، وقول «ابدأ». Claude هيحمّله ويفهمه ويثبّته ويشتغل بيه طول المحادثة.
 
+**🐉 التنين الذهبي (التطبيق):** أحدث تطبيق، فيه كل الطائر الذهبي والأبيض ومعاه **🧐 مراجع التفكير** (وكيل تاني بيراجع تفكير التنين وهو شغال ويصحّحه)، والبحث في المحادثات وتثبيتها، وفحص التسليم ✅/❌. الكود في [`apps/golden-dragon`](apps/golden-dragon).
+
 - الخريطة: [`references/RD_MAP.md`](references/RD_MAP.md)
 - التغييرات: [`references/RD_CHANGELOG.md`](references/RD_CHANGELOG.md)
 - سجل الدمج: [`references/MERGE_V271.md`](references/MERGE_V271.md)
