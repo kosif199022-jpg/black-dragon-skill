@@ -30,6 +30,7 @@ APP = SKILL / "app"
 HOME = Path.home()
 PC_CANDIDATES = [
     HOME / "OneDrive" / "Desktop" / "التنين الأسود",
+    HOME / "OneDrive" / "Desktop" / "مهارات" / "التنين الأسود",   # the folder moved into «مهارات» on 2026-11-15
     HOME / "Desktop" / "التنين الأسود",
     HOME / "kosif-own" / "black-dragon",
 ]

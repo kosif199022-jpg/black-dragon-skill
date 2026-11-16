@@ -23,7 +23,7 @@ It reads and advises; it never installs, publishes, spends or deletes."""
 import argparse, datetime, hashlib, json, math, os, re, shutil, subprocess, sys
 from pathlib import Path
 
-VERSION = "2.19.0"
+VERSION = "3.2.0"
 ROOT = Path(__file__).resolve().parent.parent
 ENGINE = ROOT / "engine"
 MIND = ROOT / "mind"
@@ -84,7 +84,7 @@ def place():
         return "cloud-chat"
     if os.environ.get("CLAUDE_CODE_REMOTE") == "true":
         return "cloud-code"
-    owner = (Path.home() / "OneDrive" / "Desktop" / "التنين الأسود").exists() or (Path.home() / "re-tools" / "retool.py").exists()
+    owner = (Path.home() / "OneDrive" / "Desktop" / "التنين الأسود").exists() or (Path.home() / "OneDrive" / "Desktop" / "مهارات" / "التنين الأسود").exists() or (Path.home() / "re-tools" / "retool.py").exists()
     return "pc-owner" if owner else "pc-other"
 
 
@@ -257,7 +257,8 @@ def _route_idf(pbs):
 
 INTENT = [  # (pattern on the normalized text, playbook id, bonus): few, general, high precision
     (r"(حلل|افحص|ادرس)\S*.{0,80}(اصنع|اعمل|ابني|سوي)\S*.{0,40}(مثله|زيه|شبيه|شبهه|نسخه|نفسه)", "clone-own-tool", 6.0),
-    (r"(طور|طوير|تطوير|ارفع|زود)\S*.{0,60}(التنين|نفسك|ذكاءك|ذكائك|قدراتك)", "self-improve", 5.0),
+    (r"(طور|طوير|تطوير|ارفع|زود|حسن|قوي)\S*.{0,60}(التنين|نفسك|ذكاءك|ذكائك|قدراتك|(تفكير|ذكاء|ذكائ|عقل)(ه|ك|ها)(?!\w)"
+     r"|(تفكير|ذكاء|عقل)\s+(ال)?(تنين|طائر))", "self-improve", 5.0),     # v2.14: «طور تفكيره وذكائه», «حسن عقل الطائر»
     (r"(فين|وين)\s+(الملف|الفيديو|الفديو|المهاره|النسخه|الناتج)|^(خلصت|عملت ايه|وصلت لفين)", "status", 5.0),
     (r"(اصنع|اعمل|ابني|سوي|انشئ)\S*\s+(لي\s+|لكلاود\s+)?مهار", "build-skill", 4.0),
     # v2.8, from the blind-labelled dev half: status questions, the owner's own app, and growing the dragon itself
@@ -272,6 +273,11 @@ URL_ONLY = [(r"github\.com/", "re-repo"), (r"(tiktok\.com|youtu\.?be|instagram\.
 GREET_RX = (r"^\W*(ازيك|ازيكم|اهلا|مرحبا|السلام عليكم|صباح الخير|مساء الخير|من انت|مين انت|انت مين|شكرا|تمام|بالعربي|لا\W*كفايه|كفايه)\W*$")
 NONE_EXTRA = r"^\W*(قول|قل|رد|اكتب)\W+(تم|كلمه واحده|بكلمه)|^\W*تم تسجيل الدخول|^\W*(رد|جاوب)\W+.{0,20}بكلمه"
 CONT_RX = (r"^\W*(موافق|ماشي|اوك|ok|كمل|اكمل|يلا|ابدا|نعم|ايوه|اه|جرب|حلها|اصلح وكمل|كمل وصلح|نفذ|ثبتها|ثباها)\W*$")
+# v3.0 (golden): a SHORT complaint about the work just done («التحميل لا يعمل», «حل المشكلة», «المحاكي ما فتحش ليه») is a
+# follow-up, not a new task: its own words («تحميل», «محاكي») must not pick a fresh road over the topic of the chat.
+FIX_RX = (r"(لا يعمل|لا تعمل|مش شغال|مش بيشتغل|مابيشتغلش|ما ?اشتغلش|ما ?فتحش|مش بيفتح|ما ?بيفتحش|لا يفتح|مش راضي|بايظ|باظ|"
+          r"حل المشكله|صلح المشكله|اصلح المشكله|حل الخطا|صلح الخطا|فيه مشكله|في مشكله|فيه خطا|مش ظاهر|مش طالع|وقف|علق|مفيش حاجه حصلت)")
+FIX_MAX = 8                 # tokens: longer messages carry their own task
 NONE_RX = (r"^\W*(ازيك|ازيكم|اهلا|مرحبا|السلام عليكم|صباح الخير|مساء الخير|من انت|مين انت|انت مين|شكرا|تمام|موافق|ماشي|اوك|ok|كمل|اكمل|يلا)\W*$")  # v2.7, kept for older callers
 # v2.8: a greeting with only small talk around it («ازيك يا تنين عامل ايه», «شكرا يا باشا») is chat too, and
 # «تمام يا تنين كمل» is a follow-up: the small-talk words are taken off before CONT_RX is tried.
@@ -280,6 +286,233 @@ CHAT_WORDS = CHAT_HEAD | set(norm(w) for w in "عليكم الخير النور 
                                               "ايه يا تنين التنين الاحمر الاسود دراجون كلود حبيبي حبيب باشا معلم يسطا صاحبي جدا اوي خالص كتير بجد والله "
                                               "الحمد لله كده خلاص الف مليون you how are".split())
 NO_CARRY = {"none", "status"}       # v2.8: a status question asks about the work, it is not a topic the next message inherits
+# ------------------------------------------------------------------ consent (v2.14)
+# «كمل» keeps the work going; it is not a yes to anything that leaves the PC or can't be undone. Measured 2026-11-14: «كمل»
+# right after «ارفعه؟» was read as a push approval and the safety layer refused the push. An action counts as approved only
+# when the message itself names it; a bare «موافق/ايوه/نفذ» covers only what the last question named (the brain can't see it).
+CONSENT_AR = {"publish": "الرفع أو النشر", "install": "التثبيت", "delete": "المسح", "spend": "الفلوس أو الرصيد", "merge": "الدمج في main"}
+_C_OBJ = ("هالي", "هولي", "هملي", "هالك", "لي", "هم", "ها", "هو", "وه", "ه", "و", "وا", "ة", "ي", "يه", "ك", "")
+_C_ROOT = {"publish": ("رفع", "نشر"), "install": ("ثبت", "سطب"), "delete": ("مسح", "حذف"),
+           "spend": ("دفع", "شتري", "شتر", "صرف", "شحن"), "merge": ("دمج",)}
+_C_IMP = {"publish": ("ارفع", "انشر"), "install": ("ثبت", "اثبت", "سطب"), "delete": ("امسح", "احذف"),
+          "spend": ("ادفع", "اشتري", "اشتر", "اصرف", "اشحن"), "merge": ("ادمج",)}
+_C_NOUN = {k: set(norm(v).split()) for k, v in {
+    "publish": "الرفع رفع النشر نشر", "install": "التثبيت تثبيت التسطيب تسطيب التحديث تحديث",
+    "delete": "المسح مسح الحذف حذف", "spend": "الدفع دفع الشرا الشراء شراء الاشتراك اشتراك السبونسر سبونسر", "merge": "الدمج دمج"}.items()}
+_C_TRANS = {k: set(norm(v).split()) for k, v in {    # English verbs written in Arabic letters
+    "publish": "بوش ابوش ديبلوي ابلود اببلود بوست", "install": "انستول انستل ابديت اپديت", "delete": "ديليت دليت",
+    "spend": "سابسكرايب سبسكرايب", "merge": "ميرج"}.items()}
+_C_SPOT = "تايتل عنوان نص كلام كابشن ترجمه لوجو شعار علامه عنصر ايقونه زرار طبقه مكان ركن فوق لفوق تحت لتحت يمين شمال وسط"
+_C_CUT = "اول اخر ثواني ثانيه ثانيتين دقيقه دقايق جزء مشهد مشاهد لقطه لقطات فريم فريمات"
+_C_TRAP = {k: set(norm(v).split()) for k, v in {   # the same verb on an edit or a layout, not on the PC or the repo
+    "publish": "صوت جوده دقه حجم اضاءه سطوع فوليوم مستوي مستوى سرعه ريزوليوشن تباين كونتراست بيتريت فريم فريمات درجه نسبه قيمه "
+               "حده لون الوان تشبع شارب ان in " + _C_SPOT,          # «اعمل بوش ان للكاميرا» = a camera push-in
+    "install": "كاميرا كادر لقطه لقطات فيديو صوره شاشه تصوير حركه خط ايد موبايل تليفون عين نظر " + _C_SPOT,
+    "delete": "خلفيه ضوضاء نويز صوت علامه ووترمارك لوجو كلام صدي اكو حروف ترجمه بقع بقعه كلمه كلمات سطر جمله ضوئي " + _C_CUT,
+    "spend": "نظر دماغك دماغي دماغ كليب مقطع لقدام قدام لورا تايملاين",          # «ادفع الكليب لقدام» moves a clip
+    "merge": "فيديو فيديوهين فيديوهات مقطع مقطعين مقاطع صور صورتين صوت اغنيه كليب كليبين لقطات لقطتين طبقات الطبقات للطبقات طبقتين لير لاير لايرز تراك تراكات"}.items()}
+_C_FILES = set(norm("ملف ملفات فولدر مجلد ريبو مستودع نسخه نسخ فرع برانش شات شاتات حساب").split())
+_C_PLACES = set(norm("يوتيوب اليوتيوب تيك تيكتوك توك انستا الانستا انستجرام فيسبوك الفيسبوك جيت جيتهاب github الموقع النت درايف الدرايف "
+                     "صفحه الصفحه صفحتي بيدج البيدج جروب الجروب بروفايل البروفايل").split())
+_C_SEND = set(norm("جروب الجروب الواتس واتس واتساب تليجرام ايميل الايميل ماسنجر الناس").split())
+_C_PKG = set(norm("مهاره مهارات تطبيق برنامج نسخه سكيل سكيلز اسكيل اسكيلز مكتبه باكدج باكيج package plugin بلجن اضافه اكستنشن اداه ffmpeg درايفر npm pip").split())
+_C_GEN = set(norm("شغل استخدم جرب ولد اعمل ارسم صمم").split())
+_C_PAID = set(norm("مدفوع المدفوع بالمدفوع بالرصيد بالكريدت بالكريدتس").split())
+_C_FILLER = set(norm("لي لنا ليا شويه شوية ده دي دول بقي كمان اي ال للـ").split())
+_C_NEG1 = set(norm("لا بلاش اوعي اوعى اياك متخليش ماتخليش مفيش dont don't never not no").split())
+_C_WANT = set(norm("ممكن عايزك عاوزك عايزين عاوزين محتاجك محتاجين لازم ياريت حاول يلا please موافق").split())
+_C_GO = set(norm("موافق موافقه اوافق ماشي تمام اوك ok يلا ابدا اعمل نفذ خلص كمل").split())
+_C_LATER_W = set(norm("بكره بعدين لسه استني استنى بنفسي").split())
+_C_LATER_RX = r"مش\s+(النهارده|دلوقتي)|غير\s+بعد\s+ما|لما\s+(ا|ن)?(شوف|راجع|اراجع|تفرج|اتفرج|رجع|ارجع|قول|اقول|خلص|اخلص)"
+_C_CONT = set(norm("كمل اكمل كملي وكمل يلا ابدا جرب حلها صلح اصلح اصلحها ماشي اوك اوكي ok okay تمام go continue براحتك بس كده").split())
+_C_YES = set(norm("موافق موافقه ايوه ايوا اه نعم نفذ نفذها اكيد اتفقنا yes yep sure").split())
+_C_FREE = r"اعمل\s+(اللي|الي)\s+(انت|انتا)\s+شايفه?|زي\s+ما\s+(انت\s+)?شايف|علي\s+راحتك|براحتك"
+_C_EN = {"publish": r"\b(push|publish|upload|deploy|post)\b(?!-)", "install": r"\binstall\b", "delete": r"\b(delete|remove the files)\b",
+         "spend": r"\b(buy|pay|purchase|subscribe)\b", "merge": r"\bmerge\b"}
+_C_EN_TRAP = {"merge": r"\s+(\S+\s+)?(layers|clips|videos|tracks|audio|للطبقات|الطبقات|طبقات|المقاطع|الكليبات)",
+              "delete": r"\s+(the\s+)?(first|last|seconds|frames)"}
+_C_EN_NEG = {"dont", "don't", "never", "not", "no", "بلاش", "بدون", "غير", "مش"}
+_ON = norm("على")                                  # «على» is «علي» once normalised
+_C_SPLIT = r"[،,.;؛!\n]+|\s+(?:بس|وبعدين|وبعدها|وبعد\s+كده)\s+"          # «؟» stays inside its clause: it marks the question
+
+
+def _c_tail(x, root):
+    """'ارفعه' with stem 'ارفع' -> 'ه'; None when what follows the stem is not an object or a voice-typed ending."""
+    return x[len(root):] if x.startswith(root) and x[len(root):] in _C_OBJ else None
+
+
+def _c_bare(w):
+    return w[1:] if w[:1] in "وف" and len(w) > 3 else w
+
+
+def _c_form(w, act):
+    """How one word names an action: ('imp'|'pres'|'fut'|'neg', object_suffix) or None (past, passive, habitual, other).
+    imp «ارفعه», pres «ترفعه/نشتري», fut «هنرفعه», neg «ماترفعش/متدمجش/متترفعش». A glued و/ف is taken off first."""
+    for x in dict.fromkeys((w, _c_bare(w))):
+        if x.endswith("ش") and len(x) > 3:
+            core = x[:-1]
+            for pre in ("ما", "م", ""):
+                c = core[len(pre):] if core.startswith(pre) else ""
+                if c[:1] in ("ت", "ن", "ي"):
+                    for body in (c[1:], c[2:] if c[1:2] == "ت" else None):      # «متترفعش»: a passive ت after the person
+                        for r in _C_ROOT[act]:
+                            if body is not None and _c_tail(body, r) is not None:
+                                return "neg", _c_tail(body, r)
+            continue
+        for s in _C_IMP[act]:
+            if _c_tail(x, s) is not None:
+                return "imp", _c_tail(x, s)
+        for r in _C_ROOT[act]:
+            if x[:1] in ("ت", "ن", "ي") and _c_tail(x[1:], r) is not None:
+                return "pres", _c_tail(x[1:], r)
+            if x[:1] in ("ت", "ن", "ي") and x[1:2] == "ت" and _c_tail(x[2:], r) is not None:
+                return "pres", _c_tail(x[2:], r)                  # passive «تترفع»، «تتصرف»
+            if x[:1] == "ه":
+                if _c_tail(x[1:], r) is not None:
+                    return "fut", _c_tail(x[1:], r)
+                if x[1:2] in ("ت", "ن", "ي") and _c_tail(x[2:], r) is not None:
+                    return "fut", _c_tail(x[2:], r)
+    return None
+
+
+def _c_is_neg_word(w):
+    x = _c_bare(w)
+    return any(_c_form(w, a) and _c_form(w, a)[0] == "neg" for a in CONSENT_AR) or (x.endswith("ش") and x[:1] == "م" and len(x) > 3)
+
+
+def _c_negated(words, i, negs=()):
+    b1 = words[i - 1] if i >= 1 else ""
+    b2 = words[i - 2:i] if i >= 2 else []
+    b3 = words[i - 3:i - 1] if i >= 3 else []
+    return (b1 in _C_NEG1 or b1 == "بدون" or bool({"مش", "مفيش"} & set(words[max(0, i - 3):i])) or b2 in (["من", "غير"], ["بدون", "ما"], ["do", "not"])
+            or (b1 == "ما" and b3 == ["من", "غير"]) or (b1 == "ولا" and any(j < i for j in negs)))   # «ماترفعش ولا تدمج»
+
+
+def _c_next(words, i, k=2):
+    out = []
+    for w in words[i + 1:]:
+        w = w[2:] if w.startswith("ال") and len(w) > 3 else w
+        if w in _C_FILLER:
+            continue
+        out.append(w)
+        if len(out) == k:
+            break
+    return out
+
+
+def _c_clause(words, question, approve, forbid):
+    """One clause («، بس وبعدين» split the message): verbs, nouns, transliterations and special phrases."""
+    negs = [i for i, w in enumerate(words) if _c_is_neg_word(w) or w in {"مش", "لا", "مفيش", "بلاش", "بدون"}]
+    text = " ".join(words)
+    later = bool(set(words) & _C_LATER_W) or bool(re.search(_C_LATER_RX, text))
+    go_at = [i for i, w in enumerate(words) if _c_bare(w) in _C_GO]
+
+    def mark(act, i):
+        (forbid if _c_negated(words, i, negs) else approve).add(act)
+
+    for i, w in enumerate(words):
+        nxt = _c_next(words, i)
+        either_or = question and "ولا" in words[i + 1:]          # «ادمجه ولا نستنى؟» decides nothing
+        x = _c_bare(w)
+        for act in CONSENT_AR:
+            f = _c_form(w, act)
+            if f:
+                kind, obj = f
+                if not obj and bool(nxt) and nxt[0] in _C_TRAP[act]:
+                    continue                                      # «ارفع الصوت», «متثبتش الكاميرا», «احذف اول تلات ثواني»
+                if kind == "neg":
+                    forbid.add(act)
+                elif kind == "imp":
+                    if _c_negated(words, i, negs):
+                        forbid.add(act)
+                    elif not either_or:
+                        approve.add(act)
+                elif kind == "pres":
+                    want = set(words[max(0, i - 2):i]) & _C_WANT or any(j < i for j in go_at if words[j] == "موافق")
+                    if _c_negated(words, i, negs):
+                        forbid.add(act)
+                    elif want and not either_or and not (
+                            question and (x[:1] != "ت" or not set(words[max(0, i - 2):i]) & {"ممكن", "ياريت", "please"})):
+                        approve.add(act)                          # «ممكن ترفعه»، «موافق تنزلها وتثبتها»
+                elif kind == "fut":
+                    if _c_negated(words, i, negs) or later:
+                        forbid.add(act)                           # «هنرفعه بكره»، «هرفعه بنفسي» = not now, not you
+            if x in _C_NOUN[act] and not (nxt and nxt[0] in _C_TRAP[act]):
+                before = words[max(0, i - 3):i]
+                if (_c_negated(words, i, negs) or before[-2:] == ["من", "غير"] or set(before) & {"بلاش", "بدون", "مش"} or later
+                        or "لا" in words[i + 1:i + 3]):
+                    forbid.add(act)                               # «من غير الرفع»، «استنى على الدمج لحد بكره»
+                elif set(before) & _C_GO and (w.startswith(("ال", "وال")) or set(words[max(0, i - 2):i]) & _C_GO):
+                    approve.add(act)                              # «موافق على الرفع»، «اعمل اشتراك»
+            xt = x[2:] if x.startswith("ال") and len(x) > 4 else x
+            if xt in _C_TRANS[act] and not (nxt and nxt[0] in _C_TRAP[act]) and not (i and words[i - 1] in {"بتاع", "بتاعه", "بتاعت"}):
+                if act == "install" and xt in ("ابديت", "اپديت") and not (set(words[max(0, i - 2):i]) & {"اعمل", "عمل"} or (nxt and nxt[0] in _C_PKG)):
+                    continue                                      # «ابديت» needs «اعمل» or a package after it
+                if later or _c_negated(words, i, negs):
+                    forbid.add(act)
+                elif not question:
+                    approve.add(act)                              # «اعمل بوش»، «اعملها ديليت»، «اعمل ميرج» (a question decides nothing)
+        if x in ("شيل", "شيله", "شيلها", "شيلهم") and nxt and nxt[0] in _C_FILES:
+            mark("delete", i)
+        if _c_tail(x, "حدث") is not None and set(nxt) & _C_PKG:
+            mark("install", i)                                    # «حدّث مكتبة three.js»
+        if x.endswith("ش") and re.match(r"^(ما|م)?(ت|ن|ي)حدث", x) and set(words[i + 1:i + 3]) & _C_PKG:
+            forbid.add("install")                                 # «متحدثش اي باكدج»
+        if (_c_tail(x, "نزل") is not None or re.match(r"^(ما|م)?(ت|ن|ي)نزل\w*ش$", x)) and (
+                (_ON in words[i + 1:i + 6] and set(words[i + 1:i + 7]) & _C_PLACES) or "بوست" in words[i + 1:i + 5]):
+            (forbid if x.endswith("ش") or later or _c_negated(words, i, negs) else approve).add("publish")   # «نزل الريل على انستا»
+        if _c_tail(x, "ابعت") is not None and (set(words[i + 1:i + 7]) & _C_SEND or set(nxt) & {"لينك", "رابط"}):
+            mark("publish", i)                                    # «ابعته في جروب العيله»
+        if any(_c_tail(x, s) is not None for s in ("نزل", "فعل")) and not question and {y[2:] if y.startswith("ال") else y for y in words[:i]} & (_C_PKG - {"نسخه", "تطبيق"}):
+            mark("install", i)                                    # «الاكستنشن الجديده … فنزلها وفعلها»
+        if x in ("لينك", "رابط") and nxt and nxt[0] in ("عام", "public"):
+            mark("publish", i)
+        if any(_c_tail(y, g) is not None for y in (w, x) for g in _C_GEN) and set(words[i + 1:i + 6]) & _C_PAID:   # «ولدها»: the و is the verb's own
+            mark("spend", i)                                      # «ولّدها على Higgsfield بالكريدت المدفوع»
+    for act, rx in _C_EN.items():
+        for m in re.finditer(rx, text):
+            if act in _C_EN_TRAP and re.match(_C_EN_TRAP[act], text[m.end():]):
+                continue                                          # «merge للطبقات»
+            before = re.findall(r"[\w']+", text[:m.start()])[-3:]
+            neg = set(before) & _C_EN_NEG or any(_c_is_neg_word(b) for b in before)
+            if neg or later:
+                forbid.add(act)                                   # «متعملش push»، «من غير ما تعمل push»
+            elif not question:
+                approve.add(act)
+
+
+def consent(text):
+    """Which outward actions this message explicitly approves or forbids. {'approve': [...], 'forbid': [...],
+    'continue_only': bool («كمل» and friends: keep working, approve nothing), 'yes_only': bool (a bare «موافق/نفذ»)}."""
+    t = norm(text)
+    words = re.findall(r"[\w']+", t)
+    approve, forbid = set(), set()
+    for part in re.split(_C_SPLIT, str(text)):
+        cw = re.findall(r"[\w']+", norm(part))
+        if cw:
+            _c_clause(cw, bool(re.search(r"[؟?]", part)) or cw[:1] == ["هل"], approve, forbid)
+    approve -= forbid                                             # «ارفعه... لا ماترفعش»: the no wins
+    rest = [w for w in words if w not in CHAT_WORDS]
+    yes_only = not approve and not forbid and bool(rest) and all(w in _C_YES for w in rest)
+    cont_only = not approve and not forbid and not yes_only and (
+        (bool(words) and not rest) or (bool(rest) and all(w in _C_CONT | _C_YES | {"و"} for w in rest))
+        or (len(words) <= 8 and bool(re.search(_C_FREE, t))))
+    return {"approve": sorted(approve), "forbid": sorted(forbid), "continue_only": cont_only, "yes_only": yes_only}
+
+
+def consent_lines(c):
+    out = []
+    if c["approve"]:
+        out.append("✅ موافقة صريحة في الرسالة دي على: " + "، ".join(CONSENT_AR[a] for a in c["approve"])
+                   + (" (الفلوس: بالسعر بالظبط قبل التنفيذ)" if "spend" in c["approve"] else ""))
+    if c["forbid"]:
+        out.append("⛔ قال صراحة ماتعملش: " + "، ".join(CONSENT_AR[a] for a in c["forbid"]))
+    if c["yes_only"]:
+        out.append("🔒 «موافق/ايوه/نفذ» لوحدها = موافقة على الفعل اللي اتسمّى في آخر سؤال بس. لو السؤال ماسمّاش رفع أو تثبيت أو مسح أو دمج أو فلوس، يبقى ولا واحد منهم متوافق عليه.")
+    elif c["continue_only"]:
+        out.append("🔒 «كمل» = كمّل الشغل المحلي بس. مش موافقة على رفع أو نشر أو تثبيت أو مسح أو دمج أو فلوس: اسأل بكلمة صريحة للفعل ده.")
+    return out
+
 
 
 def _chat_rest(t):
@@ -291,7 +524,10 @@ def _chat_rest(t):
 EX_W, EX_K, EX_FLOOR, EX_P = 6.0, 5, 0.3, 2.0
 CTX_HI, CTX_LO, CTX_CONT, WEAK = 0.5, 0.1, 1.0, 6.0
 PH_W = 3.0
+PUB_SHORT, PUB_LONG = 5.0, 1.5     # v2.14: an explicit publish approval in a short message points to «ship» (dev: «ارفعه على واعطيني الرابط»)
 CONF_HI, CONF_MID = (6.0, 0.35), (3.0, 0.05)       # dev half: high 92% right, mid 79%, low 67%
+CONF_SURE = ((10.0, 0.2), (3.0, 0.8))   # v3.0: «مؤكدة» = the road is decided; dev half (both sets, 148 routed): 100% of the simple rule
+FIX_OWN = 0.3               # v3.0: weight of a short complaint's own words when the chat has a topic
 EX_EXCLUDE = set()          # example keys hidden from the memory (the evaluation hides the requests it grades)
 _ex = {}
 _tr = {}
@@ -390,10 +626,12 @@ def _pb_scores(q, pbs):
         return {}, "greet"
     if re.match(CONT_RX, t) or len(tokens(bare)) == 0 or (0 < len(rest) <= 2 and re.match(CONT_RX, " ".join(rest))):   # «كمل», «تمام يا تنين كمل», or only a path / a wrapper
         return {}, "cont"
+    fix = len(tokens(bare)) <= FIX_MAX and re.search(FIX_RX, t)
     tr = translit()
     qp = [w for w in tokens(q) if w not in QSTOP]
     idf = _route_idf(pbs)
     out = {}
+    pub = "publish" in consent(t)["approve"]
     for p in pbs:
         tot = 0.0
         for w in qp:
@@ -407,12 +645,14 @@ def _pb_scores(q, pbs):
         for rx, pid, bonus in INTENT:
             if pid == p["id"] and re.search(rx, t):
                 tot += bonus
+        if pub and p["id"] == "ship":                 # v2.14: «ارفعه على …» is a release; «ارفع الصوت» is not (the consent gate tells them apart)
+            tot += PUB_SHORT if len(qp) <= 7 else PUB_LONG
         tot += PH_W * sum(1 for ph in p.get("_ph", ()) if ph in t)
         if tot > 0:
             out[p["id"]] = tot
     for s, r in ex_near(t):
         out[r["pb"]] = out.get(r["pb"], 0.0) + EX_W * s ** EX_P      # EX_P > 1: a near-copy counts, a loose likeness barely does
-    return out, "text"
+    return out, ("fix" if fix else "text")
 
 
 def route(q, limit=5, prev=None):
@@ -421,10 +661,12 @@ def route(q, limit=5, prev=None):
     oc = outcomes()
     pbs = playbooks()
     s, kind = _pb_scores(q, pbs)
-    if prev and kind in ("cont", "text"):
+    if prev and kind in ("cont", "text", "fix"):
         sp = dict(prev) if isinstance(prev, dict) else _pb_scores(prev, pbs)[0]     # a dict = the decayed topic of the chat so far
         top = max((v for k, v in s.items() if k != "none"), default=0.0)
-        lam = CTX_CONT if kind == "cont" else (CTX_HI if top < WEAK else CTX_LO)
+        if kind == "fix" and sp:            # v3.0: a short complaint follows the chat; its own words only break ties
+            s = {k: FIX_OWN * v for k, v in s.items()}
+        lam = CTX_CONT if kind in ("cont", "fix") else (CTX_HI if top < WEAK else CTX_LO)
         for k, v in sp.items():
             if k not in NO_CARRY:
                 s[k] = s.get(k, 0.0) + lam * v
@@ -439,12 +681,15 @@ def route(q, limit=5, prev=None):
     return pb, pw
 
 
-def confidence(pb):
-    """high | mid | low | none, from the top score and its lead over the runner-up (calibrated on the dev half)."""
+def confidence(pb, kind=None):
+    """sure | high | mid | low | none, from the top score and its lead over the runner-up (calibrated on the dev half).
+    kind = the message kind from _pb_scores: a follow-up («كمل», «لا يعمل») borrows its road from the chat, so it is never «sure»."""
     if not pb or pb[0][0] < 2:
         return "none"
     s1, s2 = pb[0][0], (pb[1][0] if len(pb) > 1 else 0.0)
     gap = (s1 - s2) / s1
+    if kind not in ("cont", "fix") and any(s1 >= a and gap >= b for a, b in CONF_SURE):
+        return "sure"
     if s1 >= CONF_HI[0] and gap >= CONF_HI[1]:
         return "high"
     if s1 >= CONF_MID[0] and gap >= CONF_MID[1]:
@@ -452,7 +697,7 @@ def confidence(pb):
     return "low"
 
 
-CONF_AR = {"high": "عالية", "mid": "متوسطة", "low": "ضعيفة", "none": "مفيش"}
+CONF_AR = {"sure": "مؤكدة", "high": "عالية", "mid": "متوسطة", "low": "ضعيفة", "none": "مفيش"}
 # the topic of the chat so far: every message adds its scores, older ones fade (0.7 per message). Dev half: 73% → 83% acceptable.
 TOPIC_DECAY, TOPIC_CAP, TOPIC_TTL = 0.7, 20.0, 45 * 60
 
@@ -512,17 +757,19 @@ def plan(q, as_json=False, prev=None):
     q = u["text"]
     before = _pb_scores(understand(prev)["text"], playbooks())[0] if prev else _topic_for(q, last_turn())     # read-only: plan never moves the topic
     pb, pw = route(q, prev=before or None)
-    conf = confidence(pb)
+    conf = confidence(pb, _pb_scores(q, playbooks())[1])
     ls = recall(q, domain=pb[0][1].get("domain") if pb else None)
     if as_json:
         print(json.dumps({"place": where, "playbooks": [{k: v for k, v in p.items() if not k.startswith("_")} | {"score": round(s, 2)} for s, p in pb],
                           "powers": [{"id": p["id"], "ar": p.get("ar"), "cost": p.get("cost"), "score": s} for s, p in pw],
-                          "lessons": ls, "confidence": conf, "used_context": bool(before)}, ensure_ascii=False, indent=1))
+                          "lessons": ls, "confidence": conf, "used_context": bool(before), "consent": consent(q)}, ensure_ascii=False, indent=1))
         return
     P = print
-    P(f"🐉 التنين الأحمر v{VERSION} · المكان: {where}")
+    P(f"🐉 التنين الذهبي v{VERSION} · المكان: {where}")
     if u["changed"]:
         P("🔤 الطلب بعد فك الكتابة: " + q[:200] + ("  (الكيبورد كان إنجليزي)" if u["layout_fixed"] else "") + ("  · " + "، ".join(u["words_fixed"]) if u["words_fixed"] else ""))
+    for line in consent_lines(consent(q)):         # v2.14
+        P(line)
     P("\n① أول رد (قبل أي أداة):")
     P(f"   فهمت إنك عايز: «{' '.join(q.split())[:160]}» ← اكتبها بكلامك بعد فك غلطات الإملاء، وقول خمّنت إيه.")
     P("   هعمل: 3–5 نقط + الناتج فين + ⏱ التقدير. سؤال واحد بس لو الطلب ليه معنيين.")
@@ -834,16 +1081,22 @@ def _garbled(run):
     letters = [c for c in run.lower() if c.isalpha()]
     if len(letters) < 5 or re.search(r"https?://|[\\/]\w+[\\/]|\.\w{2,4}\b|--\w|^\s*(pip|npm|npx|git|cd|python|curl)\b", run):
         return False
-    odd = sum(1 for t in toks if re.search(r"[A-Za-z][;',\[\]`][A-Za-z]|[;'\[\]`]$|^[;',\[\]`]", t))
+    eng = [t for t in toks if t.lower().strip(".,!?") in ENGLISH or _CONTRACTION.match(t.strip(".,!?"))]   # v2.14: don't / it's
+    odd = sum(1 for t in toks if t not in eng and re.search(r"[A-Za-z][;',\[\]`][A-Za-z]|[;'\[\]`]$|^[;',\[\]`]", t))
     vowels = sum(1 for c in letters if c in "aeiou") / len(letters)
-    known = sum(1 for t in toks if t.lower().strip(".,") in ENGLISH)
+    known = len(eng)
     if known >= max(1, len(toks) // 2):
         return False
     return odd >= max(1, len(toks) // 4) or (vowels < 0.24 and len(toks) >= 2)
 
 
 ENGLISH = set("the a an and or to of in on for with is are it this that you me my i we be do not no yes can will have has from at by as if so but ok okay please make create build run test install update fix "
-              "open file files app video image skill skills dragon black white red claude code github repo link download upload render blender chrome windows".split())
+              "open file files app video image skill skills dragon black white red claude code github repo link download upload render blender chrome windows "
+              # v2.14: the commands the owner types in English (an English request must never be «decoded» into Arabic letters)
+              "push pull merge commit branch main delete remove publish deploy buy pay stop wait cancel continue go ahead now yet later "
+              "done good great thanks thank sure yep nope dont cant wont all just them now".split())
+_CONTRACTION = re.compile(r"^(don|can|won|isn|aren|wasn|weren|doesn|didn|hasn|haven|hadn|shouldn|wouldn|couldn|mustn|it|that|there|what|"
+                          r"let|he|she|i|you|we|they|who)'(t|s|re|ve|ll|d|m)$", re.I)
 
 
 # ------------------------------------------------------------------ v2.8: the fixed text the app wraps around a request
@@ -1032,6 +1285,26 @@ def _clip(s, n):
     return (cut[:sp] if sp > n * 0.6 else cut).rstrip(" ،,.:;←-") + "…"
 
 
+def understand_guard(kind, conf, pb, lt, text):
+    """v3.0 (golden): how much to trust the road, said plainly, so the FIRST reply understands right.
+    Dev half: «مؤكدة» was right every time; «عالية» ~91% on the owner's real messages; under that it is a guess."""
+    last = _clip((lt or {}).get("task_q", ""), 160)
+    if kind == "cont":
+        return [f"🎯 فهم: رسالة متابعة قصيرة ← كمّل نفس الشغل اللي قبلها" + (f" («{last}»)" if last else "") + "، ماتبدأش طريق جديد."]
+    if kind == "fix":
+        return [f"🎯 فهم: شكوى على الشغل اللي اتعمل" + (f" («{last}»)" if last else "") + " ← اعمل reproduce للمشكلة دي وصلّحها في نفس الحاجة، "
+                "ماتفتحش طريق جديد من كلمات الرسالة. لو مش واضح «أنهي حاجة مش شغالة»، اسأل سؤال واحد."]
+    if kind == "greet" or not pb or pb[0][0] < 2:
+        return [] if kind == "greet" else ["🎯 فهم: الطلب مالوش طريق معروف ← افهمه من كلامه هو، واكتب «فهمت إنك عايز:» قبل أي أداة."]
+    alts = [p["id"] for s, p in pb[1:3] if s >= 2]
+    if conf == "sure":
+        return ["🎯 فهم: الطريق محسوم (ثقة مؤكدة) ← نفّذ."]
+    if conf == "high":
+        return ["🎯 فهم: الطريق غالبًا صح ← في «فهمت إنك عايز:» اكتب التسليم بالظبط، ولو الطلب بيقول حاجة غير الطريق امشي ورا الطلب."]
+    return [f"🎯 فهم: مش متأكد (ثقة {CONF_AR[conf]}) ← الطرق القريبة: {pb[0][1]['id']}" + (", " + ", ".join(alts) if alts else "")
+            + ". اقرا الطلب كلمة كلمة ومعاه آخر طلب" + (f" («{last}»)" if last else "") + ". لو قراءتين مختلفتين بيغيّروا التسليم: سؤال واحد قبل أي أداة تقيلة."]
+
+
 def brief(text, limit=1400, prev=None):
     """A short mission brief for a host app to put in front of the model. Reads the mind files; writes only MEM/last_turn.json
     (the chat topic, so «كمل» / «حلها» / «فين الملف» are read in the light of what came before). prev: str or topic dict."""
@@ -1039,8 +1312,8 @@ def brief(text, limit=1400, prev=None):
     lt = last_turn() if prev is None else None
     before = prev if isinstance(prev, dict) else (_pb_scores(prev, playbooks())[0] if prev else _topic_for(u["text"], lt))
     pb, pw = route(u["text"], prev=before or None)
-    conf = confidence(pb)
     s_now, kind = _pb_scores(u["text"], playbooks())
+    conf = confidence(pb, kind)
     try:                                            # best effort: a read-only disk never stops the brief
         qp = [w for w in tokens(u["text"]) if w not in QSTOP]
         task_q = u["text"] if kind == "text" and len(qp) >= 4 and conf != "none" else (lt or {}).get("task_q", "")
@@ -1051,8 +1324,10 @@ def brief(text, limit=1400, prev=None):
         pass
     where = place()
     L = []
+    cons = consent(u["text"])
     if u["changed"]:
         L.append("الطلب بعد فك الكتابة: «" + u["text"][:300] + "»" + (" (كان مكتوب والكيبورد إنجليزي)" if u["layout_fixed"] else "") + (" · تصحيح: " + "، ".join(u["words_fixed"]) if u["words_fixed"] else ""))
+    L += [] if kind == "greet" else consent_lines(cons)     # v2.14: what this message really approves (read before the road)
     if pb and pb[0][0] >= 2:
         p = pb[0][1]
         alt = pb[1][1] if len(pb) > 1 and conf in ("low", "mid") and pb[1][0] >= 2 else None
@@ -1064,6 +1339,7 @@ def brief(text, limit=1400, prev=None):
             L.append(" 🔒 بموافقة: " + " · ".join(p["ask"]))
         if p.get("gates"):
             L.append(" ✅ قبل التسليم: " + " · ".join(p["gates"][:4]))
+    L += understand_guard(kind, conf, pb, lt, u["text"])
     chat = kind in ("greet", "cont")    # v2.8.1: «ازيك يا تنين» / «شكرا» / «كمل» get no repos, skills or lessons searched from their own words
     tr = [] if chat else [r for r in repos_find(u["text"], 6) if _relevant(u["text"], r, r["repo"])][:2]
     if tr:
@@ -1079,7 +1355,8 @@ def brief(text, limit=1400, prev=None):
         L.append("دروس سابقة: " + " ⏐ ".join(_clip(l["text"], 170) for l in ls))
     out = "\n".join(L)[:limit + 500]
     return {"understood": u, "playbook": pb[0][1]["id"] if pb and pb[0][0] >= 2 else None, "library": [r["name"] for r in lb], "installed": [r["name"] for r in ih], "brief": out,
-            "confidence": conf, "alternative": pb[1][1]["id"] if len(pb) > 1 and pb[1][0] >= 2 else None, "used_context": bool(before)}
+            "confidence": conf, "alternative": pb[1][1]["id"] if len(pb) > 1 and pb[1][0] >= 2 else None, "used_context": bool(before),
+            "consent": cons}
 
 
 # ------------------------------------------------------------------ re: what is this target
@@ -1282,7 +1559,7 @@ def doctor():
         print(f" {ok(shutil.which(b))} {b}" + (f"  → {shutil.which(b)}" if shutil.which(b) else ""))
     if w == "pc-owner":
         H = Path.home()
-        for lab, p in (("تطبيق التنين (مصدر)", H / "OneDrive/Desktop/التنين الأسود/apps/dragon_desktop/app.py"), ("التطبيق المتثبت", Path(os.environ.get("LOCALAPPDATA", "")) / "BlackDragon"),
+        for lab, p in (("تطبيق التنين (مصدر)", next((p for p in (H / "OneDrive/Desktop/مهارات/التنين الأسود/apps/dragon_desktop/app.py", H / "OneDrive/Desktop/التنين الأسود/apps/dragon_desktop/app.py") if p.exists()), H / "OneDrive/Desktop/مهارات/التنين الأسود/apps/dragon_desktop/app.py")), ("التطبيق المتثبت", Path(os.environ.get("LOCALAPPDATA", "")) / "BlackDragon"),
                        ("صندوق الهندسة العكسية retool", H / "re-tools/retool.py"), ("مستودعات المونتاج", H / "dragon-repos"), ("مهارات Claude", H / ".claude/skills"),
                        ("KOSIF hub", H / "kosif-tool/.claude/skills/kosif-superpowers/scripts/hub.py"), ("ذاكرة التنين الأحمر", MEM)):
             print(f" {ok(p.exists())} {lab}  → {p}")
@@ -1311,7 +1588,7 @@ def docs():
         if p.get("tools"):
             L.append(f"- **الأدوات بالاسم:** {p['tools']}")
         L += [f"- **لو مش موجود:** {p.get('cloud_alt', '—')}", ""]
-    L += ["## باقي القدرات (50 قدرة من سجل المحرك)", "`references/ENGINE_POWERS.md` (نسخة من `engine/references/ALL_POWERS_*.md`) أو `$R map`.", ""]
+    L += [f"## باقي القدرات ({len((jload(ENGINE / 'tools' / 'powers' / 'powers.json', {}) or {}).get('powers', []))} قدرة من سجل المحرك)", "`references/ENGINE_POWERS.md` (نسخة من `engine/references/ALL_POWERS_*.md`) أو `$R map`.", ""]
     (R / "RD_CONNECTIONS.md").write_text("\n".join(L), encoding="utf-8")
     rd = jload(MIND / "re_roads.json", {})
     L = [f"# طرق الهندسة العكسية حسب نوع الهدف — v{VERSION}", "", "متولّد من `mind/re_roads.json`. `{T}` = الهدف. الأمر: `$R re TARGET`.", ""]
@@ -1390,12 +1667,14 @@ def main():
     s = sub.add_parser("krita", help="krita-draw: render scene.json | layers file.kra | info (draw with code inside the real Krita)"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("sync", help="sync-guard: words, check, fix, onsets, script, grid, selftest (captions and motion on the spoken word)"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("arena", help="arena-gate (v2.19): size, start, jobs, next, collect, advance, winner, skip, gate, selftest (the arena is a required step: competing copies, bracket, judge)"); s.add_argument("args", nargs=argparse.REMAINDER)
+    s = sub.add_parser("consent", help="consent gate: which outward actions this message explicitly approves or forbids («كمل» approves none)"); s.add_argument("q")
+    s = sub.add_parser("gold", help="Golden Bird: studio list/show/install/cmd · lib find/show/kit/stats · sync · protocol · where · selftest"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("think", help="think & plan: start, revise, check, time, mistake, mistakes, pipeline-selftest · planning-mind: card, gate, workflow, learn, lessons, types, selftest"); s.add_argument("args", nargs=argparse.REMAINDER)
     a = ap.parse_args()
 
     if a.cmd in (None, "start"):
         w = place()
-        print(f"🐉 التنين الأحمر v{VERSION} — عقل فوق محرك التنين الأسود ({len(playbooks())} playbook · {len(powers())} قدرة واتصال · {len(lessons())} درس)")
+        print(f"🐉 التنين الذهبي v{VERSION} — العقل (الأحمر) + المحرك (الأسود) + الأبيض والفائق والسينما في تنين واحد ({len(playbooks())} playbook · {len(powers())} قدرة واتصال · {len(lessons())} درس)")
         try:
             print(chats_mod().banner() + ' · سؤال عن حاجة اتعملت قبل كده: rd.py chats "…" / files "…" · قبل الكتابة في مجلد مشترك: rd.py guard PATH')
         except Exception:
@@ -1420,7 +1699,7 @@ def main():
         q = understand(a.q)["text"]
         before = _pb_scores(understand(a.prev)["text"], playbooks())[0] if a.prev else _topic_for(q, last_turn())
         pb, pw = route(q, prev=before or None)
-        print(f"ثقة الاختيار: {CONF_AR[confidence(pb)]}" + (" (بالسياق)" if before else ""))
+        print(f"ثقة الاختيار: {CONF_AR[confidence(pb, _pb_scores(q, playbooks())[1])]}" + (" (بالسياق)" if before else ""))
         for s, p in pb:
             print(f"playbook {s:5.1f}  {p['id']:<16} {p['ar']}")
         for s, r in ex_near(q, k=3):
@@ -1605,17 +1884,22 @@ def main():
         raise SystemExit(subprocess.call([sys.executable, "-X", "utf8", str(ROOT / "engine" / "skills" / "insta-reader" / "scripts" / "ig.py")] + (a.args or ["--help"])))
     elif a.cmd == "agents":
         raise SystemExit(subprocess.call([sys.executable, "-X", "utf8", str(ROOT / "scripts" / "rd_agents.py")] + (a.args or ["list"])))
-    elif a.cmd in ("dcm", "desktop", "think", "ref", "sync", "krita", "mind", "hypit", "insta", "arena"):
+    elif a.cmd in ("dcm", "desktop", "think", "ref", "sync", "krita", "mind", "hypit", "insta", "arena", "gold"):
         sk = {"dcm": ("dragon-character-memory", "dcm.py"), "desktop": ("blackdragon-desktop-bridge", "bridge.py"), "think": ("planning-mind", "plan.py"),
               "ref": ("reference-lock", "reflock.py"), "sync": ("sync-guard", "syncguard.py"),
               "krita": ("krita-draw", "krita_draw.py"), "mind": ("claude-mind", "mind.py"), "hypit": ("hypit-run", "hypit_rd.py"),
-              "insta": ("insta-reader", "insta.py"), "arena": ("arena-gate", "arena_gate.py")}[a.cmd]
+              "insta": ("insta-reader", "insta.py"), "arena": ("arena-gate", "arena_gate.py"), "gold": ("golden-bird", "gold.py")}[a.cmd]
         if a.cmd == "think" and a.args and a.args[0] in ("start", "revise", "check", "time", "mistake", "mistakes", "pipeline-selftest"):
             sk = ("planning-mind", "think.py")      # v2.9: the think-and-plan pipeline; the other words go to plan.py
             if a.args[0] == "pipeline-selftest":
                 a.args = ["selftest"] + a.args[1:]
         sc = ROOT / "engine" / "skills" / sk[0] / "scripts" / sk[1]
         raise SystemExit(subprocess.call([sys.executable, "-X", "utf8", str(sc)] + (a.args or ["--help"])))
+    elif a.cmd == "consent":
+        c = consent(understand(a.q)["text"])
+        print(json.dumps(c, ensure_ascii=False))
+        for line in consent_lines(c):
+            print(line)
     elif a.cmd == "doctor":
         doctor()
     elif a.cmd == "docs":
@@ -1653,6 +1937,12 @@ def main():
             got = understand(raw)["text"]
             if got != want:
                 bad.append(f"understand «{raw}» → «{got}», expected «{want}»")
+        for c in jload(MIND / "consent_tests.json", []) or []:       # v2.14: «كمل» approves nothing; «ارفع الصوت» is not a push
+            got = consent(understand(c["q"])["text"])
+            if got["approve"] != sorted(c.get("approve", [])) or got["forbid"] != sorted(c.get("forbid", [])) or \
+                    ("continue_only" in c and got["continue_only"] != c["continue_only"]):
+                bad.append(f"consent «{c['q']}» → +{got['approve']} -{got['forbid']} cont={got['continue_only']}, "
+                           f"expected +{c.get('approve', [])} -{c.get('forbid', [])}")
         if (LIBRARY / "index.json").is_file():
             for r in library():
                 if not (LIBRARY / r["name"] / "SKILL.md").is_file():
@@ -1687,7 +1977,7 @@ def main():
                     bad.append(f"blind chats eval: top-3 {t3}/{len(blind)} < 85%")
         except Exception as e:
             bad.append(f"rd_chats: {e}")
-        for sk, sc in (("reference-lock", "reflock.py"), ("sync-guard", "syncguard.py"), ("hypit-run", "hypit_rd.py"), ("insta-reader", "insta.py"), ("arena-gate", "arena_gate.py")):    # v2.9.1: exact reference + caption sync guards
+        for sk, sc in (("reference-lock", "reflock.py"), ("sync-guard", "syncguard.py"), ("hypit-run", "hypit_rd.py"), ("insta-reader", "insta.py"), ("arena-gate", "arena_gate.py"), ("golden-bird", "gold.py")):    # v2.9.1: exact reference + caption sync guards
             gp = ROOT / "engine" / "skills" / sk / "scripts" / sc
             if gp.is_file():
                 r = subprocess.run([sys.executable, "-X", "utf8", str(gp), "selftest"], capture_output=True, text=True, encoding="utf-8", errors="replace",

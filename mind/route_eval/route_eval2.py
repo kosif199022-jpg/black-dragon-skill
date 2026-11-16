@@ -97,7 +97,7 @@ def predict(q, prev, topic=None):
         pb, _ = rd.route(u["text"])
     ranked = [p["id"] for s, p in pb]
     top = ranked[0] if pb and pb[0][0] >= 2 else "none"
-    conf = rd.confidence(pb) if hasattr(rd, "confidence") else None
+    conf = (rd.confidence(pb, rd._pb_scores(u["text"], rd.playbooks())[1]) if "kind" in inspect.signature(rd.confidence).parameters else rd.confidence(pb)) if hasattr(rd, "confidence") else None
     LASTS[:] = [pb[0][0] if pb else 0.0, pb[1][0] if len(pb) > 1 else 0.0]
     return top, ranked[:3], conf
 

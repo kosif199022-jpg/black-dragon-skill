@@ -452,7 +452,7 @@ def cmd_pc(a):
     lap, why = on_owner_laptop()
     if not lap:
         print(f"التحكم في الكمبيوتر بيشتغل على لابتوب صاحب التنين بس ({why}).", file=sys.stderr); return 3
-    src = next((p for p in (DESKTOP_APP_SRC, HOME / "OneDrive" / "Desktop" / "التنين الأسود" / "apps" / "dragon_desktop") if (p / "control.py").is_file()), None)
+    src = next((p for p in (DESKTOP_APP_SRC, HOME / "OneDrive" / "Desktop" / "التنين الأسود" / "apps" / "dragon_desktop", HOME / "OneDrive" / "Desktop" / "مهارات" / "التنين الأسود" / "apps" / "dragon_desktop") if (p / "control.py").is_file()), None)
     if not src:
         print("control.py مش موجود (app/apps/dragon_desktop).", file=sys.stderr); return 2
     sys.path.insert(0, str(src))

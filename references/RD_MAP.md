@@ -37,6 +37,8 @@
 | `krita` | krita-draw: render scene.json | layers file.kra | info (draw with code inside the real Krita) |
 | `sync` | sync-guard: words, check, fix, onsets, script, grid, selftest (captions and motion on the spoken word) |
 | `arena` | arena-gate (v2.19): size, start, jobs, next, collect, advance, winner, skip, gate, selftest (the arena is a required step: competing copies, bracket, judge) |
+| `consent` | consent gate: which outward actions this message explicitly approves or forbids («كمل» approves none) |
+| `gold` | Golden Bird: studio list/show/install/cmd · lib find/show/kit/stats · sync · protocol · where · selftest |
 | `think` | think & plan: start, revise, check, time, mistake, mistakes, pipeline-selftest · planning-mind: card, gate, workflow, learn, lessons, types, selftest |
 | `understand` | يفهم الطلب (صوت، كيبورد إنجليزي، غلطات) |
 | `brief` | ملخص JSON: الطريق والمهارات والقدرات للطلب |
@@ -63,6 +65,7 @@
 | `engine/skills/dragon-genius` | عبقرية التنين — نظام تشغيل لـ Claude مستخلص من تحليل 100 مستودع GitHub (55 تفكير ووكلاء وذاكرة ومهارات، 45 مونتاج وصوت وأنيميشن وتحسين صورة). |
 | `engine/skills/expert-council` | مجلس الخبراء — بيجمع مجلس شخصيات خبراء عالميين لأي مجال (عدسات مستوحاة من مبادئ الأساتذة)، كل واحد يدي رأي مستقل، بعدين يتناقشوا ويتحقق المتشكك، والرئ… |
 | `engine/skills/github-atlas` | أطلس GitHub — خريطة أقوى 1000 مستودع على GitHub بالنجوم (من build-your-own-x 561k لـ etcher 35k، اتسحبت 2026-11-11) ومعاها تحميلات الإصدارات، كل مستود… |
+| `engine/skills/golden-bird` | الطائر الذهبي (Golden Bird) جوه التنين الأحمر: استوديو 10 برامج سطر أوامر مفتوحة المصدر من «مهارات\\برامج» (Rhubarb lip sync، HandBrakeCLI، Synfig، Ta… |
 | `engine/skills/hf-blender-render` | التنين الأسود — تجربة Blender على Higgsfield Sandbox بوضع تجريبي، رندر CPU مع الموافقة والقياس أولًا. |
 | `engine/skills/higgsfield-cloud` | سحابة هيجز المجانية — بتشغّل جهاز لينكس Higgsfield المجاني (sandbox_exec عادي وXL) كمزرعة رندر وتفريغ وتصفّح جنب ويندوز من غير كريدت. |
 | `engine/skills/higgsfield-free` | هيجز فيلد ببلاش — استغلال كل الإمكانيات المجانية في Higgsfield من غير ما يتصرف كريدت: سحابة لينكس للرندر والترميز والتفريغ (sandbox_exec)، Blender مست… |

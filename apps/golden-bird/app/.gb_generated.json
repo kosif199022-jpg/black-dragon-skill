@@ -1,0 +1,33 @@
+{
+ "generated": "2026-11-14 13:01:45",
+ "source": "C:\\Users\\cinde\\OneDrive\\Desktop\\التنين الأسود\\apps\\dragon_desktop",
+ "source_app_sha256": "6abc7c69e15cae3552222a62c74d94013d1b92715a4647510b198b162bcb6692",
+ "white_bird_forge_sha256": "93c79d64fb4e73e1baa39c6212e5481c0add867392751589f5044fd041773030",
+ "library_items": 154,
+ "studio_programs": 10,
+ "files": {
+  "app.py": "4370eaabc23984b6a7aeb9a18a70903644635e69f8892e5743d42243159692af",
+  "brain.py": "702cceaa81208f065f54bee1ad02ea2cc640f4fb3f0bdd3ee46d0eb69fae0c81",
+  "build.ps1": "ef47fb676a5f3605bedbb22b614f9020eb7a3de41f33e099ce1e3a5b80407906",
+  "control.py": "220ff3d849fd260c3e024f3100b6bb43684eacdae5d65d3db8a4794235f560fc",
+  "golden_tools.py": "494f9266fa34186d6c2e11dab77d1514e0e2c15765efaedcb965e5634a2add1c",
+  "mcp_control.py": "1845d07335789d60d7c31a4dc2709b8169f128a4bb9db128336c453796293c8d",
+  "mcp_dragon.py": "88b8454bf2edfd50b13d5eee7e01316adca18a9e6be7508a168d58da1ffbfb3a",
+  "README.md": "4ac91df1474d16b4bbb4d83f399b914c5d7d5dbeca3dde2286d7125a3afc6f60",
+  "voice.py": "3490ec1098c621583019374cb9910b93b63e0c4d2e1cff63e12d578d4a42a6a5",
+  "chrome_extension/background.js": "ec8f0b35fa537843e2ee6bf83bef7c11692d7a2bb4d220c4f5bf4fbea397014d",
+  "chrome_extension/icon128.png": "3d9d145022af7c670ba5f538b53fcd7fb74deb7cc524a40d017b03e7c89e2ff8",
+  "chrome_extension/manifest.json": "95697ebaee60f7ef7725e3c7561f3ab6c425628e4234183d59a1550e46f3fc1c",
+  "chrome_extension/popup.html": "7147989504269330e418cb9edb1c3fc57e047b4584882bc04b2b307a2a8eeb95",
+  "chrome_extension/popup.js": "0140fa2711641b646cf57c92dbbd89dcafd3fe73cc3c1f4962af09d782dac260",
+  "golden/library.json": "6dcce1e67863d024150c7c82c1ea072ee7ada6a5aa4c363f70cb21c9e77779e7",
+  "golden/studio.json": "d92ed5bb30fbd7aaa015e4de0c96fa579ea0bd27224d94fcab679bd1e10ce18f",
+  "ui/golden-bird.ico": "853b73bda8ef51b3508b616cec87c5b12b1a2de8e6058ff6b35681073009ae9a",
+  "ui/golden-bird.png": "f3c3728d6c418bad04b39776f97b1143af82334009fe377d750ca81d7c908544",
+  "ui/index.html": "84c98686c7af8347c3eca79d272bd32ccfebddff3d0beaf46b80a84f06897fed",
+  "ui/fonts/inter-latin-wght.woff2": "3100e775e8616cd2611beecfa23a4263d7037586789b43f035236a2e6fbd4c62",
+  "ui/fonts/noto-sans-arabic-wght.woff2": "ce85091f020920b65762b387b194ef59457ea5b25b760f2dcc35240a94bb8669",
+  "ui/fonts/OFL-inter.txt": "3b0a5fca3d17942cde889069889dedbbbd075e9b599968c82a95f4d944e9b345",
+  "ui/fonts/OFL-noto.txt": "91053c23e8a0fe5fc9b5fdbe5ff74ceffd66f6f996c123f1a6ca4c23487c1fff"
+ }
+}
