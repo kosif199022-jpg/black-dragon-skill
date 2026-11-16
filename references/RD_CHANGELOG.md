@@ -8,6 +8,12 @@
 
 # سجل تغييرات التنين الأحمر
 
+## v3.3.1 — 2026-11-16 (تصليحات)
+- doc-reader: ملف نص بنهايات ويندوز (CRLF) كان بيطلع `.md` فيه `\r\r\n`، و`rd.py selftest` كان أحمر على `main` في ويندوز (13/14). اتوحّدت نهايات السطور، وفحص جديد بملف CRLF حقيقي (15/15).
+- وصف `SKILL.md` كان 1,347 حرف والحد 1,024 (`quick_validate.py`)، فرفع المهارة بيترفض. اتختصر من غير ما يضيع أي طريق تشغيل مهم.
+- BOOT.md وCLAUDE.md كانوا بيحمّلوا فرع `red-dragon` (v2.19.0) وهما بيقولوا v3.3.0. بقوا بيحمّلوا `main` في `~/golden-dragon`، والتحديث بقى فرع ← PR ← `main`.
+- reference-lock: على ويندوز من غير fontconfig، الرجوع لمجلد Fonts كان بينادي `fc-scan` ويقع بـ `FileNotFoundError` (وده كان بيوقّع `rd.py selftest`). بقى ياخد اسم الملف لو الأداة مش موجودة، ونفس الحماية لـ `pdffonts` و`fc-list` (11/11).
+
 ## v3.3.0 — 2026-11-16 (أي مستند ← Markdown)
 - مهارة جديدة `engine/skills/doc-reader` (كودنا) فوق Microsoft MarkItDown (MIT، بيتثبت بـ pip، مش منسوخ): `rd.py md convert|batch|doctor|exts|install|selftest`.
 - تصليح الـ PDF العربي اللي pdfminer بيطلّعه بالحروف المعروضة ومقلوب: NFKC بعد قلب السطر، والكلام اللاتيني والأرقام بيرجعوا لاتجاههم. اتجرّب على PDF حقيقي.
