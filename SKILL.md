@@ -3,7 +3,13 @@ name: golden-dragon
 description: "التنين الذهبي (Golden Dragon): التنين الوحيد. اتصهر فيه التنين الأحمر (العقل والذاكرة والخطط) والتنين الأسود (محرك المونتاج والريلز 9:16 والأفلام من فوتيج وأغاني وصوت ودعاء وتلاوة، وبوابة الفحص قبل التسليم) والتنين الأبيض والتنين الأسود الفائق (21 وحدة KOSIF) وسينما الفوتيج (كابشن كاينتك ذهبي وقطع على الإيقاع) والطائر الذهبي والطائر الأبيض. Use first when the user says «التنين الذهبي» or «التنين الأسود» or «التنين الاسود» or «التنين الأحمر» or «التنين الأبيض» or «التنين» or «Golden/Black/Red/White Dragon»، «قدراتك» or «كل قدراتك»، «فعّل كل حاجة»، «موشن جرافيك»، «مونتاج» or «مونتاتج»، «اعمل فيديو» or «فديو»، «ريلز»، «فيلم لميار»، «على أغنية وطنية»، «سينما الفوتيج»، «استخرج الصوت»، «فيه أداة لـ…»، «كرتون» or «أنمي»، «محاكي ماكينة»، «طابق»، «حلل»، «هندسة عكسية»، «محاكي»، «اصنع تطبيق»، «حوّله لمهارة»، «فين الملف»، «اتعلم من غلطك»، «استخرج الألوان»، «باليتة»، «مسرح الظل»، «دمى/عرائس»، «احسب المسافة»، «نسب الجسم»، Blender 3D، «الترند»، «هيجز فيلد ببلاش»، «رندر على السحابة»، «فكّر كويس»، sends TikTok, Instagram or YouTube links or clips with an edit request, sends gibberish Latin letters (Arabic typed on an English keyboard), or sends this package. Works on claude.ai, Claude Code cloud and the owner's Windows laptop, and detects which. Replaces red-dragon, black-dragon, white-dragon, kosif-black-dragon-ultra and black-dragon-cinema."
 ---
 
-# التنين الذهبي — Golden Dragon v3.2.0 (2026-11-16)
+# التنين الذهبي — Golden Dragon v3.3.0 (2026-11-16)
+
+## v3.3.0 — أي PDF أو مستند يتحوّل لـ Markdown الأول (MarkItDown)
+- **أمر جديد `$R md`** (`engine/skills/doc-reader`، فوق Microsoft MarkItDown، MIT): `convert` و`batch` و`doctor` و`install` و`selftest`. بيحوّل PDF وWord وPowerPoint وExcel وHTML وCSV وJSON وEPUB وOutlook لـ Markdown، والجداول بتفضل جداول.
+- **القاعدة:** أي مستند يوصلك يتحوّل الأول وبعدين يتقري الـ `.md` (في CLAUDE.md وBOOT.md وأول خطوة في طريق `docs-office`).
+- **الـ PDF العربي:** pdfminer بيطلّعه حروف معروضة ومقلوبة («ﻦﻳﻼﻧوا ﲑﺒﺧ»)، والأداة بتعدله لوحدها لـ «خبير اونلاين»، ومعاه التشكيل والكلام الإنجليزي والأرقام.
+- **التطبيق:** المرفقات (PDF وWord وPowerPoint وExcel وEPUB…) بتتحوّل لـ Markdown وتتبعت كنص، وبيتحفظ نسخة في `_md` جوه مجلد الشغل. الـ PDF الممسوح (من غير نص) بيتبعت زي ما كان.
 
 ## v3.2.0 — اتدمج مع GitHub v2.15–v2.19 + تطبيق بمراجع التفكير
 - **كل اللي اتضاف على GitHub بعد v2.14 بقى هنا:** الحلبة (`$R arena`)، وعامل Haiku الرخيص (`$R agents`)، وإنستجرام (`$R insta` و`$R ig`)، وحماية Hypit (`$R hypit`)، و64 مهارة مكتبة جديدة (المكتبة 570).

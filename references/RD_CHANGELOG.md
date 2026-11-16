@@ -8,6 +8,14 @@
 
 # سجل تغييرات التنين الأحمر
 
+## v3.3.0 — 2026-11-16 (أي مستند ← Markdown)
+- مهارة جديدة `engine/skills/doc-reader` (كودنا) فوق Microsoft MarkItDown (MIT، بيتثبت بـ pip، مش منسوخ): `rd.py md convert|batch|doctor|exts|install|selftest`.
+- تصليح الـ PDF العربي اللي pdfminer بيطلّعه بالحروف المعروضة ومقلوب: NFKC بعد قلب السطر، والكلام اللاتيني والأرقام بيرجعوا لاتجاههم. اتجرّب على PDF حقيقي.
+- بدائل من غير MarkItDown: نص وCSV وJSON وHTML بالمكتبة العادية، والـ PDF بـ PyMuPDF.
+- `docs-office`: أول خطوة بقت التحويل، و`doc-reader` في مهاراته. الراوتر على test زي ما هو (90/92/98).
+- CLAUDE.md وBOOT.md: قاعدة «أي PDF أو مستند يتحوّل الأول». `rd.py selftest` بيشغّل `md selftest` (14 فحص).
+- التطبيق: `apps/golden-dragon/forge/gd_patches/gd_markitdown.py` بيحوّل المرفقات لـ Markdown.
+
 ## v3.2.0 — 2026-11-16 (التنين الذهبي + GitHub v2.15–v2.19)
 - دمج 3 اتجاهات من v2.14 (`ddbb6de`): نسخة الجهاز (v3.0 الانصهار، v3.1 الفهم من أول مرة) + `main` على GitHub (v2.15–v2.19). مفيش ملف اتشال من الناحيتين.
 - `rd.py`: الأوامر من الناحيتين (`gold`، `consent`، `insta`، `ig`، `agents`، `hypit`، `arena`)، وselftest بيفحص golden-bird وhypit-run وinsta-reader وarena-gate.

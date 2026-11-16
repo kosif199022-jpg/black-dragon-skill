@@ -449,6 +449,11 @@ def main():
     _rv_spec.loader.exec_module(rv)
     write(tmp / "app.py", rv.patch_app(read(tmp / "app.py"), sub))
     write(tmp / "ui/index.html", rv.patch_ui(read(tmp / "ui/index.html"), sub))
+    # 2026-11-16 gd_patches\gd_markitdown.py: 📄 attached PDF/Word/PowerPoint/Excel/EPUB -> Markdown (MarkItDown) before the model reads it
+    _md_spec = importlib.util.spec_from_file_location("gd_markitdown", FORGE / "gd_patches" / "gd_markitdown.py")
+    mdp = importlib.util.module_from_spec(_md_spec)
+    _md_spec.loader.exec_module(mdp)
+    write(tmp / "app.py", mdp.patch_app(read(tmp / "app.py"), sub))
     patch_extension(tmp / "chrome_extension")
     for mod in sorted(gb.MODULES.glob("golden_*.py")):                # the Golden Bird modules, renamed (studio home etc.)
         write(tmp / mod.name, rename(read(mod), mod.name))
