@@ -36,7 +36,7 @@ PROMPT_SECTION = """## 🔧 Anatomy — محاكاة ورسومات هندسية
 
 """
 
-SUBSCRIPTION = ("\n- anatomy: `python -X utf8 \"{APP_SOURCE}\\gd_anatomy.py\" status | guide \"<الطلب>\" "
+SUBSCRIPTION = ("\n- anatomy: `python -X utf8 \"{APP_SOURCE}\\\\gd_anatomy.py\" status | guide \"<الطلب>\" "
                 "| check \"<الملف.html>\"`. الفحص الثابت لا يغني عن اختبارات Anatomy بالمتصفح.")
 
 
