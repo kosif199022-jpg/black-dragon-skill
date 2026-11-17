@@ -8,6 +8,12 @@
 
 # سجل تغييرات التنين الأحمر
 
+## v3.5.3 — 2026-11-17 (Cinema-C V36 SmartMedia)
+- **`tools/cinema-c/Cinema_C_V36_iPhone.sh`:** هو V35 Studio كامل، ومضاف عليه ميزة صور إنستجرام من V31 SmartMedia اللي صاحب الشغل بعتها: بوستات الصور والكاروسيل بـ gallery-dl، و`--smart` و`--gallery` و`--setup`. ولو yt-dlp قال «There is no video in this post» بيحوّل على gallery-dl لوحده. وفيه سطر gallery-dl في `--doctor`، و5 فحوص جديدة في `--self-test`.
+- **`tools/cinema-c/v31_smartmedia/`:** ملفات V31 الأصلية زي ما اتبعتت (السكربت، والـ README، والاختبار).
+- **الاختبارات:** `tests/harness.sh` بقى بيختبر V36: فحوص V35 كلها، وفوقهم 13 فحص بـ gallery-dl وهمي (`tests/stubbin/gallery-dl`)، وyt-dlp الوهمي بقى يرجّع «no video» للينكات `/p/PHOTO`.
+- **ملحوظة من الشغل:** إنستجرام مقفول من سحابة Claude Code. اللي اشتغل هو yt-dlp على سحابة Higgsfield المجانية (`sandbox_exec`)، وبعدين نقل الملف عن طريق تخزين Higgsfield.
+
 ## v3.5.2 — 2026-11-16 (الملفات التلاتة في أول كل محادثة)
 - **`CLAUDE.md` و`BOOT.md`:** «افهمه» بقى فيه `apps/golden-dragon/README.md` و`references/APPS_CAPABILITIES.md` و`apps/golden-dragon/THINKING_PATHS.md`، وقاعدة جديدة: كل طلب يعدّي على `dragon_fusion.py brief` مع `rd.py plan`، ولو طلع سبيل تفكير 🧭 تمشي على أدواته وتجاوب سؤال الناقد بتاع كل أداة بدليل.
 - طلب صاحب الشغل: «اشتغل بيهم في كل اللي هطلبه».
