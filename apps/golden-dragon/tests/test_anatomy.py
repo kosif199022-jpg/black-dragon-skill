@@ -58,14 +58,14 @@ def test_doctor_and_plan_do_not_build_anything(bridge, installed, tmp_path):
     assert not list(tmp_path.glob("*.html"))
 
 
-@pytest.mark.parametrize("request, expected", [
+@pytest.mark.parametrize("prompt, expected", [
     ("interactive gauge with live readout", "dial-indicator"),
     ("محاكاة موجات الماء والضوء", "ripple-tank"),
     ("turntable 3D machine", "turning-dial"),
     ("توضيح لوحة مفاتيح كمبيوتر", "desk-computer"),
 ])
-def test_medium_selection(bridge, request, expected):
-    assert bridge.brief(request)["reference_example"] == expected
+def test_medium_selection(bridge, prompt, expected):
+    assert bridge.brief(prompt)["reference_example"] == expected
 
 
 def test_scaffold_copies_real_sample_and_license_without_execution(tmp_path, installed, bridge):
