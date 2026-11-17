@@ -175,6 +175,14 @@ def app_tool_units():
                     "tools, engines and programs; find / show any capability; doctor checks this PC now.",
                     what_ar="عقل الانصهار: بيوجّه أي طلب لأحسن وصفة من المهارات والأدوات والمحركات والبرامج",
                     how='fusion route "<الطلب>"'))
+    out.append(unit("tool", "viral_video_analyzer", "viral_video_analyzer",
+                    what="Built-in discovery and guided analysis of public video via yt-dlp, ffmpeg and Whisper.",
+                    what_ar="فحص وتجهيز تحليل الفيديوهات واللقطات والنص والتوقيتات",
+                    how='viral_video_analyzer doctor | plan "<video URL>"'))
+    out.append(unit("tool", "replica_skill", "replica_skill",
+                    what="Built-in routing for eleven clean-room app reconstruction skills.",
+                    what_ar="فحص وتخطيط 11 مهارة لإعادة بناء تطبيق أصلي واختباره",
+                    how='replica_skill doctor | plan "<authorized app>"'))
     # These tools are registered by gd_patches/gd_anatomy.py in the Golden Dragon,
     # not in the Golden Bird app that this scanner introspects.
     out.append(unit("tool", "anatomy", "anatomy",

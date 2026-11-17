@@ -1,21 +1,21 @@
-name: Golden Dragon Anatomy bridge checks
+name: Golden Dragon core integration checks
 on:
   push:
     branches:
       - feat/golden-dragon-anatomy-bridge-20261117
     paths:
       - 'apps/golden-dragon/forge/**'
-      - 'apps/golden-dragon/tests/test_anatomy.py'
+      - 'apps/golden-dragon/tests/test_*.py'
       - '.github/workflows/golden-dragon-anatomy.yml'
   pull_request:
     paths:
       - 'apps/golden-dragon/forge/**'
-      - 'apps/golden-dragon/tests/test_anatomy.py'
+      - 'apps/golden-dragon/tests/test_*.py'
       - '.github/workflows/golden-dragon-anatomy.yml'
 permissions:
   contents: read
 jobs:
-  anatomy-offline:
+  core-offline:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -26,6 +26,6 @@ jobs:
       - name: Install offline test runner
         run: python -m pip install pytest
       - name: Syntax-check new Anatomy modules
-        run: python -m py_compile apps/golden-dragon/forge/modules/anatomy_bridge.py apps/golden-dragon/forge/gd_patches/gd_anatomy.py apps/golden-dragon/tests/test_anatomy.py
+        run: python -m py_compile apps/golden-dragon/forge/modules/anatomy_bridge.py apps/golden-dragon/forge/modules/gd_core_integrations.py apps/golden-dragon/forge/gd_patches/gd_anatomy.py apps/golden-dragon/tests/test_anatomy.py apps/golden-dragon/tests/test_core_integrations.py
       - name: Test safe integration
-        run: python -m pytest -q apps/golden-dragon/tests/test_anatomy.py
+        run: python -m pytest -q apps/golden-dragon/tests/test_anatomy.py apps/golden-dragon/tests/test_core_integrations.py
