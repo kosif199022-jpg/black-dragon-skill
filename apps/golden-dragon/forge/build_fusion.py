@@ -175,6 +175,11 @@ def app_tool_units():
                     "tools, engines and programs; find / show any capability; doctor checks this PC now.",
                     what_ar="عقل الانصهار: بيوجّه أي طلب لأحسن وصفة من المهارات والأدوات والمحركات والبرامج",
                     how='fusion route "<الطلب>"'))
+    out.append(unit("tool", "anatomy", "anatomy",
+                    what="Optional Anatomy skill bridge: local SVG/WebGL/3D engineering guidance and static HTML/SVG verification",
+                    what_ar="جسر Anatomy للمجسمات الهندسية التفاعلية: فحص الجاهزية، خطوات التنفيذ، وفحص HTML/SVG ثابت",
+                    how='anatomy status | guide "<الطلب>" | check "<الملف.html>"',
+                    status="ok", cost="free"))
     return out
 
 
