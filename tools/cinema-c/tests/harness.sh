@@ -1,9 +1,9 @@
 #!/bin/sh
-# Offline harness for Cinema C V35. Usage: dash harness.sh V35.sh
+# Offline harness for Cinema C V36 (V35 checks + V36 SmartMedia). Usage: dash harness.sh Cinema_C_V36_iPhone.sh
 # Network is never used: yt-dlp is a stub, ffmpeg is the local one with
 # libx264/VideoToolbox hidden (a-Shell-like encoder set).
 set -u
-APPF=$1
+APPF=$(cd "$(dirname "$1")" && pwd)/$(basename "$1")
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 T="$ROOT/harness_run"
 rm -rf "$T"; mkdir -p "$T/home/Documents"
@@ -90,6 +90,29 @@ check 'source kept' yes "$( [ -f "$src" ] && echo yes || echo no)"
 o=$(printf '0\n' | dash "$APPF" --safe 2>&1)
 check 'picker shows Studio folder' yes "$(printf '%s\n' "$o" | grep -q '1MB.mp4' && echo yes || echo no)"
 check 'picker hides tmp' 0 "$(printf '%s\n' "$o" | grep -c 'tmp.mp4')"
+
+# 8) V36 SmartMedia: Instagram photo/carousel posts via gallery-dl (stub)
+dl="$HOME/Documents/Cinema_Downloads"
+o=$(dash "$APPF" --files --smart 'https://www.instagram.com/p/PHOTO123/?igsh=x' 2>&1); rc=$?
+check 'smart rc' 0 "$rc"
+gd=$(ls -d "$dl"/Instagram_PHOTO123_* 2>/dev/null | head -1)
+check 'smart album folder' yes "$( [ -d "$gd" ] && echo yes || echo no)"
+check 'smart 3 media kept' 3 "$(ls "$gd" 2>/dev/null | wc -l | tr -d ' ')"
+check 'smart json skipped' 0 "$(ls "$gd" 2>/dev/null | grep -c json)"
+check 'smart summary' 1 "$(printf '%s\n' "$o" | grep -c '2 photo(s), 1 video(s)')"
+rm -rf "$dl"/Instagram_PHOTO123_*
+o=$(printf '1\n' | dash "$APPF" --files 'https://www.instagram.com/p/PHOTO456/' 2>&1); rc=$?
+check 'auto fallback rc' 0 "$rc"
+check 'auto fallback message' 1 "$(printf '%s\n' "$o" | grep -c 'Switching to gallery-dl')"
+check 'no yt-dlp update loop for a photo post' 0 "$(printf '%s\n' "$o" | grep -c 'Update yt-dlp now')"
+check 'auto fallback folder' 1 "$(ls -d "$dl"/Instagram_PHOTO456_* 2>/dev/null | wc -l | tr -d ' ')"
+o=$(dash "$APPF" --files --gallery 'https://www.instagram.com/p/empty1/' 2>&1); rc=$?
+check 'gallery nothing -> rc 1' 1 "$rc"
+check 'gallery nothing -> clear error' 1 "$(printf '%s\n' "$o" | grep -c 'did not produce any complete media')"
+o=$(dash "$APPF" --self-test 2>&1); rc=$?
+check 'self-test passes' 0 "$rc"
+o=$(dash "$APPF" --doctor 2>&1)
+check 'doctor shows gallery-dl' 1 "$(printf '%s\n' "$o" | grep -c '^gallery-dl: 1.99.0-stub')"
 
 echo "harness: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ]

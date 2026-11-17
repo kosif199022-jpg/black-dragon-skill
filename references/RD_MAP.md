@@ -123,7 +123,7 @@
 
 | المسار | بيعمل إيه |
 |---|---|
-| `tools/cinema-c` | Cinema-C V35 للآيفون: أمر c لتحميل الفيديو بالجودة اللي تختارها (yt-dlp + ffmpeg)، والتثبيت بـ --install، مع فرق V34 واختبارات بـ stubs |
+| `tools/cinema-c` | Cinema-C V36 للآيفون: أمر c لتحميل الفيديو بالجودة اللي تختارها (yt-dlp + ffmpeg)، وبوستات صور وكاروسيل إنستجرام بـ gallery-dl (--smart، --gallery، --setup)، والتثبيت بـ --install، مع فرق V35 واختبارات بـ stubs |
 | `tools/draw-math` | Precise geometry, measurement and proportion calculator for drawing and animating people and scenes (shadow-puppet films, 3D silhouette films, 2D figu… |
 | `tools/link-collector` | collect-links.js: يجمع الروابط من صفحة بمتصفح Chromium حقيقي (--filter، --same-site، --json) |
 

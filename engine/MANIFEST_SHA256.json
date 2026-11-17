@@ -2,7 +2,7 @@
  "schema": "black-dragon.sha256-manifest.v1",
  "version": "1990.10.0",
  "method": "SHA256 of packaged content (manifest and checksum list excluded); integrity, not a third-party signature",
- "date": "2026-11-16",
+ "date": "2026-11-17",
  "count": 2063,
  "files": {
   "CHANGELOG.md": "9f631adea4804c4f448f2fea33bb808110b538ad6aa94753968f888a7adebff3",

@@ -14,6 +14,7 @@ while [ $# -gt 0 ]; do
 done
 echo "stub yt-dlp: $url" >> "${STUB_LOG:-/dev/null}"
 case "$url" in *fail*) echo 'ERROR: stub failure' >&2; exit 1 ;; esac
+case "$url" in */p/PHOTO*) echo "ERROR: [Instagram] PHOTO: There is no video in this post" >&2; exit 1 ;; esac
 dir=${tpl%/*}
 cp "$STUB_MEDIA" "$dir/عنوان تجريبي - test's \"clip\" [abc123].ts"
 : > "$dir/عنوان تجريبي [abc123].f137.mp4.part"
