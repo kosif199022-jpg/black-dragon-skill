@@ -69,3 +69,46 @@ python -X utf8 forge\verify_bundle.py             # يتأكد من الـ exe �
 **إزاي المراجع بيشتغل:** بيلف حوالين `Session.emit`، بيجمع أحداث `thinking`، وأول ما التنين يبدأ أداة أو يكتب بيبعت (الطلب + التفكير + آخر 12 خطوة) لموديل المراجع من غير أدوات: بمفتاح الـ API لو التطبيق شغّال بيه، أو `claude -p --tools "" --no-session-persistence` على الاشتراك. الرد JSON (`verdict` ok/fix/better، `issues`، `suggestion`، `confidence`)، والتصحيح بيتبعت بس لو الثقة ≥ 0.5، عن طريق نفس قناة «⚡ قاطعه» (`golden_steer`). اتجرّب فعليًا: المراجع (Haiku) مسك خطة بتعمل 16:9 ومدة 45 ث لطلب ريل 9:16 مدته 30 ث، في 9 ثواني.
 
 **ملحوظة:** `app/` كود كامل يتبني مباشرة بـ `app/build.ps1`. أما إعادة التوليد بـ `forge/make_golden_dragon.py` فمحتاجة مصانع الطائر الأبيض والذهبي وكود التنين الأسود في أماكنهم على الجهاز.
+
+
+## تطوير 2026-11-17: 🛠 Anatomy — رسومات هندسية ومحاكاة تفاعلية
+
+المصدر: https://github.com/wheresryan22/anatomy — رخصة **MIT**. أضفنا **جسرًا محليًا** من دون نسخ شفرة Anatomy إلى هذا المستودع؛ يستخدم المصدر المثبّت على جهازك بعد فحصه. تحتاج Node.js 20.10+، وللتأكد بصريًا تحتاج Chrome/Chromium.
+
+- أداة **anatomy** تقرأ الحالة (doctor) وتقترح أسلوب SVG أو SVG + WebGL أو 3D تجريبي وخطوات الفحص (brief).
+- أداة **anatomy_scaffold** تتطلب موافقة وتنسخ أصل مثال من المصدر، مع kit وscripts وSKILL.md وLICENSE إلى **مجلد جديد فقط** داخل مجلد الشغل. لا تُشغّل أي كود أو تُنزّل أي ملفات، ولا تكتب فوق مشروع قائم.
+- وصفة **anatomy-isometric** في عقل الانصهار توجّه مهام الرسم الإيزومتري التقني. تتم إضافتها للفهرس عند إعادة تشغيل البناء من المصدر.
+- **الحدود:** التجهيز ينسخ مثالًا مرجعيًا قابلًا للتعديل ولا ينشئ تلقائيًا نموذجًا جديدًا يطابق طلب المستخدم. توليد نموذج مخصص يتم بعد قراءة تعليمات المهارة والعمل على المشروع والتحقق من النتيجة.
+
+### تجهيز وتشغيل
+
+1. ثبّت المهارة على الجهاز الذي يشغل التنين (بعد مراجعة الكود والترخيص):
+
+       npx skills add wheresryan22/anatomy -g -a claude-code
+
+2. افحصها من نسخة المصدر الحالية (قبل توليد التطبيق):
+
+       python -X utf8 forge/modules/anatomy_bridge.py doctor
+       python -X utf8 forge/modules/anatomy_bridge.py brief "اشرح محرك صاروخ بمنظور إيزومتري"
+       python -X utf8 forge/modules/anatomy_bridge.py scaffold my-anatomy-demo --example raptor-engine
+
+3. راجع الكود داخل مجلد المثال، ثم في المجلد الذي تم إنشاؤه:
+
+       node examples/raptor-engine/build.mjs --light
+
+   لتقييم نماذج SVG/WebGL استخدم مراجعة المتصفح ولقطات Chrome؛ بعض الأمثلة تدعم الخيار --audit.
+
+### دمج التغيير بالتطبيق (من جهاز التطوير الأصلي)
+
+لا تعدّل apps/golden-dragon/app يدويًا؛ فهو مجلد مولّد، وملف .gd_generated.json يتحقق من بصماته. طبّق التعديلات من forge عبر الخطوات المعتادة:
+
+       cd apps/golden-dragon
+       python -X utf8 forge/scan_skills.py
+       python -X utf8 forge/build_fusion.py
+       python -X utf8 forge/make_golden_dragon.py
+       python -m pytest -q tests/test_anatomy.py
+       powershell -ExecutionPolicy Bypass -File app/build.ps1
+
+يلزم وجود مصانع الطائر الأبيض والذهبي الأصلية بالمواقع التي يتوقعها make_golden_dragon.py لإعادة التوليد؛ هذا الفرع **لا يزعم** إعادة بناء ملف EXE أو تثبيت المهارة على جهاز المستخدم.
+
+ملفات التطوير الأساسية: forge/modules/anatomy_bridge.py، forge/gd_patches/gd_anatomy.py، forge/recipes.py، forge/build_fusion.py، tests/test_anatomy.py.
