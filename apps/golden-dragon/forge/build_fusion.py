@@ -175,6 +175,17 @@ def app_tool_units():
                     "tools, engines and programs; find / show any capability; doctor checks this PC now.",
                     what_ar="عقل الانصهار: بيوجّه أي طلب لأحسن وصفة من المهارات والأدوات والمحركات والبرامج",
                     how='fusion route "<الطلب>"'))
+    # These tools are registered by gd_patches/gd_anatomy.py in the Golden Dragon,
+    # not in the Golden Bird app that this scanner introspects.
+    out.append(unit("tool", "anatomy", "anatomy",
+                    what="Read-only Anatomy MIT skill status and technical SVG/WebGL/3D plan.",
+                    what_ar="فحص مهارة Anatomy المحلية وخطة الرسم الهندسي التفاعلي",
+                    how='anatomy doctor | brief "<task>"'))
+    out.append(unit("tool", "anatomy_scaffold", "anatomy_scaffold",
+                    what="Copy the installed upstream Anatomy kit and example into a new workspace folder.",
+                    what_ar="نسخ مثال ومكتبات Anatomy بترخيص MIT بعد موافقة المستخدم",
+                    how="anatomy_scaffold destination=NAME example=dial-indicator",
+                    cost="approval"))
     return out
 
 
