@@ -119,13 +119,14 @@
 | `engine/skills/library/saas-animation` | Make short, high-end SaaS, app, product and brand animations (about 8–20s) with Claude, built as code and rendered to 4K video, without any AI video o… |
 | `engine/skills/library/talking-head-reels` | Turn a talking-head recording into a finished vertical 9:16 Instagram Reel / TikTok / YouTube Short in a bold editorial style - tightened pauses, kine… |
 
-## الأدوات (3)
+## الأدوات (4)
 
 | المسار | بيعمل إيه |
 |---|---|
 | `tools/cinema-c` | Cinema-C V36 للآيفون: أمر c لتحميل الفيديو بالجودة اللي تختارها (yt-dlp + ffmpeg)، وبوستات صور وكاروسيل إنستجرام بـ gallery-dl (--smart، --gallery، --setup)، والتثبيت بـ --install، مع فرق V35 واختبارات بـ stubs |
 | `tools/draw-math` | Precise geometry, measurement and proportion calculator for drawing and animating people and scenes (shadow-puppet films, 3D silhouette films, 2D figu… |
 | `tools/link-collector` | collect-links.js: يجمع الروابط من صفحة بمتصفح Chromium حقيقي (--filter، --same-site، --json) |
+| `tools/video-page` | video_page.py: صفحة تحميل لكل فيديو (زر أعلى جودة بايت ببايت، نسخة خفيفة، كابشن) ومكتبة «فيديوهات الكوسف» (build، hub-add، check) |
 
 ## مكتبة المهارات الخارجية: `library/` (589 مهارة)
 
