@@ -118,6 +118,7 @@ def test_patch_is_reproducible_and_permission_gated():
         "        if name == \"fusion\":\\n            return fusion_dispatch(a)\\n"
         "def fusion_dispatch(a):\\n    return \"ok\", False\\n"
     )
+    source = source.replace("\\n", "\n")  # the mock source uses escaped line breaks
     output = patch.patch_app(source, strict_sub)
     assert 'tool("anatomy"' in output and 'tool("anatomy_scaffold"' in output
     assert "approval=True" in output
