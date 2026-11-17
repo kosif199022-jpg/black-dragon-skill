@@ -482,6 +482,7 @@ def main():
     shutil.copy2(FORGE / "modules" / "dragon_fusion.py", tmp / "dragon_fusion.py")
     shutil.copy2(FORGE / "modules" / "gd_discover.py", tmp / "gd_discover.py")      # 2026-11-16: «discover» (PC catalog)
     shutil.copy2(FORGE / "modules" / "anatomy_bridge.py", tmp / "anatomy_bridge.py")  # user-installed MIT kit, opt-in
+    shutil.copy2(FORGE / "modules" / "gd_core_integrations.py", tmp / "gd_core_integrations.py")  # viral video + replica core
     (tmp / "golden").mkdir()
     for f in ("library.json", "studio.json"):
         shutil.copy2(gb.DATA / f, tmp / "golden" / f)
