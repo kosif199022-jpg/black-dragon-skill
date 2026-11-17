@@ -1,3 +1,6 @@
 __pycache__/
 *.pyc
 tools/cinema-c/harness_run/
+
+# rd.py arena runtime state (per-session, not source)
+.arena/
