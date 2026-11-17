@@ -471,11 +471,17 @@ def main():
     mdp = importlib.util.module_from_spec(_md_spec)
     _md_spec.loader.exec_module(mdp)
     write(tmp / "app.py", mdp.patch_app(read(tmp / "app.py"), sub))
+    # Anatomy: opt-in local skill bridge, reproducible tools/dispatch and permission-gated scaffold
+    _an_spec = importlib.util.spec_from_file_location("gd_anatomy", FORGE / "gd_patches" / "gd_anatomy.py")
+    an = importlib.util.module_from_spec(_an_spec)
+    _an_spec.loader.exec_module(an)
+    write(tmp / "app.py", an.patch_app(read(tmp / "app.py"), sub))
     patch_extension(tmp / "chrome_extension")
     for mod in sorted(gb.MODULES.glob("golden_*.py")):                # the Golden Bird modules, renamed (studio home etc.)
         write(tmp / mod.name, rename(read(mod), mod.name))
     shutil.copy2(FORGE / "modules" / "dragon_fusion.py", tmp / "dragon_fusion.py")
     shutil.copy2(FORGE / "modules" / "gd_discover.py", tmp / "gd_discover.py")      # 2026-11-16: «discover» (PC catalog)
+    shutil.copy2(FORGE / "modules" / "anatomy_bridge.py", tmp / "anatomy_bridge.py")  # user-installed MIT kit, opt-in
     (tmp / "golden").mkdir()
     for f in ("library.json", "studio.json"):
         shutil.copy2(gb.DATA / f, tmp / "golden" / f)
@@ -505,7 +511,7 @@ def main():
     for old in ("red-dragon.ico", "red-dragon.png", "white-bird.ico", "white-bird.png", "golden-bird.ico", "golden-bird.png"):
         (tmp / "ui" / old).unlink(missing_ok=True)
     build = gb.steer.patch_build(gb.patch_build(wb.patch_build(wb.build_ps1())), gb.sub)
-    (tmp / "build.ps1").write_text(patch_build(build), encoding="utf-8-sig")
+    (tmp / "build.ps1").write_text(an.patch_build(patch_build(build), sub), encoding="utf-8-sig")
     (tmp / "README.md").write_text(
         f"# {NAME_GD}: كود التطبيق\n\nالمجلد ده **متولّد**: كود التنين الأسود ← تعديلات `..\\..\\الطائر الأبيض\\forge\\make_white_bird.py` ← "
         "تعديلات `..\\..\\الطائر الذهبي\\forge\\make_golden_bird.py` ← طبقة `..\\forge\\make_golden_dragon.py`. أي تعديل دايم يتحط في "
