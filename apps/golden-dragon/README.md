@@ -69,3 +69,41 @@ python -X utf8 forge\verify_bundle.py             # يتأكد من الـ exe �
 **إزاي المراجع بيشتغل:** بيلف حوالين `Session.emit`، بيجمع أحداث `thinking`، وأول ما التنين يبدأ أداة أو يكتب بيبعت (الطلب + التفكير + آخر 12 خطوة) لموديل المراجع من غير أدوات: بمفتاح الـ API لو التطبيق شغّال بيه، أو `claude -p --tools "" --no-session-persistence` على الاشتراك. الرد JSON (`verdict` ok/fix/better، `issues`، `suggestion`، `confidence`)، والتصحيح بيتبعت بس لو الثقة ≥ 0.5، عن طريق نفس قناة «⚡ قاطعه» (`golden_steer`). اتجرّب فعليًا: المراجع (Haiku) مسك خطة بتعمل 16:9 ومدة 45 ث لطلب ريل 9:16 مدته 30 ث، في 9 ثواني.
 
 **ملحوظة:** `app/` كود كامل يتبني مباشرة بـ `app/build.ps1`. أما إعادة التوليد بـ `forge/make_golden_dragon.py` فمحتاجة مصانع الطائر الأبيض والذهبي وكود التنين الأسود في أماكنهم على الجهاز.
+
+
+## 🧩 Anatomy — Interactive engineering / machine teardown (opt-in, forge)
+
+Upstream: [wheresryan22/anatomy](https://github.com/wheresryan22/anatomy), MIT by Ryan. Golden Dragon
+uses an **external skill** rather than vendoring the upstream source. No Anatomy files or
+executable code are copied into this repository; upstream attribution and license remain
+with the original repository.
+
+- `anatomy status`: detect an existing local installation and report incomplete copies.
+- `anatomy guide`: a task-specific SVG / SVG+WebGL / experimental 3D workflow, referring
+  to the official kit, camera, motion/readout model, audit, screenshots and accessibility.
+- `anatomy check`: limited **static** HTML/SVG audit (local assets, obvious controls,
+  SVG/XML syntax). It **does not execute** JavaScript, render 3D, or prove collision/
+  depth-order/physical correctness.
+- The existing `machine-teardown` fusion recipe now routes to `tool:anatomy` after
+  `build_fusion.py` is rerun. It still supports the installed `teardown` skill.
+
+### On the owner's Windows development machine
+
+```powershell
+# Optional, only after reviewing the upstream skill:
+npx skills add wheresryan22/anatomy -a claude-code
+
+cd apps/golden-dragon
+python -X utf8 forge/build_fusion.py
+python -X utf8 forge/make_golden_dragon.py
+python -X utf8 -m pytest tests/test_anatomy.py -q
+powershell -ExecutionPolicy Bypass -File app/build.ps1
+```
+
+**Regeneration dependency:** `forge/make_golden_dragon.py` replays the Golden Bird and
+White Bird factories kept on the owner's Windows machine. The checked-in `app/`
+is generated and checksum-guarded; do not edit it directly or claim that the executable
+has been updated until regeneration, tests, build and actual browser checks pass.
+
+The optional installation can also be placed in `~/.claude/skills/anatomy`,
+`~/.agents/skills/anatomy`, or supplied through `GOLDEN_ANATOMY_HOME`.
