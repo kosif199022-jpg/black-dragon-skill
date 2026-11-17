@@ -1,4 +1,4 @@
-# مكتبة المهارات — أشهر 589 مهارة Claude (2026-11-12)
+# مكتبة المهارات — أشهر 590 مهارة Claude (2026-11-12)
 
 الاختيار: نجوم مستودع المصدر على GitHub يوم القياس، بالدور على المستودعات (14 بالكتير من كل مستودع) عشان مستودع واحد مايملاش القايمة. اتشالت: المهارات الهجومية، واللي من غير رخصة، والمكررة، واللي متثبتة أصلًا.
 اللي اتشال: {'offensive': 94, 'installed': 19, 'no_license': 23, 'no_description': 98, 'duplicate': 675, 'too_big': 18}
@@ -82,6 +82,7 @@
 | 72 | `replica-entrepreneur` | 9,033 | Jakeschincariol/replica-skill | mit | — | Researches the app being cloned and reads what its real users say in public reviews (App Store, Google Play, G2, Capterra, Trustpilot, Reddit, Hacker  |
 | 73 | `replica-launch` | 9,033 | Jakeschincariol/replica-skill | mit | — | Writes the launch for an app clone: the landing page built on the positioning angle, pricing set against the original's public pricing and its users'  |
 | 74 | `replica-recon` | 9,033 | Jakeschincariol/replica-skill | mit | — | Reverse-engineers any app into a recon map: screen inventory, user flows, component list, inferred data model and a feature matrix, from public pages, |
+| 590 | `replica-test` | 9,711 | Jakeschincariol/replica-skill | mit | — | Clicks through every flow of an app clone and tests it for bugs: a test plan generated from the recon flows with happy paths and edge cases, Playwright end-to-end tests where possi |
 | 75 | `android-reverse-engineering` | 8,703 | SimoneAvogadro/android-reverse-engineering-skill | apache-2.0 | exec، network | Decompile Android APK, XAPK, JAR, and AAR files using jadx or Fernflower/Vineflower. Reverse engineer Android apps, extract HTTP API endpoints (Retrof |
 | 76 | `agentic-actions-auditor` | 8,155 | trailofbits/skills | cc-by-sa-4.0 | — | Audits GitHub Actions workflows for security vulnerabilities in AI agent integrations including Claude Code Action, Gemini CLI, OpenAI Codex, and GitH |
 | 77 | `algorand-vulnerability-scanner` | 8,155 | trailofbits/skills | cc-by-sa-4.0 | — | Scans Algorand smart contracts for 11 common vulnerabilities including rekeying attacks, unchecked transaction fees, missing field validations, and ac |

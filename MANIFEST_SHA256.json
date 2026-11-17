@@ -7149,6 +7149,11 @@
   "tools/video-page/README.md": "0dd640f6014e870f44ea33b298d188a063a5fd28c8263475e01b72db121d28f1",
   "tools/video-page/hub.html": "4b5a6c014edb73f0ebcda0a899f0d0f2a690fcfad57d6fbd9fdff84f67288aae",
   "tools/video-page/template.html": "bced64e0bbc006b59c7ce7caf98bba824a373fa3087c887d2d8559f562c129b6",
-  "tools/video-page/video_page.py": "d93c1e03332ca4a57a1d2073c2b941b35bb872912dfc7d2b2171e215f10220bd"
+  "tools/video-page/video_page.py": "d93c1e03332ca4a57a1d2073c2b941b35bb872912dfc7d2b2171e215f10220bd",
+  "library/replica-test/bug-report.md": "7213450c859557f93aa2a28a5872d6dd3d4a5b6fb4038cdeb37fd24f18f06295",
+  "library/replica-test/e2e.example.spec.ts": "2cedda08b9a10280bdcf0729eb3eac42a575b3d641b31375bc26de1c9752154d",
+  "library/replica-test/SKILL.md": "d2a3fa23862c746da201537fa14ed2e870c4a58a8e8adcc0884ed68e0a4a370c",
+  "library/replica-test/SOURCE.json": "f7a909cba5dccdd6718eb42cacee32c8164faee8291ce5d0ed4e38d3680a5900",
+  "library/replica-test/test-plan.md": "c09755ff7c3821d62fafa0463ccf92650089334bb884be3758402a549296e85d"
  }
 }

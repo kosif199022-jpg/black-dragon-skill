@@ -9059,6 +9059,21 @@
    "rank": 589,
    "review": [],
    "has_scripts": false
+  },
+  {
+   "name": "replica-test",
+   "title": "replica-test",
+   "description": "Clicks through every flow of an app clone and tests it for bugs: a test plan generated from the recon flows with happy paths and edge cases, Playwright end-to-end tests where possible, a browser click-through where not, and bug reports in a fixed format with severity, steps and evidence. Use when the user says \"test my clone\", \"find bugs\", \"QA this\", \"click through everything\", \"write e2e tests\", \"does it work\", or after /replica-build or /replica-backend.",
+   "repo": "Jakeschincariol/replica-skill",
+   "stars": 9711,
+   "license": "mit",
+   "pushed": "2026-10-03",
+   "source_path": "replica-test",
+   "files": 5,
+   "kb": 7,
+   "rank": 590,
+   "review": [],
+   "has_scripts": false
   }
  ],
  "added_2026_11_13": "v2.10: the official Anthropic skills with an explicit Apache-2.0 LICENSE.txt (fonts left out). doc-coauthoring is not copied: no licence file upstream; it is listed in mind/installed_catalog.json.",
