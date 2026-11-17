@@ -3,7 +3,7 @@
 # Network is never used: yt-dlp is a stub, ffmpeg is the local one with
 # libx264/VideoToolbox hidden (a-Shell-like encoder set).
 set -u
-APPF=$1
+APPF=$(cd "$(dirname "$1")" && pwd)/$(basename "$1")
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 T="$ROOT/harness_run"
 rm -rf "$T"; mkdir -p "$T/home/Documents"
