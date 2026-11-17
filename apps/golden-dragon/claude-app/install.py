@@ -131,11 +131,15 @@ class Inst:
     def launcher_path(self):
         return self.gd / "golden-dragon.cmd"         # ASCII: WScript.Shell can't save a shortcut pointing at Arabic names
 
-    def shortcut_path(self):
+    def desktop(self):
         for d in (self.home / "OneDrive" / "Desktop", self.home / "Desktop"):
             if d.is_dir():
-                return d / "التنين الذهبي - Claude Code.lnk"
+                return d
         return None
+
+    def shortcut_path(self):
+        d = self.desktop()
+        return d / "التنين الذهبي - Claude Code.lnk" if d else None
 
     def launcher(self, remove=False):
         f, lnk = self.launcher_path(), self.shortcut_path()
@@ -151,10 +155,11 @@ class Inst:
         f.write_text("\r\n".join([
             "@echo off", "chcp 65001 >nul",
             "rem " + MARK + " — التنين الذهبي من غير التطبيق: Claude Code + GOLDEN.md (من CLAUDE.md) + خوادم golden-dragon.",
-            "rem دبل كليك (بيشتغل في مجلد المستخدم)، أو اسحب مجلد على الاختصار، أو: golden-dragon.cmd \"C:\\مجلد\\الشغل\"",
-            'if not "%~1"=="" (cd /d "%~1") else (cd /d "%USERPROFILE%")',
+            "rem دبل كليك (بيشتغل على سطح المكتب)، أو اسحب مجلد على الاختصار، أو: golden-dragon.cmd \"C:\\مجلد\\الشغل\"",
+            "rem الافتراضي سطح المكتب مش مجلد المستخدم: Claude Code بيسأل «تثق في المجلد؟» كل مرة في مجلد المستخدم، وفي غيره مرة واحدة.",
+            f'if not "%~1"=="" (cd /d "%~1") else (cd /d "{self.desktop() or self.home}")',
             "title التنين الذهبي - %CD%",
-            "echo التنين الذهبي (من غير التطبيق) - مجلد الشغل: %CD%",
+            "echo Golden Dragon (no app) - working folder: %CD%",        # conhost can't draw Arabic right-to-left
             f"claude{add} --permission-mode auto %2 %3 %4 %5",
             ""]), encoding="utf-8")
         self.log.append(f"المشغّل ← {f}")
