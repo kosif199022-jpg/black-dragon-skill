@@ -50,7 +50,7 @@ def test_true_standalone_fusion_native_end_to_end(tmp_path, monkeypatch):
     status, error = dispatch({"action": "native_status"})
     assert not error, status
     info = json.loads(status)
-    assert info["adapter_count"] == 7
+    assert info["adapter_count"] == 8
     assert info["indexed_capabilities_all_executable"] is False
     assert all(not a["runtime_tested_by_this_call"] for a in info["adapters"])
 
