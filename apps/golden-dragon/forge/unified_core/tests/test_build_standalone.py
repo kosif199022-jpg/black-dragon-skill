@@ -88,6 +88,7 @@ def test_real_repository_standalone_source(tmp_path):
     assert (target / "app" / "capability_ledger.py").is_file()
     assert (target / "app" / "audit_tree.py").is_file()
     assert (target / "app" / "native_registry.py").is_file()
+    assert (target / "app" / "blender_engine.py").is_file()
     assert len(json.loads((target / "standalone-manifest.json").read_text(encoding="utf-8"))["files"]) > 25
     stamp = json.loads((target / "app" / ".gd_generated.json").read_text(encoding="utf-8"))
     assert stamp["schema"] == "golden-dragon.generated-standalone.v1"
