@@ -121,7 +121,7 @@ camera.data.type = "ORTHO"
 camera.data.ortho_scale = 5.9
 scene.camera = camera
 scene.render.filepath = output_dir + "/render.png"
-bpy.ops.wm.save_as_mainfile(filepath=output_dir + "/scene.blend")
+bpy.ops.wm.save_as_mainfile(filepath=output_dir + "/scene.blend", compress=False)
 bpy.ops.render.render(write_still=True)
 '''
 
