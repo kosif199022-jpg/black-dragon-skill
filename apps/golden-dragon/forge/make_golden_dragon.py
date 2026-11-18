@@ -223,10 +223,13 @@ FUSION_TOOL = '''    tool("fusion", "Golden Dragon fusion core: ONE index of eve
          "'probe_media' = inspect ONE local audio/video file using FFprobe (path required; no network or transcode). "
          "'inspect_binary_imports' = static REA PE import scan of ONE local Windows binary (path required; no execution). "
          "'transcode_media' = FFmpeg convert local audio/video to a NEW TEMP file (path and optional profile; never overwrite input). "
+         "'native_status' = list ONLY explicitly implemented adapters and passive prerequisites (not proof of runtime success). "
+         "'native_exec' = invoke one registered native operation using 'operation' and optional local 'path'; "
+         "creating a new temporary output requires approve_new_file=true. "
          "Read-only except discover, which writes only its own catalog in %APPDATA%\\\\GoldenDragon.",
          {"action": {"type": "string", "enum": ["brief", "route", "check", "find", "show", "recipes", "doctor", "lessons", "think", "stats",
-                                                "discover", "local", "audit", "probe_media", "inspect_binary_imports", "transcode_media"]},
-          "query": S, "draft": S, "id": S, "kind": S, "path": S, "profile": S, "limit": {"type": "integer", "minimum": 1, "maximum": 30}}, ["action"]),
+                                                "discover", "local", "audit", "probe_media", "inspect_binary_imports", "transcode_media", "native_status", "native_exec"]},
+          "query": S, "draft": S, "id": S, "kind": S, "path": S, "profile": S, "operation": S, "approve_new_file": {"type":"boolean"}, "limit": {"type": "integer", "minimum": 1, "maximum": 30}}, ["action"]),
 '''
 
 FUSION_DISPATCH = '''def fusion_dispatch(a):
@@ -263,6 +266,21 @@ FUSION_DISPATCH = '''def fusion_dispatch(a):
             return fz.md_discover(), False
         if act == "local":
             return fz.md_local(a.get("kind") or None, int(a.get("limit") or 40)), False
+        if act == "native_status":
+            from pathlib import Path as _Path
+            import native_registry as _native
+            return _native.native_report_json(_Path(__file__).resolve().parent), False
+        if act == "native_exec":
+            from pathlib import Path as _Path
+            import native_registry as _native
+            operation = (a.get("operation") or "").strip()
+            if not operation:
+                raise ValueError("INVALID_JSON: operation is required for native_exec")
+            outcome = _native.native_execute(
+                _Path(__file__).resolve().parent, operation,
+                local_path=a.get("path"), profile=a.get("profile") or "mp4-compatible",
+                approve_new_file=a.get("approve_new_file") is True)
+            return json.dumps(outcome, ensure_ascii=False), False
         if act == "audit":
             from pathlib import Path as _Path
             import gd_runtime as _gd_runtime
@@ -299,7 +317,7 @@ FUSION_DISPATCH = '''def fusion_dispatch(a):
             _core = _gd_runtime.GoldenDragonCore(_Path(__file__).resolve().parent,
                                                   media=_Path(_local_path))
             return json.dumps(_core.execute("media.probe"), ensure_ascii=False), False
-        raise ValueError("INVALID_JSON: action must be brief, route, check, find, show, recipes, doctor, lessons, think, stats, discover, local, audit, probe_media, inspect_binary_imports or transcode_media")
+        raise ValueError("INVALID_JSON: action must be brief, route, check, find, show, recipes, doctor, lessons, think, stats, discover, local, audit, probe_media, inspect_binary_imports, transcode_media, native_status or native_exec")
     except (KeyError, FileNotFoundError, ValueError, OSError, ImportError) as e:
         return f"✗ {e.args[0] if e.args else e}", True
 
@@ -414,7 +432,7 @@ def patch_build(t):
     codes_gd = ",".join(f"0x{ord(c):x}" for c in NAME_GD)
     t = sub(t, codes_gb, codes_gd, 1, "shortcut name")
     t = sub(t, '--add-data "$here\\golden;golden"', '--add-data "$here\\golden;golden" --add-data "$here\\fusion;fusion"', 1, "bundle fusion data")
-    t = sub(t, "--hidden-import golden_tools", "--hidden-import golden_tools --hidden-import anthropic --hidden-import dragon_fusion --hidden-import gd_discover --hidden-import gd_runtime --hidden-import capability_ledger --hidden-import audit_tree", 1, "bundle dragon_fusion and unified runtime")
+    t = sub(t, "--hidden-import golden_tools", "--hidden-import golden_tools --hidden-import anthropic --hidden-import dragon_fusion --hidden-import gd_discover --hidden-import gd_runtime --hidden-import capability_ledger --hidden-import audit_tree --hidden-import native_registry", 1, "bundle dragon_fusion and unified runtime")
     return t
 
 
@@ -545,7 +563,7 @@ def main():
     shutil.copy2(FORGE / "modules" / "anatomy_bridge.py", tmp / "anatomy_bridge.py")  # user-installed MIT kit, opt-in
     shutil.copy2(FORGE / "modules" / "gd_core_integrations.py", tmp / "gd_core_integrations.py")  # viral video + replica core
     # Native unified core (read-only): no MCP bridge, imported by the fusion audit action.
-    for module in ("runtime.py", "capability_ledger.py", "audit_tree.py"):
+    for module in ("runtime.py", "capability_ledger.py", "audit_tree.py", "native_registry.py"):
         shutil.copy2(FORGE / "unified_core" / module,
                      tmp / ("gd_runtime.py" if module == "runtime.py" else module))
     (tmp / "golden").mkdir()
