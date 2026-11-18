@@ -51,6 +51,7 @@ $pyArgs = @(
     '--add-data',"$app\voice.py;.",
     '--add-data',"$app\golden;golden",
     '--add-data',"$app\fusion;fusion",
+    '--hidden-import','anthropic',
     '--hidden-import','keyring.backends.Windows',
     '--hidden-import','webview.dom',
     '--hidden-import','control',
