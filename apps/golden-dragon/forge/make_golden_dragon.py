@@ -211,7 +211,7 @@ FUSION_TOOL = '''    tool("fusion", "Golden Dragon fusion core: ONE index of eve
          "when doctor says the PC catalog is missing or stale, or the owner added something); 'local' = list that catalog "
          "(optional kind). Read-only except discover, which writes only its own catalog in %APPDATA%\\\\GoldenDragon.",
          {"action": {"type": "string", "enum": ["brief", "route", "check", "find", "show", "recipes", "doctor", "lessons", "think", "stats",
-                                                "discover", "local"]},
+                                                "discover", "local", "audit"]},
           "query": S, "draft": S, "id": S, "kind": S, "limit": {"type": "integer", "minimum": 1, "maximum": 30}}, ["action"]),
 '''
 
@@ -249,8 +249,16 @@ FUSION_DISPATCH = '''def fusion_dispatch(a):
             return fz.md_discover(), False
         if act == "local":
             return fz.md_local(a.get("kind") or None, int(a.get("limit") or 40)), False
-        raise ValueError("INVALID_JSON: action must be brief, route, check, find, show, recipes, doctor, lessons, think, stats, discover or local")
-    except (KeyError, FileNotFoundError) as e:
+        if act == "audit":
+            from pathlib import Path as _Path
+            import gd_runtime as _gd_runtime
+            _here = _Path(__file__).resolve().parent
+            _core = _gd_runtime.GoldenDragonCore(
+                _here, _here / "fusion" / "index.json",
+                _here / "fusion" / "recipes.json")
+            return json.dumps(_core.execute("catalog.audit"), ensure_ascii=False), False
+        raise ValueError("INVALID_JSON: action must be brief, route, check, find, show, recipes, doctor, lessons, think, stats, discover, local or audit")
+    except (KeyError, FileNotFoundError, ValueError, OSError, ImportError) as e:
         return f"✗ {e.args[0] if e.args else e}", True
 
 
@@ -353,7 +361,7 @@ def patch_build(t):
     codes_gd = ",".join(f"0x{ord(c):x}" for c in NAME_GD)
     t = sub(t, codes_gb, codes_gd, 1, "shortcut name")
     t = sub(t, '--add-data "$here\\golden;golden"', '--add-data "$here\\golden;golden" --add-data "$here\\fusion;fusion"', 1, "bundle fusion data")
-    t = sub(t, "--hidden-import golden_tools", "--hidden-import golden_tools --hidden-import dragon_fusion --hidden-import gd_discover", 1, "bundle dragon_fusion")
+    t = sub(t, "--hidden-import golden_tools", "--hidden-import golden_tools --hidden-import dragon_fusion --hidden-import gd_discover --hidden-import gd_runtime --hidden-import capability_ledger --hidden-import audit_tree", 1, "bundle dragon_fusion and unified runtime")
     return t
 
 
@@ -483,6 +491,10 @@ def main():
     shutil.copy2(FORGE / "modules" / "gd_discover.py", tmp / "gd_discover.py")      # 2026-11-16: «discover» (PC catalog)
     shutil.copy2(FORGE / "modules" / "anatomy_bridge.py", tmp / "anatomy_bridge.py")  # user-installed MIT kit, opt-in
     shutil.copy2(FORGE / "modules" / "gd_core_integrations.py", tmp / "gd_core_integrations.py")  # viral video + replica core
+    # Native unified core (read-only): no MCP bridge, imported by the fusion audit action.
+    for module in ("runtime.py", "capability_ledger.py", "audit_tree.py"):
+        shutil.copy2(FORGE / "unified_core" / module,
+                     tmp / ("gd_runtime.py" if module == "runtime.py" else module))
     (tmp / "golden").mkdir()
     for f in ("library.json", "studio.json"):
         shutil.copy2(gb.DATA / f, tmp / "golden" / f)
