@@ -161,6 +161,8 @@ def scholars_section():
     the per-request tools, their steps and their critic questions come from `fusion brief` / `fusion check`."""
     f = GD / "analysis" / "thinking_toolkit.json"
     if not f.is_file():
+        f = FUSION / "thinking.json"  # self-contained fallback: equivalent 22 tools / 8 steps
+    if not f.is_file():
         raise SystemExit(f"✗ صندوق أدوات التفكير مش موجود: {f}")
     tk = json.loads(f.read_text(encoding="utf-8"))
     # The older source tree has no thinking_books.json or merge_books helper.
