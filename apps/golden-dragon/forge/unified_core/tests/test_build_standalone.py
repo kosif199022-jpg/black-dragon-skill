@@ -33,10 +33,10 @@ def fusion_dispatch(a):
 def unrelated():
     return VALUE
 """
-    forge = '''FUSION_TOOL = """    tool("fusion", "new", {"audit":"x", "probe_media":"x", "inspect_binary_imports":"x", "transcode_media":"x"}),\\n"""
+    forge = '''FUSION_TOOL = """    tool("fusion", "new", {"audit":"x", "probe_media":"x", "inspect_binary_imports":"x", "transcode_media":"x", "native_status":"x", "native_exec":"x"}),\\n"""
 FUSION_DISPATCH = """def fusion_dispatch(a):
     import gd_runtime
-    return {"audit":1, "probe_media":1, "inspect_binary_imports":1, "transcode_media":1}
+    return {"audit":1, "probe_media":1, "inspect_binary_imports":1, "transcode_media":1, "native_status":1, "native_exec":1}
 def skills_index():
 """
 '''
@@ -87,6 +87,7 @@ def test_real_repository_standalone_source(tmp_path):
     assert (target / "app" / "gd_runtime.py").is_file()
     assert (target / "app" / "capability_ledger.py").is_file()
     assert (target / "app" / "audit_tree.py").is_file()
+    assert (target / "app" / "native_registry.py").is_file()
     assert len(json.loads((target / "standalone-manifest.json").read_text(encoding="utf-8"))["files"]) > 25
     with pytest.raises(ValueError, match="overwrite"):
         builder.build(PROJECT, target)
