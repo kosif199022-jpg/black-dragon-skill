@@ -7,6 +7,9 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
+# Source-tree tests must mirror the generated app module lookup path.
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 core_spec = importlib.util.spec_from_file_location("gd_runtime", ROOT / "runtime.py")
 core_module = importlib.util.module_from_spec(core_spec)
 sys.modules["gd_runtime"] = core_module
