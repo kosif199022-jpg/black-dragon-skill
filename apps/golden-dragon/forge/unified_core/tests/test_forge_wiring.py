@@ -25,14 +25,16 @@ def test_forge_compiles_and_exposes_native_audit():
     assert 'if act == "audit":' in dispatch
     assert 'import gd_runtime as _gd_runtime' in dispatch
     assert '_core.execute("catalog.audit")' in dispatch
+    assert 'if act == "native_status":' in dispatch
+    assert 'if act == "native_exec":' in dispatch
     compile(dispatch.rsplit("\ndef skills_index():", 1)[0], "fusion_dispatch", "exec")
 
 
 def test_forge_bundles_all_native_modules():
     source = FORGE.read_text(encoding="utf-8-sig")
-    assert 'for module in ("runtime.py", "capability_ledger.py", "audit_tree.py"):' in source
+    assert 'for module in ("runtime.py", "capability_ledger.py", "audit_tree.py", "native_registry.py"):' in source
     assert 'tmp / ("gd_runtime.py" if module == "runtime.py" else module)' in source
-    for module in ("gd_runtime", "capability_ledger", "audit_tree"):
+    for module in ("gd_runtime", "capability_ledger", "audit_tree", "native_registry"):
         assert f"--hidden-import {module}" in source
 
 
