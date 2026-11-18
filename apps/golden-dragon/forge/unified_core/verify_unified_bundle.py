@@ -16,7 +16,7 @@ from pathlib import Path
 
 NEED_MODULES = (
     "dragon_fusion", "golden_tools", "golden_steer", "control", "brain",
-    "gd_runtime", "capability_ledger", "audit_tree",
+    "gd_runtime", "capability_ledger", "audit_tree", "native_registry",
 )
 NEED_DATA = (
     "fusion/index.json", "fusion/recipes.json", "fusion/lessons.json",
