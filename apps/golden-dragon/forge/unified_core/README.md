@@ -54,3 +54,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File forge/unified_core/build_iso
 ```
 
 The isolated builder refuses destinations outside `TEMP`, refuses overwriting existing output, and does not install to the user home or change Desktop shortcuts. Its PowerShell syntax and `-DryRun` were verified on the owner's Windows device.
+
+## First dependency-breaking standalone build path
+
+The new `build_standalone.py` composes source from **Golden Dragon's own versioned `app/` baseline**, with the current native unified core and updated `fusion` actions, without importing or invoking `make_golden_bird.py` or `make_white_bird.py`.
+
+Run from the repository checkout, with a **new** output directory inside the system TEMP:
+
+```powershell
+python -B apps/golden-dragon/forge/unified_core/build_standalone.py --out "$env:TEMP\gd-standalone-trial" --dry-run
+python -B apps/golden-dragon/forge/unified_core/build_standalone.py --out "$env:TEMP\gd-standalone-trial"
+```
+
+The composition explicitly refuses to overwrite an existing destination. It does not install an EXE and excludes the legacy auto-installing `build.ps1` from the generated app. The only packager it carries forward is the guarded `forge/unified_core/build_isolated.ps1`, which packages inside TEMP.
+
+**Automated verification:** GitHub Actions run `Golden Dragon standalone source build` #4 (ID `44339824543`) succeeded on the feature branch with **6/6 tests passing**, including composition of the *real versioned Golden Dragon source*. The separate existing core integration workflow on the same commit passed as well.
+
+**Limit:** This is a reproducible standalone **source composition** milestone, not a verified Windows EXE rebuilt from this new path and not proof that the sibling engines' runtime capabilities have all been absorbed. It freezes the current Golden Dragon-owned source baseline until remaining source layers are individually consolidated.
