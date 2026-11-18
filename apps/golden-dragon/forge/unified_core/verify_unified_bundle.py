@@ -1,4 +1,4 @@
-"""Verify a newly built *isolated* Windows GoldenDragon EXE without launching it.
+r"""Verify a newly built *isolated* Windows GoldenDragon EXE without launching it.
 
 This verifier is deliberately stricter than the legacy verify_bundle.py:
 it requires the unified native core modules and the existing runtime assets.
