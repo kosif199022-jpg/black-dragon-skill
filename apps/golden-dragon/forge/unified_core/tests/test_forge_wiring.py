@@ -32,9 +32,9 @@ def test_forge_compiles_and_exposes_native_audit():
 
 def test_forge_bundles_all_native_modules():
     source = FORGE.read_text(encoding="utf-8-sig")
-    assert 'for module in ("runtime.py", "capability_ledger.py", "audit_tree.py", "native_registry.py"):' in source
+    assert 'for module in ("runtime.py", "capability_ledger.py", "audit_tree.py", "native_registry.py", "blender_engine.py"):' in source
     assert 'tmp / ("gd_runtime.py" if module == "runtime.py" else module)' in source
-    for module in ("gd_runtime", "capability_ledger", "audit_tree", "native_registry"):
+    for module in ("gd_runtime", "capability_ledger", "audit_tree", "native_registry", "blender_engine"):
         assert f"--hidden-import {module}" in source
 
 
