@@ -221,9 +221,10 @@ FUSION_TOOL = '''    tool("fusion", "Golden Dragon fusion core: ONE index of eve
          "when doctor says the PC catalog is missing or stale, or the owner added something); 'local' = list that catalog "
          "(optional kind). 'audit' = passive catalog evidence and recipe-link verification without running indexed tools. "
          "'probe_media' = inspect ONE local audio/video file using FFprobe (path required; no network or transcode). "
+         "'inspect_binary_imports' = static REA PE import scan of ONE local Windows binary (path required; no execution). "
          "Read-only except discover, which writes only its own catalog in %APPDATA%\\\\GoldenDragon.",
          {"action": {"type": "string", "enum": ["brief", "route", "check", "find", "show", "recipes", "doctor", "lessons", "think", "stats",
-                                                "discover", "local", "audit", "probe_media"]},
+                                                "discover", "local", "audit", "probe_media", "inspect_binary_imports"]},
           "query": S, "draft": S, "id": S, "kind": S, "path": S, "limit": {"type": "integer", "minimum": 1, "maximum": 30}}, ["action"]),
 '''
 
@@ -269,6 +270,15 @@ FUSION_DISPATCH = '''def fusion_dispatch(a):
                 _here, _here / "fusion" / "index.json",
                 _here / "fusion" / "recipes.json")
             return json.dumps(_core.execute("catalog.audit"), ensure_ascii=False), False
+        if act == "inspect_binary_imports":
+            import gd_runtime as _gd_runtime
+            from pathlib import Path as _Path
+            _local_path = (a.get("path") or "").strip()
+            if not _local_path:
+                raise ValueError("INVALID_JSON: path is required for inspect_binary_imports")
+            _core = _gd_runtime.GoldenDragonCore(_Path(__file__).resolve().parent,
+                                                  binary=_Path(_local_path))
+            return json.dumps(_core.execute("binary.imports"), ensure_ascii=False), False
         if act == "probe_media":
             import gd_runtime as _gd_runtime
             from pathlib import Path as _Path
@@ -278,7 +288,7 @@ FUSION_DISPATCH = '''def fusion_dispatch(a):
             _core = _gd_runtime.GoldenDragonCore(_Path(__file__).resolve().parent,
                                                   media=_Path(_local_path))
             return json.dumps(_core.execute("media.probe"), ensure_ascii=False), False
-        raise ValueError("INVALID_JSON: action must be brief, route, check, find, show, recipes, doctor, lessons, think, stats, discover, local, audit or probe_media")
+        raise ValueError("INVALID_JSON: action must be brief, route, check, find, show, recipes, doctor, lessons, think, stats, discover, local, audit, probe_media or inspect_binary_imports")
     except (KeyError, FileNotFoundError, ValueError, OSError, ImportError) as e:
         return f"✗ {e.args[0] if e.args else e}", True
 
