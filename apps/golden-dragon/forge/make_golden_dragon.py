@@ -209,7 +209,8 @@ FUSION_TOOL = '''    tool("fusion", "Golden Dragon fusion core: ONE index of eve
          "imagination, deep, creative, logic/probability, step by step, analysis, decision; query = a path or empty for the map). 'discover' = walk the owner's folders now and "
          "add every skill, plugin, MCP server, program, shortcut, script, tool folder, repo and skill archive to the index (run it "
          "when doctor says the PC catalog is missing or stale, or the owner added something); 'local' = list that catalog "
-         "(optional kind). Read-only except discover, which writes only its own catalog in %APPDATA%\\\\GoldenDragon.",
+         "(optional kind). 'audit' = passive catalog evidence and recipe-link verification without running indexed tools. "
+         "Read-only except discover, which writes only its own catalog in %APPDATA%\\\\GoldenDragon.",
          {"action": {"type": "string", "enum": ["brief", "route", "check", "find", "show", "recipes", "doctor", "lessons", "think", "stats",
                                                 "discover", "local", "audit"]},
           "query": S, "draft": S, "id": S, "kind": S, "limit": {"type": "integer", "minimum": 1, "maximum": 30}}, ["action"]),
