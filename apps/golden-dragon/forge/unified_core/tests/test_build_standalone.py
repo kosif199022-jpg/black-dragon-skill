@@ -89,5 +89,27 @@ def test_real_repository_standalone_source(tmp_path):
     assert (target / "app" / "audit_tree.py").is_file()
     assert (target / "app" / "native_registry.py").is_file()
     assert len(json.loads((target / "standalone-manifest.json").read_text(encoding="utf-8"))["files"]) > 25
+    stamp = json.loads((target / "app" / ".gd_generated.json").read_text(encoding="utf-8"))
+    assert stamp["schema"] == "golden-dragon.generated-standalone.v1"
+    assert stamp["recipes"] >= 40
+    assert stamp["fusion_counts"]["skill"] >= 500
+    assert builder.verify_standalone_output(target)["verified"] is True
     with pytest.raises(ValueError, match="overwrite"):
         builder.build(PROJECT, target)
+
+
+def test_tampered_generated_source_is_rejected(tmp_path):
+    target = tmp_path / "untouched"
+    builder.build(PROJECT, target)
+    changed = target / "app" / "gd_runtime.py"
+    changed.write_bytes(changed.read_bytes() + b"\\n# unexpected mutation")
+    with pytest.raises(ValueError, match="checksum mismatch"):
+        builder.verify_standalone_output(target)
+
+
+def test_extra_file_is_rejected(tmp_path):
+    target = tmp_path / "untouched"
+    builder.build(PROJECT, target)
+    (target / "app" / "unlisted.py").write_text("pass", encoding="utf-8")
+    with pytest.raises(ValueError, match="file list differs"):
+        builder.verify_standalone_output(target)
