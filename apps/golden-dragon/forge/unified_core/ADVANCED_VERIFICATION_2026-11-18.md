@@ -14,7 +14,7 @@ Branch: `feat/golden-dragon-runtime-ledger-20261118`; draft PR #23. **No merge o
 ## Validation (latest source checkout)
 
 - Unified-core tests: **32 passed**, after regeneration with the latest native FFmpeg/REA/lazy-loading changes.
-- Legacy application regression tests: **56 passed in the previous advanced checkout**; re-run on final media-transcode regeneration to record the final number.
+- Legacy application regression tests: **56 passed** on the final regenerated media-transcode source (60.10 seconds), after the 32 unified-core tests passed. **88 total passing test cases** across the two suites, with no failures.
 - Source regeneration: succeeded in TEMP with 39 files, preserving 1,101 indexed catalog units, 42 recipes, and 65 lessons. This catalog is **not** 1,101 executed capabilities.
 - Installed EXE SHA-256: `33405ab2e133c0d8814e82ef1d12cd1f69373b6e77efd07f2bf1e3e1a654ab6e`; do not replace it without explicit later go-ahead.
 
