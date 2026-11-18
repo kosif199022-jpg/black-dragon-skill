@@ -51,6 +51,11 @@ ADAPTERS = {
         "requires": (), "command": "ffmpeg",
         "input": "media", "writes_output": True,
     },
+    "blender.render": {
+        "description": "Render a reviewed mechanical 3D scene using Blender",
+        "requires": (), "command": "blender",
+        "input": "scene", "writes_output": True,
+    },
     "audit": {
         "description": "Combine non-mutating catalog, source and binary checks",
         "requires": ("fusion/index.json", "fusion/recipes.json"),
@@ -98,6 +103,8 @@ def native_execute(
     *,
     local_path: str | None = None,
     profile: str = "mp4-compatible",
+    preset: str = "mechanical_gear",
+    resolution: int = 512,
     approve_new_file: bool = False,
 ) -> dict[str, Any]:
     """Invoke only a reviewable allowlisted adapter with fixed typed inputs.
@@ -110,7 +117,7 @@ def native_execute(
     adapter = ADAPTERS[operation]
     root = Path(app_root)
     expected_input = adapter["input"]
-    if expected_input != "none":
+    if expected_input in ("binary", "media"):
         if not isinstance(local_path, str) or not local_path.strip():
             raise ValueError("local path required for adapter: " + operation)
         if "://" in local_path:
@@ -129,6 +136,9 @@ def native_execute(
     elif expected_input == "media":
         kwargs["media"] = Path(local_path)
         kwargs["profile"] = profile
+    elif expected_input == "scene":
+        kwargs["preset"] = preset
+        kwargs["resolution"] = resolution
     if operation in ("catalog.audit", "audit"):
         kwargs["index"], kwargs["recipes"] = index, recipes
     core = GoldenDragonCore(root, **kwargs)
