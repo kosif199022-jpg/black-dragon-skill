@@ -36,6 +36,8 @@ jobs:
             -q -p no:cacheprovider --tb=short
 
       - name: Generate independent Golden Dragon source artifact
+        env:
+          TMPDIR: ${{ runner.temp }}
         run: |
           python -B apps/golden-dragon/forge/unified_core/build_standalone.py \
             --out "${{ runner.temp }}/golden-dragon-standalone"
