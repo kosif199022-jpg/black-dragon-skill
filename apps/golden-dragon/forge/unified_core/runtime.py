@@ -258,18 +258,22 @@ class GoldenDragonCore:
         "binary.imports": "Inspect Windows PE imports via REA static CLI",
         "media.probe": "Read media metadata with local FFprobe (no transcode)",
         "media.transcode": "Convert a local media file into a new TEMP output with FFmpeg",
+        "blender.render": "Render an original 3D scene using installed Blender in TEMP",
         "audit": "Run all selected read-only audit stages",
     }
 
     def __init__(self, root: Path, index: Path | None = None,
                  recipes: Path | None = None, binary: Path | None = None,
-                 media: Path | None = None, profile: str = "mp4-compatible"):
+                 media: Path | None = None, profile: str = "mp4-compatible",
+                 preset: str = "mechanical_gear", resolution: int = 512):
         self.root = Path(root)
         self.index = Path(index) if index else None
         self.recipes = Path(recipes) if recipes else None
         self.binary = Path(binary) if binary else None
         self.media = Path(media) if media else None
         self.profile = profile
+        self.preset = preset
+        self.resolution = resolution
 
     def _catalog(self) -> dict:
         if self.index is None:
@@ -313,6 +317,10 @@ class GoldenDragonCore:
                 raise ValueError("media path is required")
             return {"operation": operation,
                     "result": transcode_media(self.media, profile=self.profile)}
+        if operation == "blender.render":
+            from blender_engine import render_scene
+            return {"operation": operation, "result": render_scene(
+                preset=self.preset, resolution=self.resolution)}
         stages = {"catalog": self._catalog(), "source": self._source()}
         if self.binary is not None:
             stages["binary"] = inspect_pe(self.binary)
@@ -332,8 +340,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--binary", type=Path)
     p.add_argument("--media", type=Path)
     p.add_argument("--profile", default="mp4-compatible", choices=sorted(TRANSCODE_PROFILES))
+    p.add_argument("--preset", default="mechanical_gear", choices=("mechanical_gear", "machine_piston"))
+    p.add_argument("--resolution", type=int, choices=(256, 512, 1024), default=512)
     args = p.parse_args(argv)
-    core = GoldenDragonCore(args.root, args.index, args.recipes, args.binary, args.media, args.profile)
+    core = GoldenDragonCore(args.root, args.index, args.recipes, args.binary,
+                            args.media, args.profile, args.preset, args.resolution)
     try:
         result = core.execute(args.operation)
     except (ValueError, OSError, json.JSONDecodeError) as exc:
