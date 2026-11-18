@@ -27,13 +27,7 @@ jobs:
       - run: python -m pip install pytest
       - name: Verify standalone source, native registry, and real fused dispatch
         run: |
-          python -B -m pytest \
-            apps/golden-dragon/forge/unified_core/tests/test_build_standalone.py \
-            apps/golden-dragon/forge/unified_core/tests/test_standalone_native_dispatch.py \
-            apps/golden-dragon/forge/unified_core/tests/test_native_registry.py \
-            apps/golden-dragon/forge/unified_core/tests/test_forge_wiring.py \
-            apps/golden-dragon/forge/unified_core/tests/test_verify_unified_bundle.py \
-            -q -p no:cacheprovider --tb=short
+          python -B -m pytest apps/golden-dragon/forge/unified_core/tests -q -p no:cacheprovider --tb=short
 
       - name: Generate independent Golden Dragon source artifact
         env:
@@ -73,7 +67,7 @@ jobs:
       - name: Run standalone-native and registry checks on Windows
         shell: pwsh
         run: |
-          python -B -m pytest apps/golden-dragon/forge/unified_core/tests/test_build_standalone.py apps/golden-dragon/forge/unified_core/tests/test_standalone_native_dispatch.py apps/golden-dragon/forge/unified_core/tests/test_native_registry.py apps/golden-dragon/forge/unified_core/tests/test_forge_wiring.py apps/golden-dragon/forge/unified_core/tests/test_verify_unified_bundle.py -q -p no:cacheprovider --tb=short
+          python -B -m pytest apps/golden-dragon/forge/unified_core/tests -q -p no:cacheprovider --tb=short
       - name: Compose independent Windows source without sibling forges
         shell: pwsh
         run: |
