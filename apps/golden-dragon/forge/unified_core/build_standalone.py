@@ -25,6 +25,7 @@ CORE_MAP = {
     "capability_ledger.py": "capability_ledger.py",
     "audit_tree.py": "audit_tree.py",
     "native_registry.py": "native_registry.py",
+    "blender_engine.py": "blender_engine.py",
 }
 EVIDENCE_ACTIONS = (
     "audit", "probe_media", "inspect_binary_imports", "transcode_media",
