@@ -34,3 +34,26 @@ jobs:
             apps/golden-dragon/forge/unified_core/tests/test_forge_wiring.py \
             apps/golden-dragon/forge/unified_core/tests/test_verify_unified_bundle.py \
             -q -p no:cacheprovider --tb=short
+
+      - name: Generate independent Golden Dragon source artifact
+        run: |
+          python -B apps/golden-dragon/forge/unified_core/build_standalone.py \
+            --out "${{ runner.temp }}/golden-dragon-standalone"
+          python -B - <<'PY'
+          import json, os
+          from pathlib import Path
+          source = Path(os.environ["RUNNER_TEMP"]) / "golden-dragon-standalone"
+          manifest = json.loads((source / "standalone-manifest.json").read_text(encoding="utf-8"))
+          assert manifest["requires_sibling_forges"] is False
+          assert manifest["runtime_capabilities_all_verified"] is False
+          assert "native_registry.py" in manifest["files"]
+          assert len(manifest["files"]) > 25
+          print("Standalone source verification: PASS, files:", len(manifest["files"]))
+          PY
+      - name: Upload standalone source for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-dragon-standalone-source
+          path: ${{ runner.temp }}/golden-dragon-standalone/
+          if-no-files-found: error
+          retention-days: 7
