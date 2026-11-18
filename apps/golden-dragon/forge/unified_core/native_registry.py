@@ -109,9 +109,6 @@ def native_execute(
         raise ValueError("unknown native adapter: " + str(operation))
     adapter = ADAPTERS[operation]
     root = Path(app_root)
-    info = next(x for x in native_status(root)["adapters"] if x["operation"] == operation)
-    if not info["prerequisite_available"]:
-        raise ValueError("native adapter prerequisites missing: " + operation)
     expected_input = adapter["input"]
     if expected_input != "none":
         if not isinstance(local_path, str) or not local_path.strip():
@@ -120,6 +117,9 @@ def native_execute(
             raise ValueError("remote URLs are not accepted by native adapters")
     if adapter["writes_output"] and approve_new_file is not True:
         raise ValueError("explicit approval is required to create a new file")
+    info = next(x for x in native_status(root)["adapters"] if x["operation"] == operation)
+    if not info["prerequisite_available"]:
+        raise ValueError("native adapter prerequisites missing: " + operation)
 
     index = root / "fusion" / "index.json"
     recipes = root / "fusion" / "recipes.json"
