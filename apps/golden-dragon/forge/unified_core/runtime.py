@@ -16,6 +16,7 @@ import shutil
 import struct
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 
@@ -186,6 +187,67 @@ def inspect_binary_imports(path: Path, *, timeout: int = 60) -> dict:
     }
 
 
+
+TRANSCODE_PROFILES = {
+    "mp4-compatible": (".mp4", ["-map", "0:v:0?", "-map", "0:a:0?",
+                                 "-c:v", "mpeg4", "-q:v", "5",
+                                 "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart"]),
+    "mp4-h264": (".mp4", ["-map", "0:v:0?", "-map", "0:a:0?",
+                           "-c:v", "libx264", "-preset", "veryfast", "-crf", "22",
+                           "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart"]),
+    "mp3": (".mp3", ["-vn", "-map", "0:a:0?", "-c:a", "libmp3lame", "-q:a", "3"]),
+}
+
+
+def transcode_media(path: Path, *, profile: str = "mp4-compatible",
+                    timeout: int = 180) -> dict:
+    """Actual media conversion through FFmpeg, restricted to fresh TEMP output.
+
+    Never overwrites the user's original media and never accepts arbitrary
+    FFmpeg flags, URLs, remote protocols or an externally supplied output path.
+    """
+    path = Path(path).expanduser()
+    if path.suffix.lower() not in MEDIA_SUFFIXES or not path.is_file():
+        raise ValueError("media source must be an existing local audio/video file")
+    if path.is_symlink():
+        raise ValueError("media symlinks are not allowed")
+    if profile not in TRANSCODE_PROFILES:
+        raise ValueError("unsupported media profile")
+    if not 1 <= timeout <= 300:
+        raise ValueError("invalid conversion timeout")
+    if path.stat().st_size > 2_000_000_000:
+        raise ValueError("input exceeds conversion size budget")
+    ffmpeg = shutil.which("ffmpeg")
+    if not ffmpeg:
+        raise ValueError("ffmpeg is not installed or not on PATH")
+    ext, fixed_args = TRANSCODE_PROFILES[profile]
+    fresh = Path(tempfile.mkdtemp(prefix="golden-dragon-media-"))
+    output = fresh / ("converted" + ext)
+    command = [ffmpeg, "-nostdin", "-hide_banner", "-v", "error",
+               "-protocol_whitelist", "file,pipe", "-i", str(path.resolve()),
+               *fixed_args, "-n", str(output)]
+    flags = 0x08000000 if sys.platform == "win32" else 0
+    try:
+        result = subprocess.run(command, stdin=subprocess.DEVNULL,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                timeout=timeout, check=False, shell=False,
+                                creationflags=flags)
+    except subprocess.TimeoutExpired as exc:
+        output.unlink(missing_ok=True)
+        raise ValueError("ffmpeg conversion timed out") from exc
+    if result.returncode != 0 or not output.is_file() or output.stat().st_size == 0:
+        output.unlink(missing_ok=True)
+        error = result.stderr.decode("utf-8", errors="replace")[-240:]
+        raise ValueError("ffmpeg conversion failed: " + error)
+    return {
+        "source": str(path.resolve()), "output": str(output),
+        "output_bytes": output.stat().st_size,
+        "profile": profile, "transcode_performed": True,
+        "network_access": False, "original_overwritten": False,
+        "metadata": inspect_media(output),
+    }
+
+
 class GoldenDragonCore:
     """Single dispatch boundary for proven read-only operations."""
 
@@ -195,17 +257,19 @@ class GoldenDragonCore:
         "binary.pe_header": "Inspect a PE header without executing the binary",
         "binary.imports": "Inspect Windows PE imports via REA static CLI",
         "media.probe": "Read media metadata with local FFprobe (no transcode)",
+        "media.transcode": "Convert a local media file into a new TEMP output with FFmpeg",
         "audit": "Run all selected read-only audit stages",
     }
 
     def __init__(self, root: Path, index: Path | None = None,
                  recipes: Path | None = None, binary: Path | None = None,
-                 media: Path | None = None):
+                 media: Path | None = None, profile: str = "mp4-compatible"):
         self.root = Path(root)
         self.index = Path(index) if index else None
         self.recipes = Path(recipes) if recipes else None
         self.binary = Path(binary) if binary else None
         self.media = Path(media) if media else None
+        self.profile = profile
 
     def _catalog(self) -> dict:
         if self.index is None:
@@ -244,6 +308,11 @@ class GoldenDragonCore:
             if self.media is None:
                 raise ValueError("media path is required")
             return {"operation": operation, "result": inspect_media(self.media)}
+        if operation == "media.transcode":
+            if self.media is None:
+                raise ValueError("media path is required")
+            return {"operation": operation,
+                    "result": transcode_media(self.media, profile=self.profile)}
         stages = {"catalog": self._catalog(), "source": self._source()}
         if self.binary is not None:
             stages["binary"] = inspect_pe(self.binary)
@@ -262,8 +331,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--recipes", type=Path)
     p.add_argument("--binary", type=Path)
     p.add_argument("--media", type=Path)
+    p.add_argument("--profile", default="mp4-compatible", choices=sorted(TRANSCODE_PROFILES))
     args = p.parse_args(argv)
-    core = GoldenDragonCore(args.root, args.index, args.recipes, args.binary, args.media)
+    core = GoldenDragonCore(args.root, args.index, args.recipes, args.binary, args.media, args.profile)
     try:
         result = core.execute(args.operation)
     except (ValueError, OSError, json.JSONDecodeError) as exc:
