@@ -23,9 +23,11 @@ CORE_MAP = {
     "gd_runtime.py": "runtime.py",
     "capability_ledger.py": "capability_ledger.py",
     "audit_tree.py": "audit_tree.py",
+    "native_registry.py": "native_registry.py",
 }
 EVIDENCE_ACTIONS = (
     "audit", "probe_media", "inspect_binary_imports", "transcode_media",
+    "native_status", "native_exec",
 )
 
 
