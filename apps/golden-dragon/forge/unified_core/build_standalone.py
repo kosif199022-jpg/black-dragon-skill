@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+from collections import Counter
 import hashlib
 import json
 import shutil
@@ -197,6 +198,25 @@ def build(project_root: Path, destination: Path, *, dry_run: bool = False) -> di
     shutil.copy2(core / "build_isolated.ps1", safe / "build_isolated.ps1")
     for p in output.glob("*.py"):
         ast.parse(p.read_text(encoding="utf-8-sig"), filename=str(p))
+    file_hashes = {
+        str(p.relative_to(output)).replace("\\", "/"): _hash(p)
+        for p in output.rglob("*") if p.is_file()
+    }
+    # Maintain the previous generated-source integrity contract, but never
+    # restore its auto-installing build.ps1. This stamp is deterministic.
+    unit_counts = Counter(str(unit.get("kind") or "unknown")
+                          for unit in index.get("units") or [])
+    stamp = {
+        "schema": "golden-dragon.generated-standalone.v1",
+        "source": str(app),
+        "source_app_sha256": counts["source_sha256"],
+        "fusion_counts": dict(unit_counts),
+        "recipes": len(recipes),
+        "files": dict(file_hashes),
+    }
+    (output / ".gd_generated.json").write_text(
+        json.dumps(stamp, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
     manifest = {
         "schema": "golden-dragon.standalone-source.v1",
         **counts,
@@ -210,14 +230,53 @@ def build(project_root: Path, destination: Path, *, dry_run: bool = False) -> di
             "files": len(manifest["files"]), **counts}
 
 
+
+def verify_standalone_output(destination: Path) -> dict:
+    """Independently verify a standalone source snapshot; never mutate it."""
+    root = Path(destination).resolve()
+    manifest_file = root / "standalone-manifest.json"
+    app_root = root / "app"
+    if not manifest_file.is_file() or not app_root.is_dir():
+        raise ValueError("standalone manifest or app directory is missing")
+    record = json.loads(manifest_file.read_text(encoding="utf-8-sig"))
+    expected = record.get("files")
+    if not isinstance(expected, dict) or not expected:
+        raise ValueError("standalone manifest lacks file digests")
+    observed = {}
+    for p in app_root.rglob("*"):
+        if p.is_symlink():
+            raise ValueError("generated source contains a symlink")
+        if p.is_file():
+            observed[str(p.relative_to(app_root)).replace("\\", "/")] = _hash(p)
+    if set(observed) != set(expected):
+        raise ValueError("generated source file list differs from manifest")
+    corrupt = [name for name, digest in expected.items()
+               if observed[name] != digest]
+    if corrupt:
+        raise ValueError("generated source checksum mismatch: " + ", ".join(corrupt[:8]))
+    stamp = json.loads((app_root / ".gd_generated.json").read_text(encoding="utf-8-sig"))
+    stamped = stamp.get("files")
+    if not isinstance(stamped, dict):
+        raise ValueError("generated identity stamp is missing file digests")
+    for name, digest in stamped.items():
+        if observed.get(name) != digest:
+            raise ValueError("generated identity checksum mismatch: " + name)
+    return {"verified": True, "files": len(expected),
+            "catalog_units": record.get("catalog_units"),
+            "requires_sibling_forges": record.get("requires_sibling_forges")}
+
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--project", type=Path,
                    default=Path(__file__).resolve().parents[2])
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--dry-run", action="store_true")
+    p.add_argument("--verify", action="store_true", help="read-only check of an existing source bundle")
     args = p.parse_args(argv)
-    report = build(args.project, args.out, dry_run=args.dry_run)
+    report = (verify_standalone_output(args.out) if args.verify
+              else build(args.project, args.out, dry_run=args.dry_run))
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return 0
 
