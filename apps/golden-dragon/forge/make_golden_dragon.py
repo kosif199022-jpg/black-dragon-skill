@@ -330,6 +330,17 @@ SEED_NEW = 'for n in ("GoldenBird", "WhiteBird", "BlackDragon") if (dst.parent /
 
 def patch_app(t, counts, n_recipes, lessons):
     t = rename(t, "app.py")
+    # Avoid loading the Anthropic SDK's ~25s dependency chain before the GUI opens.
+    # First actual API call still imports the genuine SDK, preserving behavior.
+    t = sub(t, "\\nimport anthropic\\n",
+            "\\nimport importlib as _gd_importlib\\n"
+            "class _GoldenLazyAnthropic:\\n"
+            "    def __getattr__(self, attr):\\n"
+            "        module = _gd_importlib.import_module('anthropic')\\n"
+            "        globals()['anthropic'] = module\\n"
+            "        return getattr(module, attr)\\n"
+            "anthropic = _GoldenLazyAnthropic()\\n",
+            1, "lazy-load Anthropic SDK at first API request")
     t = sub(t, "generated from the Black Dragon app by forge/make_white_bird.py + forge/make_golden_bird.py.",
             "generated from the Black Dragon app by forge/make_white_bird.py + forge/make_golden_bird.py + forge/make_golden_dragon.py.",
             1, "docstring")
@@ -392,7 +403,7 @@ def patch_build(t):
     codes_gd = ",".join(f"0x{ord(c):x}" for c in NAME_GD)
     t = sub(t, codes_gb, codes_gd, 1, "shortcut name")
     t = sub(t, '--add-data "$here\\golden;golden"', '--add-data "$here\\golden;golden" --add-data "$here\\fusion;fusion"', 1, "bundle fusion data")
-    t = sub(t, "--hidden-import golden_tools", "--hidden-import golden_tools --hidden-import dragon_fusion --hidden-import gd_discover --hidden-import gd_runtime --hidden-import capability_ledger --hidden-import audit_tree", 1, "bundle dragon_fusion and unified runtime")
+    t = sub(t, "--hidden-import golden_tools", "--hidden-import golden_tools --hidden-import anthropic --hidden-import dragon_fusion --hidden-import gd_discover --hidden-import gd_runtime --hidden-import capability_ledger --hidden-import audit_tree", 1, "bundle dragon_fusion and unified runtime")
     return t
 
 
