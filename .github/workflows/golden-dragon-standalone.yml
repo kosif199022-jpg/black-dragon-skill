@@ -59,3 +59,24 @@ jobs:
           path: ${{ runner.temp }}/golden-dragon-standalone/
           if-no-files-found: error
           retention-days: 7
+
+  windows-standalone:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest
+      - name: Run standalone-native and registry checks on Windows
+        shell: pwsh
+        run: |
+          python -B -m pytest apps/golden-dragon/forge/unified_core/tests/test_build_standalone.py apps/golden-dragon/forge/unified_core/tests/test_standalone_native_dispatch.py apps/golden-dragon/forge/unified_core/tests/test_native_registry.py apps/golden-dragon/forge/unified_core/tests/test_forge_wiring.py apps/golden-dragon/forge/unified_core/tests/test_verify_unified_bundle.py -q -p no:cacheprovider --tb=short
+      - name: Compose independent Windows source without sibling forges
+        shell: pwsh
+        run: |
+          $env:TMP = $env:RUNNER_TEMP
+          $env:TEMP = $env:RUNNER_TEMP
+          python -B apps/golden-dragon/forge/unified_core/build_standalone.py --out (Join-Path $env:RUNNER_TEMP "golden-dragon-standalone")
+          if ($LASTEXITCODE -ne 0) { throw "Independent source build failed" }
