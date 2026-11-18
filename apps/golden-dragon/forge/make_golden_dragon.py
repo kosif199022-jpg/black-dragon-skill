@@ -220,10 +220,11 @@ FUSION_TOOL = '''    tool("fusion", "Golden Dragon fusion core: ONE index of eve
          "add every skill, plugin, MCP server, program, shortcut, script, tool folder, repo and skill archive to the index (run it "
          "when doctor says the PC catalog is missing or stale, or the owner added something); 'local' = list that catalog "
          "(optional kind). 'audit' = passive catalog evidence and recipe-link verification without running indexed tools. "
+         "'probe_media' = inspect ONE local audio/video file using FFprobe (path required; no network or transcode). "
          "Read-only except discover, which writes only its own catalog in %APPDATA%\\\\GoldenDragon.",
          {"action": {"type": "string", "enum": ["brief", "route", "check", "find", "show", "recipes", "doctor", "lessons", "think", "stats",
-                                                "discover", "local", "audit"]},
-          "query": S, "draft": S, "id": S, "kind": S, "limit": {"type": "integer", "minimum": 1, "maximum": 30}}, ["action"]),
+                                                "discover", "local", "audit", "probe_media"]},
+          "query": S, "draft": S, "id": S, "kind": S, "path": S, "limit": {"type": "integer", "minimum": 1, "maximum": 30}}, ["action"]),
 '''
 
 FUSION_DISPATCH = '''def fusion_dispatch(a):
@@ -268,7 +269,16 @@ FUSION_DISPATCH = '''def fusion_dispatch(a):
                 _here, _here / "fusion" / "index.json",
                 _here / "fusion" / "recipes.json")
             return json.dumps(_core.execute("catalog.audit"), ensure_ascii=False), False
-        raise ValueError("INVALID_JSON: action must be brief, route, check, find, show, recipes, doctor, lessons, think, stats, discover, local or audit")
+        if act == "probe_media":
+            import gd_runtime as _gd_runtime
+            from pathlib import Path as _Path
+            _local_path = (a.get("path") or "").strip()
+            if not _local_path:
+                raise ValueError("INVALID_JSON: path is required for probe_media")
+            _core = _gd_runtime.GoldenDragonCore(_Path(__file__).resolve().parent,
+                                                  media=_Path(_local_path))
+            return json.dumps(_core.execute("media.probe"), ensure_ascii=False), False
+        raise ValueError("INVALID_JSON: action must be brief, route, check, find, show, recipes, doctor, lessons, think, stats, discover, local, audit or probe_media")
     except (KeyError, FileNotFoundError, ValueError, OSError, ImportError) as e:
         return f"✗ {e.args[0] if e.args else e}", True
 
