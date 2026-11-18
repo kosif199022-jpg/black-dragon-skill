@@ -41,6 +41,7 @@ jobs:
         run: |
           python -B apps/golden-dragon/forge/unified_core/build_standalone.py \
             --out "${{ runner.temp }}/golden-dragon-standalone"
+          python -B apps/golden-dragon/forge/unified_core/build_standalone.py --out "${{ runner.temp }}/golden-dragon-standalone" --verify
           python -B - <<'PY'
           import json, os
           from pathlib import Path
@@ -80,3 +81,5 @@ jobs:
           $env:TEMP = $env:RUNNER_TEMP
           python -B apps/golden-dragon/forge/unified_core/build_standalone.py --out (Join-Path $env:RUNNER_TEMP "golden-dragon-standalone")
           if ($LASTEXITCODE -ne 0) { throw "Independent source build failed" }
+          python -B apps/golden-dragon/forge/unified_core/build_standalone.py --out (Join-Path $env:RUNNER_TEMP "golden-dragon-standalone") --verify
+          if ($LASTEXITCODE -ne 0) { throw "Standalone source integrity check failed" }
