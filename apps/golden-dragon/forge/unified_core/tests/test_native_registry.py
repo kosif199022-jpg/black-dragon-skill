@@ -38,7 +38,7 @@ def _exe(path):
 
 def test_registry_is_exactly_real_allowlisted_core_operations():
     assert set(registry.ADAPTERS) == set(core_module.GoldenDragonCore.OPERATIONS)
-    assert len(registry.ADAPTERS) == 7
+    assert len(registry.ADAPTERS) == 8
 
 
 def test_status_is_honest_about_passive_prerequisites(tmp_path, monkeypatch):
