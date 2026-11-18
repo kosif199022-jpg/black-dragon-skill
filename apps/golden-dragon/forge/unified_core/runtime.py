@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import shutil
 import struct
 import subprocess
@@ -118,6 +119,73 @@ def inspect_media(path: Path, *, timeout: int = 30) -> dict:
         "transcode_performed": False, "network_access": False,
     }
 
+
+def inspect_binary_imports(path: Path, *, timeout: int = 60) -> dict:
+    """Extract PE imports with the installed REA CLI; never execute the image.
+
+    REA provides evidence from PE import directory metadata, not proof of
+    reachable functions or a complete decompilation. Refuse unsafe cmd.exe
+    metacharacters because Windows 'rea' may resolve to an npm .cmd wrapper.
+    """
+    path = Path(path).expanduser()
+    if path.suffix.lower() not in {".exe", ".dll", ".pyd", ".sys", ".ocx"} or not path.is_file():
+        raise ValueError("binary must be a local PE executable or library")
+    if path.is_symlink():
+        raise ValueError("binary symlinks are not allowed")
+    path = path.resolve()
+    if re.search(r"""[&|<>()^%!"'\r\n]""", str(path)):
+        raise ValueError("unsafe characters in binary path")
+    if path.stat().st_size > 280_000_000:
+        raise ValueError("binary too large for controlled REA inspection")
+    if not 1 <= timeout <= 120:
+        raise ValueError("invalid REA timeout")
+    rea = shutil.which("rea") or shutil.which("rea.cmd")
+    if not rea:
+        raise ValueError("REA CLI is not available")
+    args = [rea, "inspect-pe-imports", str(path), "--max-file-bytes",
+            "280000000", "--format", "json"]
+    flags = 0x08000000 if sys.platform == "win32" else 0
+    try:
+        run = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             shell=False, check=False, timeout=timeout,
+                             creationflags=flags)
+    except subprocess.TimeoutExpired as exc:
+        raise ValueError("REA import inspection timed out") from exc
+    if run.returncode != 0:
+        err = run.stderr.decode("utf-8", "replace")[-250:]
+        raise ValueError("REA import inspection failed: " + err)
+    if len(run.stdout) > 8_000_000:
+        raise ValueError("REA output exceeds safe report budget")
+    try:
+        evidence = json.loads(run.stdout)
+    except (UnicodeError, ValueError) as exc:
+        raise ValueError("REA returned invalid JSON") from exc
+    normalized = evidence.get("normalized_result")
+    if not isinstance(normalized, dict) or evidence.get("operation") != "inspect_pe_imports":
+        raise ValueError("REA returned an unexpected evidence structure")
+    imports = normalized.get("imports") or []
+    artifact = normalized.get("artifact") or {}
+    return {
+        "path": str(path),
+        "sha256": artifact.get("sha256"),
+        "evidence_id": evidence.get("evidence_id"),
+        "provider": (evidence.get("provider") or {}).get("id"),
+        "architecture": normalized.get("architecture"),
+        "dll_count": len(imports),
+        "imported_function_count": sum(len(d.get("functions") or []) for d in imports),
+        "dlls": [
+            {"name": d.get("name"), "function_count": len(d.get("functions") or []),
+             "sample": [f.get("name") or "#"+str(f.get("ordinal"))
+                        for f in (d.get("functions") or [])[:12]]}
+            for d in imports
+        ],
+        "coverage": normalized.get("coverage"),
+        "rea_executed": True,
+        "target_executed": False,
+        "decompilation_performed": False,
+    }
+
+
 class GoldenDragonCore:
     """Single dispatch boundary for proven read-only operations."""
 
@@ -125,6 +193,7 @@ class GoldenDragonCore:
         "catalog.audit": "Validate catalog declarations and passive presence",
         "source.audit": "Inventory source without importing or running it",
         "binary.pe_header": "Inspect a PE header without executing the binary",
+        "binary.imports": "Inspect Windows PE imports via REA static CLI",
         "media.probe": "Read media metadata with local FFprobe (no transcode)",
         "audit": "Run all selected read-only audit stages",
     }
@@ -167,6 +236,10 @@ class GoldenDragonCore:
             if self.binary is None:
                 raise ValueError("binary path is required")
             return {"operation": operation, "result": inspect_pe(self.binary)}
+        if operation == "binary.imports":
+            if self.binary is None:
+                raise ValueError("binary path is required")
+            return {"operation": operation, "result": inspect_binary_imports(self.binary)}
         if operation == "media.probe":
             if self.media is None:
                 raise ValueError("media path is required")
