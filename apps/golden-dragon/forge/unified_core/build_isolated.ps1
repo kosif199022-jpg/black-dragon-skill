@@ -64,6 +64,7 @@ $pyArgs = @(
     '--hidden-import','capability_ledger',
     '--hidden-import','audit_tree',
     '--hidden-import','native_registry',
+    '--hidden-import','blender_engine',
     '--hidden-import','golden_steer',
     '--distpath',$dest,'--workpath',$work,'--specpath',$out,
     (Join-Path $app 'app.py')
