@@ -11,7 +11,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import shutil
 import struct
+import subprocess
+import sys
 from pathlib import Path
 
 
@@ -52,6 +55,69 @@ def inspect_pe(path: Path) -> dict:
     }
 
 
+
+MEDIA_SUFFIXES = {".mp4", ".mov", ".mkv", ".webm", ".m4v", ".avi", ".wav",
+                  ".mp3", ".m4a", ".aac", ".flac", ".ogg", ".opus"}
+
+
+def inspect_media(path: Path, *, timeout: int = 30) -> dict:
+    """Real FFprobe execution for one local media file; no network or shell.
+
+    Enforces an explicit file path and restricts FFmpeg protocols to local
+    file/pipe so nested playlist URLs cannot trigger remote network fetches.
+    """
+    path = Path(path).expanduser()
+    if path.suffix.lower() not in MEDIA_SUFFIXES or not path.is_file():
+        raise ValueError("media source must be an existing local audio/video file")
+    if path.is_symlink():
+        raise ValueError("media symlinks are not allowed")
+    path = path.resolve()
+    ffprobe = shutil.which("ffprobe")
+    if not ffprobe:
+        raise ValueError("ffprobe is not installed or not on PATH")
+    if not 1 <= timeout <= 120:
+        raise ValueError("invalid probe timeout")
+    args = [ffprobe, "-hide_banner", "-v", "error", "-protocol_whitelist",
+            "file,pipe", "-show_format", "-show_streams", "-of", "json",
+            "-i", str(path)]
+    flags = 0x08000000 if sys.platform == "win32" else 0
+    try:
+        run = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             check=False, timeout=timeout, shell=False,
+                             creationflags=flags)
+    except subprocess.TimeoutExpired as exc:
+        raise ValueError("ffprobe timed out") from exc
+    if run.returncode != 0:
+        message = run.stderr.decode("utf-8", errors="replace").strip()[:240]
+        raise ValueError("ffprobe failed: " + message)
+    try:
+        info = json.loads(run.stdout)
+    except (UnicodeError, ValueError) as exc:
+        raise ValueError("ffprobe returned invalid JSON") from exc
+    tracks = []
+    for item in info.get("streams") or []:
+        tracks.append({
+            "index": item.get("index"),
+            "type": item.get("codec_type"),
+            "codec": item.get("codec_name"),
+            "width": item.get("width"),
+            "height": item.get("height"),
+            "sample_rate": item.get("sample_rate"),
+            "channels": item.get("channels"),
+            "frame_rate": item.get("avg_frame_rate"),
+        })
+    fmt = info.get("format") or {}
+    try:
+        seconds = float(fmt["duration"]) if fmt.get("duration") else None
+    except (ValueError, TypeError):
+        seconds = None
+    return {
+        "path": str(path), "bytes": path.stat().st_size,
+        "format": fmt.get("format_name"), "duration_seconds": seconds,
+        "streams": tracks, "ffprobe_executed": True,
+        "transcode_performed": False, "network_access": False,
+    }
+
 class GoldenDragonCore:
     """Single dispatch boundary for proven read-only operations."""
 
@@ -59,15 +125,18 @@ class GoldenDragonCore:
         "catalog.audit": "Validate catalog declarations and passive presence",
         "source.audit": "Inventory source without importing or running it",
         "binary.pe_header": "Inspect a PE header without executing the binary",
+        "media.probe": "Read media metadata with local FFprobe (no transcode)",
         "audit": "Run all selected read-only audit stages",
     }
 
     def __init__(self, root: Path, index: Path | None = None,
-                 recipes: Path | None = None, binary: Path | None = None):
+                 recipes: Path | None = None, binary: Path | None = None,
+                 media: Path | None = None):
         self.root = Path(root)
         self.index = Path(index) if index else None
         self.recipes = Path(recipes) if recipes else None
         self.binary = Path(binary) if binary else None
+        self.media = Path(media) if media else None
 
     def _catalog(self) -> dict:
         if self.index is None:
@@ -98,6 +167,10 @@ class GoldenDragonCore:
             if self.binary is None:
                 raise ValueError("binary path is required")
             return {"operation": operation, "result": inspect_pe(self.binary)}
+        if operation == "media.probe":
+            if self.media is None:
+                raise ValueError("media path is required")
+            return {"operation": operation, "result": inspect_media(self.media)}
         stages = {"catalog": self._catalog(), "source": self._source()}
         if self.binary is not None:
             stages["binary"] = inspect_pe(self.binary)
@@ -115,8 +188,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--index", type=Path)
     p.add_argument("--recipes", type=Path)
     p.add_argument("--binary", type=Path)
+    p.add_argument("--media", type=Path)
     args = p.parse_args(argv)
-    core = GoldenDragonCore(args.root, args.index, args.recipes, args.binary)
+    core = GoldenDragonCore(args.root, args.index, args.recipes, args.binary, args.media)
     try:
         result = core.execute(args.operation)
     except (ValueError, OSError, json.JSONDecodeError) as exc:
