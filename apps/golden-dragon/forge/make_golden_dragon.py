@@ -163,8 +163,16 @@ def scholars_section():
     if not f.is_file():
         raise SystemExit(f"✗ صندوق أدوات التفكير مش موجود: {f}")
     tk = json.loads(f.read_text(encoding="utf-8"))
-    from build_fusion import merge_books        # + the tools and «سبل التفكير» distilled from king's books (data\\thinking_books.json)
-    tk = merge_books(tk)
+    # The older source tree has no thinking_books.json or merge_books helper.
+    # Preserve the existing verified toolkit instead of inventing book entries.
+    import build_fusion as _fusion_builder
+    _books = FORGE / "data" / "thinking_books.json"
+    if hasattr(_fusion_builder, "merge_books"):
+        tk = _fusion_builder.merge_books(tk)
+    elif _books.is_file():
+        raise SystemExit("thinking_books.json exists but merge_books is missing; refusing to drop tools")
+    else:
+        log.append("  thinkers: optional book overlay absent; kept existing toolkit")
     tools, proto = tk.get("tools") or [], tk.get("protocol_ar") or []
     if len(proto) != 8 or len(tools) < 12:      # the protocol in fusion_section is written for these 8 steps
         raise SystemExit(f"✗ thinking_toolkit.json اتغيّر شكله: {len(proto)} خطوة و{len(tools)} أداة (المتوقع 8 خطوات)")
