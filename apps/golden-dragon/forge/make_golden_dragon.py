@@ -226,10 +226,12 @@ FUSION_TOOL = '''    tool("fusion", "Golden Dragon fusion core: ONE index of eve
          "'native_status' = list ONLY explicitly implemented adapters and passive prerequisites (not proof of runtime success). "
          "'native_exec' = invoke one registered native operation using 'operation' and optional local 'path'; "
          "creating a new temporary output requires approve_new_file=true. "
+         "Native operation blender.render creates a fixed mechanical_gear or machine_piston scene using Blender; "
+         "pass preset and resolution=256,512,1024; no user scripts. "
          "Read-only except discover, which writes only its own catalog in %APPDATA%\\\\GoldenDragon.",
          {"action": {"type": "string", "enum": ["brief", "route", "check", "find", "show", "recipes", "doctor", "lessons", "think", "stats",
                                                 "discover", "local", "audit", "probe_media", "inspect_binary_imports", "transcode_media", "native_status", "native_exec"]},
-          "query": S, "draft": S, "id": S, "kind": S, "path": S, "profile": S, "operation": S, "approve_new_file": {"type":"boolean"}, "limit": {"type": "integer", "minimum": 1, "maximum": 30}}, ["action"]),
+          "query": S, "draft": S, "id": S, "kind": S, "path": S, "profile": S, "preset": S, "resolution": {"type":"integer", "enum":[256,512,1024]}, "operation": S, "approve_new_file": {"type":"boolean"}, "limit": {"type": "integer", "minimum": 1, "maximum": 30}}, ["action"]),
 '''
 
 FUSION_DISPATCH = '''def fusion_dispatch(a):
@@ -279,6 +281,7 @@ FUSION_DISPATCH = '''def fusion_dispatch(a):
             outcome = _native.native_execute(
                 _Path(__file__).resolve().parent, operation,
                 local_path=a.get("path"), profile=a.get("profile") or "mp4-compatible",
+                preset=a.get("preset") or "mechanical_gear", resolution=a.get("resolution") or 512,
                 approve_new_file=a.get("approve_new_file") is True)
             return json.dumps(outcome, ensure_ascii=False), False
         if act == "audit":
@@ -432,7 +435,7 @@ def patch_build(t):
     codes_gd = ",".join(f"0x{ord(c):x}" for c in NAME_GD)
     t = sub(t, codes_gb, codes_gd, 1, "shortcut name")
     t = sub(t, '--add-data "$here\\golden;golden"', '--add-data "$here\\golden;golden" --add-data "$here\\fusion;fusion"', 1, "bundle fusion data")
-    t = sub(t, "--hidden-import golden_tools", "--hidden-import golden_tools --hidden-import anthropic --hidden-import dragon_fusion --hidden-import gd_discover --hidden-import gd_runtime --hidden-import capability_ledger --hidden-import audit_tree --hidden-import native_registry", 1, "bundle dragon_fusion and unified runtime")
+    t = sub(t, "--hidden-import golden_tools", "--hidden-import golden_tools --hidden-import anthropic --hidden-import dragon_fusion --hidden-import gd_discover --hidden-import gd_runtime --hidden-import capability_ledger --hidden-import audit_tree --hidden-import native_registry --hidden-import blender_engine", 1, "bundle dragon_fusion and unified runtime")
     return t
 
 
@@ -563,7 +566,7 @@ def main():
     shutil.copy2(FORGE / "modules" / "anatomy_bridge.py", tmp / "anatomy_bridge.py")  # user-installed MIT kit, opt-in
     shutil.copy2(FORGE / "modules" / "gd_core_integrations.py", tmp / "gd_core_integrations.py")  # viral video + replica core
     # Native unified core (read-only): no MCP bridge, imported by the fusion audit action.
-    for module in ("runtime.py", "capability_ledger.py", "audit_tree.py", "native_registry.py"):
+    for module in ("runtime.py", "capability_ledger.py", "audit_tree.py", "native_registry.py", "blender_engine.py"):
         shutil.copy2(FORGE / "unified_core" / module,
                      tmp / ("gd_runtime.py" if module == "runtime.py" else module))
     (tmp / "golden").mkdir()
