@@ -332,14 +332,14 @@ def patch_app(t, counts, n_recipes, lessons):
     t = rename(t, "app.py")
     # Avoid loading the Anthropic SDK's ~25s dependency chain before the GUI opens.
     # First actual API call still imports the genuine SDK, preserving behavior.
-    t = sub(t, "\\nimport anthropic\\n",
-            "\\nimport importlib as _gd_importlib\\n"
-            "class _GoldenLazyAnthropic:\\n"
-            "    def __getattr__(self, attr):\\n"
-            "        module = _gd_importlib.import_module('anthropic')\\n"
-            "        globals()['anthropic'] = module\\n"
-            "        return getattr(module, attr)\\n"
-            "anthropic = _GoldenLazyAnthropic()\\n",
+    t = sub(t, "\nimport anthropic\n",
+            "\nimport importlib as _gd_importlib\n"
+            "class _GoldenLazyAnthropic:\n"
+            "    def __getattr__(self, attr):\n"
+            "        module = _gd_importlib.import_module('anthropic')\n"
+            "        globals()['anthropic'] = module\n"
+            "        return getattr(module, attr)\n"
+            "anthropic = _GoldenLazyAnthropic()\n",
             1, "lazy-load Anthropic SDK at first API request")
     t = sub(t, "generated from the Black Dragon app by forge/make_white_bird.py + forge/make_golden_bird.py.",
             "generated from the Black Dragon app by forge/make_white_bird.py + forge/make_golden_bird.py + forge/make_golden_dragon.py.",
