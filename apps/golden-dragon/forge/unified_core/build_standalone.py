@@ -62,19 +62,25 @@ def _replace_ast_spans(source: str, updates: list[tuple[ast.AST, str]]) -> str:
 
 
 def _lazy_anthropic(source: str) -> str:
-    sentinel = "\nimport anthropic\n"
-    if source.count(sentinel) != 1:
+    # Locate the import structurally, including when it is the first line.
+    tree = ast.parse(source)
+    imports = [
+        node for node in tree.body
+        if isinstance(node, ast.Import)
+        and any(alias.name == "anthropic" for alias in node.names)
+    ]
+    if len(imports) != 1 or len(imports[0].names) != 1:
         raise ValueError("cannot safely identify the single Anthropic import")
     proxy = (
-        "\nimport importlib as _gd_importlib\n"
+        "import importlib as _gd_importlib\n"
         "class _GoldenLazyAnthropic:\n"
         "    def __getattr__(self, name):\n"
         "        real_sdk = _gd_importlib.import_module('anthropic')\n"
         "        globals()['anthropic'] = real_sdk\n"
         "        return getattr(real_sdk, name)\n"
-        "anthropic = _GoldenLazyAnthropic()\n"
+        "anthropic = _GoldenLazyAnthropic()"
     )
-    return source.replace(sentinel, proxy, 1)
+    return _replace_ast_spans(source, [(imports[0], proxy)])
 
 
 def compose_app(baseline: str, forge: str) -> str:
