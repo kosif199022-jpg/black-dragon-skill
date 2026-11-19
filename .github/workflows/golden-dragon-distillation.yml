@@ -4,8 +4,10 @@ on:
     paths:
       - 'apps/golden-dragon/forge/distill_skills.py'
       - 'apps/golden-dragon/forge/query_distilled.py'
+      - 'apps/golden-dragon/forge/review_similar_skills.py'
       - 'apps/golden-dragon/tests/test_distill_skills.py'
       - 'apps/golden-dragon/tests/test_query_distilled.py'
+      - 'apps/golden-dragon/tests/test_review_similar_skills.py'
       - '.github/workflows/golden-dragon-distillation.yml'
   workflow_dispatch:
 jobs:
@@ -22,5 +24,6 @@ jobs:
         run: |
           python -m unittest discover -s apps/golden-dragon/tests -p 'test_distill_skills.py' -v
           python -m unittest discover -s apps/golden-dragon/tests -p 'test_query_distilled.py' -v
+          python -m unittest discover -s apps/golden-dragon/tests -p 'test_review_similar_skills.py' -v
       - name: Compile source files
-        run: python -m py_compile apps/golden-dragon/forge/distill_skills.py apps/golden-dragon/forge/query_distilled.py
+        run: python -m py_compile apps/golden-dragon/forge/distill_skills.py apps/golden-dragon/forge/query_distilled.py apps/golden-dragon/forge/review_similar_skills.py
