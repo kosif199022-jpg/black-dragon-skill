@@ -1,4 +1,4 @@
-﻿"""Execute the supported parts of a single media and file-inspection request."""
+"""Execute the supported parts of a single media and file-inspection request."""
 import argparse
 import json
 import re
@@ -12,6 +12,12 @@ def execute(request, sources, output):
     words = request.casefold()
     vertical = re.search(r"vertical|portrait|9:16|رأسي|راسي|عمودي|طولي", words)
     inspect = re.search(r"inspect|fingerprint|بصم|افحص|فحص", words)
+    sheets = [p for p in sources if p.suffix.lower() == ".csv"]
+    if sheets:
+        if len(sources) != 1 or not vertical or not output or not re.search(r"inventory|stock|جرد|مخزون", words):
+            raise ValueError("Supply one inventory CSV and a new MP4 path for a vertical inventory report")
+        from inventory_reel import report
+        return report(sheets[0], output)
     videos = [p for p in sources if p.suffix.lower() in {".mp4", ".mov", ".mkv", ".avi", ".webm"}]
     binaries = [p for p in sources if p.suffix.lower() in {".exe", ".dll"}]
     if not all(p.is_file() for p in sources):
