@@ -51,7 +51,11 @@ if __name__ == "__main__":
     if args.method:
         if args.inputs or args.output:
             parser.error("--method takes a request only")
+        from production_method import caption_method
         response = {"mode": "method", "checks": review(args.request, policy)}
+        decisions = caption_method(args.request)
+        if decisions:
+            response["production_method"] = decisions
     else:
         if not args.inputs:
             parser.error("Supply input files for execution, or use --method for quality checks")
