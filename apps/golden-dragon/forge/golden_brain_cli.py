@@ -1,4 +1,4 @@
-"""Read-only bridge between the distilled knowledge preview and existing fusion router."""
+﻿"""Read-only bridge between the distilled knowledge preview and existing fusion router."""
 import argparse
 import json
 import os
@@ -8,11 +8,14 @@ from pathlib import Path
 from brain_query import search
 
 HERE = Path(__file__).resolve().parent
-DEFAULT_BRAIN = HERE / "data" / "unified-brain-preview" / "brain.json"
+DEFAULT_BRAIN = HERE / "data" / "unified-brain-preview" / "brain_quality_gated.json"
 FUSION = HERE / "modules" / "dragon_fusion.py"
 FUSION_DATA = HERE / "data" / "fusion"
 
 def consult(query, brain=DEFAULT_BRAIN, include_route=True, limit=5):
+    brain = Path(brain)
+    if not brain.is_file():
+        return {"query": query, "knowledge": [], "execution": "not attempted", "error": "Quality-gated brain missing; build quality gate or provide --brain"}
     result = {"query": query, "knowledge": search(brain, query, limit), "execution": "not attempted"}
     if include_route:
         if not (FUSION_DATA / "recipes.json").is_file() or not (FUSION_DATA / "index.json").is_file():
@@ -36,3 +39,4 @@ if __name__ == "__main__":
     ap.add_argument("--limit", type=int, default=5)
     a = ap.parse_args()
     print(json.dumps(consult(a.query, a.brain, not a.no_route, max(1, min(100, a.limit))), ensure_ascii=False, indent=2))
+

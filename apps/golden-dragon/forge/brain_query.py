@@ -1,4 +1,4 @@
-"""Read-only search over the Golden Dragon brain preview; no tool execution."""
+﻿"""Read-only search over the Golden Dragon brain preview; no tool execution."""
 import argparse
 import json
 import re
@@ -12,6 +12,8 @@ def search(brain, query, limit=5):
     scored = []
     for item in data["instructions"]:
         text = item["text"]
+        if re.match(r"^\s*(?:name|description|version|author|license):", text, re.I):
+            continue
         text_words = set(re.findall(r"\w+", text.casefold(), re.UNICODE))
         overlap = len(words & text_words)
         if overlap:
@@ -26,3 +28,4 @@ if __name__ == "__main__":
     ap.add_argument("--limit", type=int, default=5)
     args = ap.parse_args()
     print(json.dumps(search(args.brain, args.query, max(1, min(args.limit, 100))), ensure_ascii=False, indent=2))
+
