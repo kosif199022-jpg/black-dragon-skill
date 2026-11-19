@@ -39,7 +39,21 @@ def execute(request, sources, output):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("request")
-    parser.add_argument("inputs", nargs="+", type=Path)
+    parser.add_argument("inputs", nargs="*", type=Path)
+    parser.add_argument("--method", action="store_true", help="Return the unified review method for a task")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
-    print(json.dumps(execute(args.request, args.inputs, args.output), ensure_ascii=False))
+    from experience import load_policy, review, verify
+    policy = load_policy()
+    if args.method:
+        if args.inputs or args.output:
+            parser.error("--method takes a request only")
+        response = {"mode": "method", "checks": review(args.request, policy)}
+    else:
+        if not args.inputs:
+            parser.error("Supply input files for execution, or use --method for quality checks")
+        response = execute(args.request, args.inputs, args.output)
+        evidence = verify(response, args.inputs)
+        response["verified_properties"] = evidence
+        response["review_checks"] = review(args.request, policy, evidence.keys())
+    print(json.dumps(response, ensure_ascii=False))

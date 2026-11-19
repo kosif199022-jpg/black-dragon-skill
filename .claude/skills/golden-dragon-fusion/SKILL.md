@@ -5,6 +5,8 @@ description: Take one task in Arabic or English and produce a verified deliverab
 
 Work from the user's requested result. Infer the operations from the inputs and the delivery conditions. The user supplies one request and any necessary files. They do not have to identify a skill, search a catalog, select recipes or assemble a plan.
 
+For a task, the bundled application can supply a unified quality brief directly: python golden_dragon.pyz --method "TASK". Use these checks to guide work. In execution mode, verified_properties reports observed measurements while review_checks lists further checks to consider. The policy is embedded in the archive and requires no runtime catalog lookup.
+
 Keep one working record for the entire task: the supplied inputs, requested changes, output format, constraints, intermediate results and acceptance evidence. Start with the output and determine what information it depends on. Inspect each input once. Carry its stable identifiers, units, language, timing and provenance through every transformation. When an intermediate result changes, repeat the checks that depend on it.
 
 For a data-driven visual, reconcile records and freeze the checked figures before designing the graphic. For narrated media, derive the timeline from the audio, preserve character or product references across shots, align captions with the actual speech, and inspect readability in the exported frame. For a mechanism, establish the relation between parts and motion before camera animation. For a program or package, identify the format and provenance using read-only inspection and report observed fields. For software changes, test the normal entry point with a representative input and inspect the delivered output.
