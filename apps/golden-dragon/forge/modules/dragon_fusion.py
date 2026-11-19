@@ -51,6 +51,16 @@ STATUS_AR = {"ok": "✓", "older": "إصدار أقدم", "partial": "ناقصه
 PENALTY = {"older": 0.15, "missing": 0.6, "partial": 0.85, "local": 0.9, "copy": 0.5, "archive": 0.45}
 PC_KINDS = ("pc-skill", "pc-plugin", "pc-mcp", "pc-app", "pc-tool", "pc-script", "pc-repo", "pc-pack")
 
+def distilled_knowledge(query, limit=5):
+    """Optional source-aware skill knowledge; never executes retrieved text."""
+    try:
+        from gd_distilled_bridge import distilled_search
+        return distilled_search(query, limit=limit)
+    except ImportError:
+        return {"enabled": False, "results": [], "reason": "bridge_unavailable"}
+
+
+
 try:                                          # «discover»: what this PC has beyond the build-time index (local catalog)
     import gd_discover as _gdd
 except Exception:
