@@ -22,6 +22,10 @@ def extract(path, root):
     raw = path.read_text(encoding="utf-8", errors="replace")
     matches = list(HEAD.finditer(raw))
     sections = []
+    if matches and raw[:matches[0].start()].strip():
+        intro = raw[:matches[0].start()].strip()
+        sections.append({"heading": "Preamble", "body": intro,
+                         "fingerprint": hashlib.sha256(normalize(intro).encode()).hexdigest()})
     if not matches and raw.strip():
         sections.append({"heading": "Full document", "body": raw.strip(),
                          "fingerprint": hashlib.sha256(normalize(raw).encode()).hexdigest()})
@@ -36,7 +40,7 @@ def extract(path, root):
             "sections": sections, "status": "extracted_not_verified"}
 
 def distill(root):
-    files = sorted(p for p in root.rglob("SKILL.md") if p.is_file()
+    files = sorted(p for p in root.rglob("SKILL.md") if p.is_file() and not p.is_symlink()
                    and not any(part.startswith(".") for part in p.relative_to(root).parts))
     items = []
     errors = []
