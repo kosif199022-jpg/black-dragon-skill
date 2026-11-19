@@ -4,7 +4,7 @@ on:
     paths:
       - 'apps/golden-dragon/forge/distill_skills.py'
       - 'apps/golden-dragon/forge/query_distilled.py'
-      - 'apps/golden-dragon/forge/review_similar_skills.py apps/golden-dragon/forge/modules/gd_distilled_bridge.py apps/golden-dragon/forge/modules/dragon_fusion.py'
+      - 'apps/golden-dragon/forge/review_similar_skills.py'
       - 'apps/golden-dragon/forge/modules/gd_distilled_bridge.py'
       - 'apps/golden-dragon/forge/modules/dragon_fusion.py'
       - 'apps/golden-dragon/tests/test_distill_skills.py'
