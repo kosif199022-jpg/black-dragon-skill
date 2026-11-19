@@ -476,6 +476,17 @@ def main():
     an = importlib.util.module_from_spec(_an_spec)
     _an_spec.loader.exec_module(an)
     write(tmp / "app.py", an.patch_app(read(tmp / "app.py"), sub))
+    # Independent verified read-only knowledge runtime (committed source + bundle).
+    _kk_spec = importlib.util.spec_from_file_location("gd_knowledge", FORGE / "gd_patches" / "gd_knowledge.py")
+    kk = importlib.util.module_from_spec(_kk_spec)
+    _kk_spec.loader.exec_module(kk)
+    if not (GD / "knowledge" / "golden-dragon-runtime.zip").is_file():
+        raise SystemExit("Missing verified independent knowledge bundle")
+    write(tmp / "app.py", kk.patch_app(read(tmp / "app.py")))
+    write(tmp / "ui/index.html", kk.patch_ui(read(tmp / "ui/index.html")))
+    shutil.copy2(OV / "golden_knowledge_bridge.py", tmp / "golden_knowledge_bridge.py")
+    shutil.copy2(FORGE / "golden_dragon_runtime.py", tmp / "golden_dragon_runtime.py")
+    log.append("  Independent knowledge bridge: search UI + tool + read-only database")
     patch_extension(tmp / "chrome_extension")
     for mod in sorted(gb.MODULES.glob("golden_*.py")):                # the Golden Bird modules, renamed (studio home etc.)
         write(tmp / mod.name, rename(read(mod), mod.name))
@@ -512,7 +523,7 @@ def main():
     for old in ("red-dragon.ico", "red-dragon.png", "white-bird.ico", "white-bird.png", "golden-bird.ico", "golden-bird.png"):
         (tmp / "ui" / old).unlink(missing_ok=True)
     build = gb.steer.patch_build(gb.patch_build(wb.patch_build(wb.build_ps1())), gb.sub)
-    (tmp / "build.ps1").write_text(an.patch_build(patch_build(build), sub), encoding="utf-8-sig")
+    (tmp / "build.ps1").write_text(kk.patch_build(an.patch_build(patch_build(build), sub)), encoding="utf-8-sig")
     (tmp / "README.md").write_text(
         f"# {NAME_GD}: كود التطبيق\n\nالمجلد ده **متولّد**: كود التنين الأسود ← تعديلات `..\\..\\الطائر الأبيض\\forge\\make_white_bird.py` ← "
         "تعديلات `..\\..\\الطائر الذهبي\\forge\\make_golden_bird.py` ← طبقة `..\\forge\\make_golden_dragon.py`. أي تعديل دايم يتحط في "
@@ -524,7 +535,12 @@ def main():
         "generated": time.strftime("%Y-%m-%d %H:%M:%S"), "source": str(SRC).replace(str(Path.home()), "%USERPROFILE%"), "source_app_sha256": sha(SRC / "app.py"),
         "white_bird_forge_sha256": sha(wb.FORGE / "make_white_bird.py"), "golden_bird_forge_sha256": sha(GB_FORGE),
         "fusion_index_sha256": sha(FUSION / "index.json"), "fusion_counts": counts, "recipes": n_recipes,
-        "lessons": len(lessons), "files": files}, ensure_ascii=False, indent=1), encoding="utf-8")
+        "lessons": len(lessons), "files": files,
+        "knowledge_integration": {
+            "mode": "generated-source-backed",
+            "bundle_sha256": sha(GD / "knowledge" / "golden-dragon-runtime.zip"),
+            "read_only": True,
+            "bridge": "golden_knowledge_bridge.py"}}, ensure_ascii=False, indent=1), encoding="utf-8")
     if OUT.exists():
         shutil.rmtree(OUT)
     tmp.rename(OUT)
