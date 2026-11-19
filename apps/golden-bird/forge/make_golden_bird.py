@@ -10,7 +10,9 @@ Golden Bird = the White Bird (itself generated from the Black Dragon app) + what
   3. adds the new capabilities: golden_tools.py (studio + motion library), the data in data\\ (made by build_catalog.py),
      three tools in the app (studio, studio_run, motion_lib), the subscription-mode mapping and the «قدرات الطائر الذهبي»
      section of the system prompt;
-  4. puts a test gate at the top of build.ps1 (..\\tests\\run_tests.ps1; -SkipTests skips it).
+  4. puts a test gate at the top of build.ps1 (..\\tests\\run_tests.ps1; -SkipTests skips it);
+  5. applies the feature patches in patches\\ (steer.py: a message sent while it works is read at once) and copies
+     every modules\\golden_*.py next to app.py.
 Every patch counts its anchor, so a changed upstream stops the script instead of producing a half-patched app.
 
   python -X utf8 make_golden_bird.py          regenerate ..\\app (refuses if app\\ was edited by hand; --force overrides)
@@ -28,6 +30,9 @@ DESK = GB.parent
 WB_FORGE = Path(os.environ.get("WHITE_BIRD_HOME", DESK / "الطائر الأبيض")) / "forge" / "make_white_bird.py"
 STAMP = OUT / ".gb_generated.json"
 UNTRACKED = {"ui/version.txt", ".gb_generated.json"}
+MODULES = FORGE / "modules"                             # golden_*.py: copied next to app.py and bundled into the exe
+sys.path.insert(0, str(FORGE))
+from patches import steer                               # noqa: E402  «تغيير المسار وهو شغال»
 PORT_WB, PORT_GB = "47831", "47841"
 NAME_WB, NAME_GB = "الطائر الأبيض", "الطائر الذهبي"
 log = []
@@ -296,7 +301,38 @@ def patch_app(t, n_lib, n_ready, programs):
               r'if self.deep and EFFORTS.index(effort) < EFFORTS.index("max"):\n\1effort = "max"', "deep analysis thinks at max", 2)
     t = sub(t, "\ndef main():", "\n" + GB_MIND_UPGRADE, 1, "one-time effort upgrade")
     t = sub(t, "    _wb_seed()\n    api = Api()", "    _wb_seed()\n    _gb_mind_upgrade()\n    api = Api()", 1, "run the upgrade at start")
+    # 2026-11-15: the dragon folders moved from the Desktop into Desktop\مهارات; find them wherever they live now
+    t = sub(t, PATHS_OLD, PATHS_NEW, 1, "paths follow the moved folders")
+    t = sub(t, MONTAGE_LINE_OLD, MONTAGE_LINE_NEW, 1, "program paths: where.exe (المونتاج\\CLAUDE.md is gone)")
     return t
+
+
+PATHS_OLD = '''REPO = Path(os.environ.get("BLACK_DRAGON_HOME", Path.home() / "OneDrive" / "Desktop" / REPO_DIRNAME))
+APP_SOURCE = Path(os.environ.get("GOLDEN_BIRD_HOME", Path.home() / "OneDrive" / "Desktop" / "الطائر الذهبي")) / "app"        # this app's own source (self-development)
+MONTAGE = Path.home() / "OneDrive" / "Desktop" / "المونتاج"
+'''
+PATHS_NEW = '''def _home_of(env, name):
+    """A sibling folder wherever it lives now: $env, else Desktop\\\\<name>, else Desktop\\\\مهارات\\\\<name> (the dragon folders were
+    moved into «مهارات» on 2026-11-15), OneDrive's Desktop first. Unknown -> the «مهارات» spot, so messages point there."""
+    if os.environ.get(env):
+        return Path(os.environ[env])
+    cands = [base / sub / name for base in (Path.home() / "OneDrive" / "Desktop", Path.home() / "Desktop") for sub in ("", "مهارات")]
+    return next((c for c in cands if c.is_dir()), cands[1])
+
+
+REPO = _home_of("BLACK_DRAGON_HOME", REPO_DIRNAME)
+APP_SOURCE = _home_of("GOLDEN_BIRD_HOME", "الطائر الذهبي") / "app"        # this app's own source (self-development)
+MONTAGE = _home_of("DRAGON_MONTAGE_HOME", "المونتاج")
+'''
+MONTAGE_LINE_OLD = '  - المسارات الكاملة لكل برنامج مكتوبة في `{MONTAGE / "CLAUDE.md"}`.'
+MONTAGE_LINE_NEW = '  - المسار الكامل لأي برنامج: `where.exe <الاسم>` (ملف `المونتاج\\\\CLAUDE.md` القديم مش موجود من 2026-11-15).'
+MCP_REPO_OLD = '''if not REPO.exists():
+    REPO = HOME / "Desktop" / "التنين الأسود"
+'''
+MCP_REPO_NEW = '''if not REPO.exists():                    # the folder moved into «مهارات» on 2026-11-15
+    REPO = next((c for c in (HOME / "OneDrive" / "Desktop" / "مهارات" / "التنين الأسود", HOME / "Desktop" / "التنين الأسود",
+                             HOME / "Desktop" / "مهارات" / "التنين الأسود") if c.exists()), HOME / "Desktop" / "التنين الأسود")
+'''
 
 
 def patch_ui(t, n_lib):
@@ -406,9 +442,15 @@ def main():
     write(tmp / "app.py", patch_app((tmp / "app.py").read_text(encoding="utf-8"), n_lib, n_ready, programs))
     for name in ("control.py", "mcp_control.py", "mcp_dragon.py"):
         write(tmp / name, rename((tmp / name).read_text(encoding="utf-8"), name))
+    write(tmp / "mcp_dragon.py", sub((tmp / "mcp_dragon.py").read_text(encoding="utf-8"), MCP_REPO_OLD, MCP_REPO_NEW, 1,
+                                     "mcp_dragon: engine repo follows the move"))
     write(tmp / "ui/index.html", patch_ui((tmp / "ui/index.html").read_text(encoding="utf-8"), n_lib))
     patch_extension(tmp / "chrome_extension")
-    shutil.copy2(FORGE / "modules" / "golden_tools.py", tmp / "golden_tools.py")
+    # 3) feature patches (forge\patches), on top of the gold layer
+    write(tmp / "app.py", steer.patch_app((tmp / "app.py").read_text(encoding="utf-8"), sub))
+    write(tmp / "ui/index.html", steer.patch_ui((tmp / "ui/index.html").read_text(encoding="utf-8"), sub))
+    for mod in sorted(MODULES.glob("golden_*.py")):
+        shutil.copy2(mod, tmp / mod.name)
     (tmp / "golden").mkdir()
     for f in ("library.json", "studio.json"):
         shutil.copy2(DATA / f, tmp / "golden" / f)
@@ -421,7 +463,7 @@ def main():
     shutil.copy2(OV / "icon" / "golden-bird.ico", tmp / "ui" / "golden-bird.ico")
     for old in ("red-dragon.ico", "red-dragon.png", "white-bird.ico", "white-bird.png"):
         (tmp / "ui" / old).unlink(missing_ok=True)
-    (tmp / "build.ps1").write_text(patch_build(wb.patch_build(wb.build_ps1())), encoding="utf-8-sig")
+    (tmp / "build.ps1").write_text(steer.patch_build(patch_build(wb.patch_build(wb.build_ps1())), sub), encoding="utf-8-sig")
     (tmp / "README.md").write_text(
         f"# {NAME_GB}: كود التطبيق\n\nالمجلد ده **متولّد**: كود التنين الأسود ← تعديلات `..\\..\\الطائر الأبيض\\forge\\make_white_bird.py` ← "
         "تعديلات `..\\forge\\make_golden_bird.py`. أي تعديل دايم يتحط في `forge`، وبعدين ولّد من جديد وابني بـ `build.ps1`.\n", encoding="utf-8")

@@ -147,6 +147,8 @@ def test_ui_dragon_layer_and_icon():
 def test_golden_modules_are_the_golden_bird_ones_renamed():
     """golden_tools / golden_steer = the Golden Bird forge modules + the identity renames only, so the Golden Bird's own 74
     tests cover their behaviour here too."""
+    if not (GB / "forge" / "modules").is_dir():      # the Golden Bird forge lives only on the owner's laptop, not in the repo
+        pytest.skip(f"Golden Bird forge not here: {GB}")
     spec = importlib.util.spec_from_file_location("make_golden_dragon_t", FORGE / "make_golden_dragon.py")
     forge = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(forge)

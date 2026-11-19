@@ -21,15 +21,20 @@ from the Python runtime but are not exposed to the AI model tool.
 - forge/make_golden_dragon.py re-applies the patch on future regeneration
 - forge/integrate_existing_app.py integrates a previously generated app
 
-The existing app was patched in place, with the original sources backed up
-locally under forge/data/knowledge-app-integration-backup. Its generated manifest
-retains its previous metadata and adds a knowledge_integration record.
+The first integration used a safe direct patch with local backups under
+forge/data/knowledge-app-integration-backup. After reconciling the upstream
+main branch, the authentic analysis/thinking_toolkit.json became available.
+The full Golden Dragon generator has now run successfully, producing the
+committed app sources from the White Bird, Golden Bird, Anatomy, MarkItDown,
+and knowledge patches together. The generated file stamp includes an
+explicit knowledge_integration entry, and its integrity guard passes.
 
-## Legacy generator prerequisite
-Full regeneration is currently blocked by the missing authentic file
-analysis/thinking_toolkit.json. It was not fabricated or replaced. The current
-generated app has nevertheless been patched directly with source-tracked patches.
-Restore the original prerequisite before regenerating the complete app.
+To regenerate this app from authentic dependencies:
+
+    python -X utf8 apps/golden-dragon/forge/make_golden_dragon.py
+
+The app in this repository is source/build output. Rebuilding and installing
+the desktop executable is a separate, user-initiated step.
 
 ## Tests
 From the repository root, run:

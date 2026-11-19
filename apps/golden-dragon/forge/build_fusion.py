@@ -30,6 +30,33 @@ HOME = Path.home()
 sys.path.insert(0, str(FORGE))
 from recipes import RD_MAP, RECIPES                  # noqa: E402
 
+BOOKS = FORGE / "data" / "thinking_books.json"      # thinking tools distilled from the books king sent (kept in the repo)
+
+
+def merge_books(toolkit, books=None):
+    """The thinkers' toolkit + data\\thinking_books.json: new tools appended (an id already in the toolkit wins), each
+    protocol step gets the book tools that serve it, the Arabic «سبل التفكير» paths ride along. Idempotent."""
+    if books is None:
+        if not BOOKS.is_file():
+            return toolkit
+        books = json.loads(BOOKS.read_text(encoding="utf-8"))
+    tk = dict(toolkit)
+    have = {t.get("id") for t in tk.get("tools") or []}
+    tk["tools"] = list(tk.get("tools") or []) + [t for t in books.get("tools") or [] if t.get("id") not in have]
+    proto = list(tk.get("protocol_ar") or [])
+    for i, add in enumerate(books.get("protocol_add") or []):
+        if add and i < len(proto) and add not in proto[i]:
+            proto[i] = f"{proto[i]} · من الكتب: {add}"
+    tk["protocol_ar"] = proto
+    ids = {t.get("id") for t in tk["tools"]}
+    missing = [(p["id"], x) for p in books.get("paths") or [] for x in p.get("tools") or [] if x not in ids]
+    if missing:
+        raise SystemExit(f"✗ thinking_books.json: سبيل بيشاور على أداة مش موجودة {missing[:5]}")
+    tk["paths"] = books.get("paths") or []
+    tk["sources_read"] = list(dict.fromkeys(list(tk.get("sources_read") or []) + list(books.get("sources_books") or [])))
+    return tk
+
+
 PROGRAMS = [   # (id, command probed on PATH, Arabic line)
     ("ffmpeg", "ffmpeg", "فيديو وصوت: تحويل وتقطيع وفلاتر وترميز"), ("ffprobe", "ffprobe", "قياس ملفات الميديا"),
     ("blender", "blender", "Blender 5.2 من غير واجهة (-b)"), ("melt", "melt", "محرك Kdenlive للمونتاج من سطر الأوامر"),
@@ -148,6 +175,25 @@ def app_tool_units():
                     "tools, engines and programs; find / show any capability; doctor checks this PC now.",
                     what_ar="عقل الانصهار: بيوجّه أي طلب لأحسن وصفة من المهارات والأدوات والمحركات والبرامج",
                     how='fusion route "<الطلب>"'))
+    out.append(unit("tool", "viral_video_analyzer", "viral_video_analyzer",
+                    what="Built-in discovery and guided analysis of public video via yt-dlp, ffmpeg and Whisper.",
+                    what_ar="فحص وتجهيز تحليل الفيديوهات واللقطات والنص والتوقيتات",
+                    how='viral_video_analyzer doctor | plan "<video URL>"'))
+    out.append(unit("tool", "replica_skill", "replica_skill",
+                    what="Built-in routing for eleven clean-room app reconstruction skills.",
+                    what_ar="فحص وتخطيط 11 مهارة لإعادة بناء تطبيق أصلي واختباره",
+                    how='replica_skill doctor | plan "<authorized app>"'))
+    # These tools are registered by gd_patches/gd_anatomy.py in the Golden Dragon,
+    # not in the Golden Bird app that this scanner introspects.
+    out.append(unit("tool", "anatomy", "anatomy",
+                    what="Read-only Anatomy MIT skill status and technical SVG/WebGL/3D plan.",
+                    what_ar="فحص مهارة Anatomy المحلية وخطة الرسم الهندسي التفاعلي",
+                    how='anatomy doctor | brief "<task>"'))
+    out.append(unit("tool", "anatomy_scaffold", "anatomy_scaffold",
+                    what="Copy the installed upstream Anatomy kit and example into a new workspace folder.",
+                    what_ar="نسخ مثال ومكتبات Anatomy بترخيص MIT بعد موافقة المستخدم",
+                    how="anatomy_scaffold destination=NAME example=dial-indicator",
+                    cost="approval"))
     return out
 
 
@@ -322,7 +368,7 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     tk = GD / "analysis" / "thinking_toolkit.json"            # the thinkers' toolkit (distilled from the thinking skills)
     if tk.is_file():
-        toolkit = jload(tk)
+        toolkit = merge_books(jload(tk))                          # + the tools and «سبل» distilled from king's books
         bad = [t.get("id") for t in toolkit.get("tools", []) if not (t.get("id") and t.get("steps_ar") and t.get("use_when"))]
         if bad:
             raise SystemExit(f"✗ thinking_toolkit.json: أدوات ناقصة ({bad[:5]})")

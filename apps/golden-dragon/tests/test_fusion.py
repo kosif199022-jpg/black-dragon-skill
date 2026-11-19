@@ -261,3 +261,47 @@ def test_coverage_understands_arabic_word_forms(fz):
     good = "المسح النهائي اترفض. التنين الأحمر 2.16 ماتثبّتش. تحديث الطائر الذهبي متجهّز. إضافة كروم جاهزة على سطح المكتب."
     assert fz.check(req, good)[1] == ["ارشيف"]
     assert len(fz.check(req, "تمام")[1]) >= 7
+
+
+def test_book_tools_and_paths_are_bundled(fz):
+    """The 22 tools distilled from king's books (Kahneman, Greetham, Jaynes, the Cursed Child play, the IFRS kit) ship
+    in thinking.json next to the original toolkit, and every «سبيل» points at real tools."""
+    import json
+    books = json.loads((FORGE / "data" / "thinking_books.json").read_text(encoding="utf-8"))
+    tk = fz.thinking()
+    ids = {t["id"] for t in tk["tools"]}
+    assert {t["id"] for t in books["tools"]} <= ids and len(books["tools"]) >= 20 and len(tk["protocol_ar"]) == 8
+    for t in books["tools"]:
+        assert t["steps_ar"] and t["use_when"] and t["check_ar"] and t["trigger_words"], t["id"]
+        assert " — " in fz._src_label(t), t["id"]                        # labelled with the author and the book
+    names = {p["name_ar"] for p in tk["paths"]}
+    assert {"سبيل الخيال", "سبيل التفكير العميق", "سبيل التفكير الإبداعي", "سبيل المنطق والاحتمال", "سبيل خطوة بخطوة"} <= names
+    assert all(x in ids for p in tk["paths"] for x in p["tools"])
+
+
+def test_build_merges_the_books_once():
+    src = (FORGE / "build_fusion.py").read_text(encoding="utf-8")
+    ns = {"json": __import__("json"), "FORGE": FORGE}
+    exec(src[src.index("BOOKS = FORGE"):src.index("PROGRAMS = [")], ns)       # just merge_books, no PC scan
+    base = {"tools": [{"id": "premortem", "steps_ar": ["x"], "use_when": ["plan"]},
+                      {"id": "first-principles", "steps_ar": ["x"], "use_when": ["plan"]}] + [
+                     {"id": i, "steps_ar": ["x"], "use_when": ["plan"]} for i in
+                     ("alternatives-before-commit", "competing-hypotheses", "falsify-it", "calibrate-and-update",
+                      "polya-four-phases", "begin-with-the-end", "outside-view", "inversion")],
+            "protocol_ar": [f"step {i}" for i in range(8)]}
+    once = ns["merge_books"](base)
+    assert ns["merge_books"](once) == once                                     # idempotent
+    assert len(once["tools"]) == len(base["tools"]) + 22 and "من الكتب" in once["protocol_ar"][0]
+
+
+def test_paths_steer_the_brief_and_think(fz):
+    assert fz.thinking_paths("تخيل لو المحل اتفتح في مدينة تانية")[0]["id"] == "imagination"
+    assert fz.thinking_paths("احسب احتمال ان العميل يرجع")[0]["id"] == "logic"
+    assert fz.thinking_paths("اشرحلي خطوة بخطوة")[0]["id"] == "steps"
+    ids = [t["id"] for t in fz.thinking_for("تخيل لو المحل اتفتح في مدينة تانية", None)]
+    assert "what-if-timeline" in ids
+    md = fz.md_brief("فكر بعمق: ليه المبيعات وقعت الشهر ده؟")
+    assert "🧭 **سبيل التفكير العميق" in md
+    assert fz.md_think("").count("- **سبيل") >= 7                               # the map
+    one = fz.md_think("الخيال")
+    assert one.startswith("## 🧭 سبيل الخيال") and "1. " in one and "✔" in one

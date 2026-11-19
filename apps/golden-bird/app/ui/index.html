@@ -692,6 +692,12 @@ button.gold{background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 88
 .brand .logo{letter-spacing:.2px}
 .gb-badge{display:inline-flex;gap:6px;align-items:center;margin-top:10px;padding:5px 12px;border-radius:999px;font-size:12px;
   background:var(--accent-soft);color:var(--accent);border:.5px solid var(--ring)}
+
+/* «تغيير المسار»: the interrupt button under a message sent while the chat works */
+.gb-now{margin:6px 6px 0 0;padding:3px 11px;border-radius:999px;font:inherit;font-size:12px;cursor:pointer;
+  background:var(--accent-soft);color:var(--accent);border:.5px solid var(--ring)}
+.gb-now:hover{background:var(--accent);color:var(--on-accent)}
+.gb-now:disabled{opacity:.6;cursor:default}
 </style>
 </head>
 <body>
@@ -1058,6 +1064,9 @@ async function openCmp(){const o=await pywebview.api.compare_options(); CMP=CMP.
 $('#cmp').onchange=e=>{ if(e.target.checked) openCmp(); else {$('#cmpPop').style.display='none'; $('#cmpN').textContent=''} };
 $('#cmpOk').onclick=()=>{CMP=[...document.querySelectorAll('#cmpList input:checked')].map(x=>x.value); $('#cmpPop').style.display='none';
   $('#cmpN').textContent=CMP.length?`(${CMP.length})`:''; if(!CMP.length) $('#cmp').checked=false};
+async function gbNow(btn){   // «⚡ قاطعه دلوقتي»: stop the running step, the waiting message is read now
+  btn.disabled=true; btn.textContent='⚡ بيقاطعه…';
+  try{const r=await pywebview.api.steer_now(act); if(!r||!r.ok) btn.remove()}catch(_){btn.remove()}}
 async function send(q){
   const s=S[act]; q=(q??$('#inp').value).trim(); if(!q&&!s.atts.length) return;
   if($('#cmp').checked&&CMP.length&&!s.busy){
@@ -1069,7 +1078,7 @@ async function send(q){
   }
   s.el.querySelector('.welcome')?.remove();
   if(s.busy){   // like Claude Code: the message reaches the agent while it works
-    const u=add(s,'user',esc(q)+(s.atts.length?`<div class="att">📎 ${s.atts.map(a=>esc(a.name)).join('، ')}</div>`:'')+'<div class="badge run">📨 هيوصله وهو شغال…</div>');
+    const u=add(s,'user',esc(q)+(s.atts.length?`<div class="att">📎 ${s.atts.map(a=>esc(a.name)).join('، ')}</div>`:'')+'<div class="badge run">📨 هيقراها عند أول خطوة…</div><button class="gb-now" onclick="gbNow(this)" title="يوقّف الخطوة اللي شغالة ويقرا رسالتك دلوقتي">⚡ قاطعه دلوقتي</button>');
     const r=await pywebview.api.send(s.sid,q);
     if(!r.ok){u.querySelector('.badge').remove();add(s,'bot',`<span class="err-msg">${esc(r.error||'مقدرتش أبعت')}</span>`);return}
     (s.qbadges=s.qbadges||[]).push(u.querySelector('.badge'));
@@ -1128,7 +1137,7 @@ window.onDragon=e=>{
   const s=S[e.sid]; if(!s) return;
   if(e.kind==='remote_user'){   // a message sent by another Claude Code session (blackdragon_app)
     s.el.querySelector('.welcome')?.remove();
-    const u=add(s,'user',esc(e.text||'')+'<div class="att">🔗 من Claude Code</div>'+(e.queued?'<div class="badge run">📨 هيوصله وهو شغال…</div>':'<div class="badge run"><span class="spin"></span>بيبدأ…</div>'));
+    const u=add(s,'user',esc(e.text||'')+'<div class="att">🔗 من Claude Code</div>'+(e.queued?'<div class="badge run">📨 هيقراها عند أول خطوة…</div><button class="gb-now" onclick="gbNow(this)" title="يوقّف الخطوة اللي شغالة ويقرا رسالتك دلوقتي">⚡ قاطعه دلوقتي</button>':'<div class="badge run"><span class="spin"></span>بيبدأ…</div>'));
     if(e.queued){(s.qbadges=s.qbadges||[]).push(u.querySelector('.badge'))}
     else{ if(s.title.startsWith('محادثة ')) s.title='🔗 '+(e.text||'').slice(0,40);
       s.badge=u.querySelector('.badge'); s.busy=true; s.hadErr=false; s.waiting=0; s.cur=null; s.t0=Date.now();
@@ -1143,7 +1152,8 @@ window.onDragon=e=>{
     c._t=(c._t||'')+e.text; c.querySelector('.txt').innerHTML=md(c._t); if(!replaying) s.el.scrollTop=s.el.scrollHeight; return}
   if(e.kind==='cmp_done'){const c=document.getElementById(`cc_${e.id}_${e.model.replace(/[^a-z0-9]/gi,'')}`); if(!c) return;
     c.querySelector('.spin')?.remove(); c.querySelector('.s').textContent=(e.ok?'✓ ':'✕ ')+fmt(e.secs); if(!e.ok){c.classList.add('bad'); c.querySelector('.txt').textContent=e.error||'فشل'} return}
-  if(e.kind==='queued_in'){(s.qbadges||[]).splice(0).forEach(b=>{b.className='badge ok';b.textContent='✓ وصلته وهو شغال'}); return}
+  if(e.kind==='queued_in'){(s.qbadges||[]).splice(0,e.n||99).forEach(b=>{b.className='badge ok';b.textContent='✓ قراها وهو شغال';b.parentNode?.querySelector('.gb-now')?.remove()}); return}
+  if(e.kind==='steer'){s.el.querySelectorAll('.gb-now').forEach(b=>b.remove()); if(s.busy) setState(s,'run','⚡ بيغيّر المسار…'); return}
   if(e.kind==='turn_continue'){ return }
   if(e.kind==='agent'){
     let c=document.getElementById('ag_'+e.id);

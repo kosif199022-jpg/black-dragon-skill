@@ -5,8 +5,8 @@ description: التنين الأسود — استوديو Blender وPhotoshop و
 
 # Creative Studio — Blender · Photoshop · After Effects (part of the Black Dragon)
 
-Repos: `C:\Users\cinde\dragon-repos\creative\` (shallow clones, all MIT/CC0 unless noted; reference + methods, read scripts before running).
-Engine: `python -m dragon run blender ...` from `C:\Users\cinde\OneDrive\Desktop\التنين الأسود`.
+Repos: `%USERPROFILE%\dragon-repos\creative\` (shallow clones, all MIT/CC0 unless noted; reference + methods, read scripts before running).
+Engine: `python -m dragon run blender ...` from `%USERPROFILE%\OneDrive\Desktop\مهارات\التنين الأسود` (or `%BLACK_DRAGON_HOME%`; the folder moved there on 2026-11-15).
 
 ## What runs on this machine right now
 | App | Status | How Claude drives it |

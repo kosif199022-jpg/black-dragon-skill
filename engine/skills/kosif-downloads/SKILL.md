@@ -5,7 +5,7 @@ description: KOSIF «كوسيف» — مدير تحميل مسرّع زي Intern
 
 # KOSIF downloads (Black Dragon engine `kosif`)
 
-Run from `C:\Users\cinde\OneDrive\Desktop\التنين الأسود`:
+Run from `%USERPROFILE%\OneDrive\Desktop\مهارات\التنين الأسود` (or `%BLACK_DRAGON_HOME%`):
 ```
 python -m dragon run kosif doctor
 python -m dragon run kosif probe URL                                  # name, size, resumable — no download

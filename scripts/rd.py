@@ -19,11 +19,14 @@
   python scripts/rd.py files "<كلمة>"        delivered file paths from those chats + does each still exist
   python scripts/rd.py guard PATH            is another session writing this folder? (--save / --diff snapshot, lock / unlock)
   python scripts/rd.py x ARGS...             pass through to the engine (engine/scripts/dragon.py)
+  python scripts/rd.py fuse brief|route|tools|protocol|find|show|recipes|lessons|doctor|selftest
+                                             v3.4: the fusion brain (depth L0-L3, recipes, 22 thinking tools) in-process
+  python scripts/rd.py check --request "<الطلب>" --draft FILE|-   v3.4: critic gate on the answer before sending it
 It reads and advises; it never installs, publishes, spends or deletes."""
-import argparse, datetime, hashlib, json, math, os, re, shutil, subprocess, sys
+import argparse, datetime, hashlib, json, math, os, re, shutil, subprocess, sys, types
 from pathlib import Path
 
-VERSION = "3.2.0"
+VERSION = "3.5.4"
 ROOT = Path(__file__).resolve().parent.parent
 ENGINE = ROOT / "engine"
 MIND = ROOT / "mind"
@@ -762,7 +765,8 @@ def plan(q, as_json=False, prev=None):
     if as_json:
         print(json.dumps({"place": where, "playbooks": [{k: v for k, v in p.items() if not k.startswith("_")} | {"score": round(s, 2)} for s, p in pb],
                           "powers": [{"id": p["id"], "ar": p.get("ar"), "cost": p.get("cost"), "score": s} for s, p in pw],
-                          "lessons": ls, "confidence": conf, "used_context": bool(before), "consent": consent(q)}, ensure_ascii=False, indent=1))
+                          "lessons": ls, "confidence": conf, "used_context": bool(before), "consent": consent(q),
+                          "thinking": thinking_info(q)}, ensure_ascii=False, indent=1))
         return
     P = print
     P(f"🐉 التنين الذهبي v{VERSION} · المكان: {where}")
@@ -773,6 +777,14 @@ def plan(q, as_json=False, prev=None):
     P("\n① أول رد (قبل أي أداة):")
     P(f"   فهمت إنك عايز: «{' '.join(q.split())[:160]}» ← اكتبها بكلامك بعد فك غلطات الإملاء، وقول خمّنت إيه.")
     P("   هعمل: 3–5 نقط + الناتج فين + ⏱ التقدير. سؤال واحد بس لو الطلب ليه معنيين.")
+    try:                                   # v3.4: depth L0-L3 + the thinking tools for this request (rd_fusion.py)
+        fm = fusion_mod()
+        if fm.available():
+            P("")
+            for line in fm.thinking_lines(rd_self(), q):
+                P(line)
+    except Exception as e:
+        P(f"\n🧠 (سلّم التفكير ماطلعش: {type(e).__name__}; جرّب rd.py fuse brief \"…\")")
     if not pb:
         P("\n② مفيش playbook مطابق. استخدم: rd.py map ، أو المحرك: rd.py x find \"<الطلب>\" ، وبعد ما تخلص: rd.py learn …")
     for i, (s, p) in enumerate(pb[:2]):
@@ -837,6 +849,32 @@ def chat_hits(q, limit=2):
         return chats_mod().search(q, limit=limit, per=2, min_terms=2)
     except Exception:
         return []
+
+
+def fusion_mod():
+    """scripts/rd_fusion.py (v3.4): the Golden Dragon's fusion brain, run in this process. Imported by path like rd_chats."""
+    here = str(Path(__file__).resolve().parent)
+    if here not in sys.path:
+        sys.path.insert(0, here)
+    import rd_fusion
+    return rd_fusion
+
+
+def rd_self():
+    """What rd_fusion needs from this file. A plain namespace, so it works when rd.py is imported under another name."""
+    return types.SimpleNamespace(understand=understand, route=route, VERSION=VERSION)
+
+
+def thinking_info(q):
+    """{'depth': 'L2', 'why': …, 'tools': [ids]} for plan --json; {} when the fusion brain is not in this copy."""
+    try:
+        fm = fusion_mod()
+        if not fm.available():
+            return {}
+        lvl, why, tools, _ = fm.depth_and_tools(rd_self(), q)
+        return {"depth": lvl, "why": why, "tools": [t["id"] for t in tools]}
+    except Exception as e:
+        return {"error": f"{type(e).__name__}: {str(e)[:120]}"}
 
 
 def bump(lid):
@@ -1666,10 +1704,14 @@ def main():
     s = sub.add_parser("hypit", help="hypit-run: doctor, setup, example, check, plan, render, cli, selftest (the real Hypit SVML video engine, local and free; paid Providers blocked without --allow-paid)"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("krita", help="krita-draw: render scene.json | layers file.kra | info (draw with code inside the real Krita)"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("sync", help="sync-guard: words, check, fix, onsets, script, grid, selftest (captions and motion on the spoken word)"); s.add_argument("args", nargs=argparse.REMAINDER)
+    s = sub.add_parser("md", help="doc-reader (v3.3): convert, batch, doctor, exts, install, selftest (any PDF, Word, PowerPoint, Excel, HTML, EPUB… → Markdown with Microsoft MarkItDown, MIT)"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("arena", help="arena-gate (v2.19): size, start, jobs, next, collect, advance, winner, skip, gate, selftest (the arena is a required step: competing copies, bracket, judge)"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("consent", help="consent gate: which outward actions this message explicitly approves or forbids («كمل» approves none)"); s.add_argument("q")
     s = sub.add_parser("gold", help="Golden Bird: studio list/show/install/cmd · lib find/show/kit/stats · sync · protocol · where · selftest"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("think", help="think & plan: start, revise, check, time, mistake, mistakes, pipeline-selftest · planning-mind: card, gate, workflow, learn, lessons, types, selftest"); s.add_argument("args", nargs=argparse.REMAINDER)
+    s = sub.add_parser("fuse", help="v3.4 fusion brain: brief, route, check, tools, protocol, find, show, recipes, lessons, doctor, stats, selftest"); s.add_argument("args", nargs=argparse.REMAINDER)
+    s = sub.add_parser("check", help="v3.4 critic gate before sending an answer (= fuse check)")
+    s.add_argument("--request", required=True, help="the owner's request, as he wrote it"); s.add_argument("--draft", required=True, help="the answer file, or - for stdin")
     a = ap.parse_args()
 
     if a.cmd in (None, "start"):
@@ -1687,6 +1729,7 @@ def main():
             print(" • لابتوبه (Claude Code أو تطبيق التنين): اقرا references/RD_CONNECTIONS.md و engine/references/MACHINE_MAP.md وامشي بمسارات [pc].")
             print(" • سحابة: امشي بخطوات [cloud]، واللي محتاج اللابتوب قول عليه بصراحة واقترح البديل (سحابة Higgsfield المجانية لو مربوطة).")
         print("القواعد اللي مابتتكسرش: references/RD_RULES.md · كل الأوامر: rd.py --help")
+        print("🧠 v3.4: قبل الشغل اللي فيه أكتر من خطوة rd.py fuse brief \"<الطلب>\" (العمق وأدوات التفكير)، وقبل الرد rd.py check --request … --draft …")
     elif a.cmd == "where":
         print(json.dumps({"place": place(), "root": str(ROOT), "engine": (ENGINE / "scripts" / "dragon.py").is_file(), "memory": str(MEM), "version": VERSION}, ensure_ascii=False))
     elif a.cmd == "understand":
@@ -1884,17 +1927,21 @@ def main():
         raise SystemExit(subprocess.call([sys.executable, "-X", "utf8", str(ROOT / "engine" / "skills" / "insta-reader" / "scripts" / "ig.py")] + (a.args or ["--help"])))
     elif a.cmd == "agents":
         raise SystemExit(subprocess.call([sys.executable, "-X", "utf8", str(ROOT / "scripts" / "rd_agents.py")] + (a.args or ["list"])))
-    elif a.cmd in ("dcm", "desktop", "think", "ref", "sync", "krita", "mind", "hypit", "insta", "arena", "gold"):
+    elif a.cmd in ("dcm", "desktop", "think", "ref", "sync", "krita", "mind", "hypit", "insta", "arena", "gold", "md"):
         sk = {"dcm": ("dragon-character-memory", "dcm.py"), "desktop": ("blackdragon-desktop-bridge", "bridge.py"), "think": ("planning-mind", "plan.py"),
               "ref": ("reference-lock", "reflock.py"), "sync": ("sync-guard", "syncguard.py"),
               "krita": ("krita-draw", "krita_draw.py"), "mind": ("claude-mind", "mind.py"), "hypit": ("hypit-run", "hypit_rd.py"),
-              "insta": ("insta-reader", "insta.py"), "arena": ("arena-gate", "arena_gate.py"), "gold": ("golden-bird", "gold.py")}[a.cmd]
+              "insta": ("insta-reader", "insta.py"), "arena": ("arena-gate", "arena_gate.py"), "gold": ("golden-bird", "gold.py"), "md": ("doc-reader", "docmd.py")}[a.cmd]
         if a.cmd == "think" and a.args and a.args[0] in ("start", "revise", "check", "time", "mistake", "mistakes", "pipeline-selftest"):
             sk = ("planning-mind", "think.py")      # v2.9: the think-and-plan pipeline; the other words go to plan.py
             if a.args[0] == "pipeline-selftest":
                 a.args = ["selftest"] + a.args[1:]
         sc = ROOT / "engine" / "skills" / sk[0] / "scripts" / sk[1]
         raise SystemExit(subprocess.call([sys.executable, "-X", "utf8", str(sc)] + (a.args or ["--help"])))
+    elif a.cmd == "fuse":
+        raise SystemExit(fusion_mod().main(a.args, rd_self()))
+    elif a.cmd == "check":
+        raise SystemExit(fusion_mod().main(["check", "--request", a.request, "--draft", a.draft], rd_self()))
     elif a.cmd == "consent":
         c = consent(understand(a.q)["text"])
         print(json.dumps(c, ensure_ascii=False))
@@ -1977,13 +2024,35 @@ def main():
                     bad.append(f"blind chats eval: top-3 {t3}/{len(blind)} < 85%")
         except Exception as e:
             bad.append(f"rd_chats: {e}")
-        for sk, sc in (("reference-lock", "reflock.py"), ("sync-guard", "syncguard.py"), ("hypit-run", "hypit_rd.py"), ("insta-reader", "insta.py"), ("arena-gate", "arena_gate.py"), ("golden-bird", "gold.py")):    # v2.9.1: exact reference + caption sync guards
+        for sk, sc in (("reference-lock", "reflock.py"), ("sync-guard", "syncguard.py"), ("hypit-run", "hypit_rd.py"), ("insta-reader", "insta.py"), ("arena-gate", "arena_gate.py"), ("golden-bird", "gold.py"), ("doc-reader", "docmd.py")):    # v2.9.1: exact reference + caption sync guards
             gp = ROOT / "engine" / "skills" / sk / "scripts" / sc
             if gp.is_file():
                 r = subprocess.run([sys.executable, "-X", "utf8", str(gp), "selftest"], capture_output=True, text=True, encoding="utf-8", errors="replace",
                                    timeout=300, env=dict(os.environ, PYTHONDONTWRITEBYTECODE="1"))
                 if r.returncode:
                     bad.append(f"{sk}: " + (r.stdout.strip().splitlines() or [r.stderr.strip()[-200:] or "?"])[-1][:200])
+        try:                                     # v3.4: the fusion brain answers in-process (counts, brief, depth, check)
+            bad += fusion_mod().problems(rd_self())
+        except Exception as e:
+            bad.append(f"fusion: {type(e).__name__}: {str(e)[:160]}")
+        try:                                     # v3.4: plan shows the thinking block, and still works when a copy has no fusion data
+            import tempfile
+            with tempfile.TemporaryDirectory(prefix="rd-plan-") as tmp:      # plan bumps lesson hits: keep them out of the owner's memory
+                broken = Path(tmp) / "broken"                                 # a copy whose fusion module does not even import
+                (broken / "fusion").mkdir(parents=True)
+                (broken / "fusion" / "index.json").write_text("{}", encoding="utf-8")
+                (broken / "dragon_fusion.py").write_text("def broken(:\n", encoding="utf-8")
+                for case, extra, want in (("with", {}, "🧠 سلّم التفكير"), ("off", {"RD_NO_FUSION": "1"}, None),
+                                          ("broken", {"GOLDEN_FUSION_PY": str(broken / "dragon_fusion.py")}, "سلّم التفكير ماطلعش")):
+                    env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", RED_DRAGON_HOME=str(Path(tmp) / "mem"), **extra)
+                    r = subprocess.run([sys.executable, "-X", "utf8", str(Path(__file__).resolve()), "plan", "اعمل ريل 9:16 من الفيديو ده على اغنية"],
+                                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=300, env=env)
+                    shown = "🧠 سلّم التفكير" in r.stdout
+                    ok = not r.returncode and "②" in r.stdout and (want in r.stdout if want else not shown and "ماطلعش" not in r.stdout)
+                    if not ok:
+                        bad.append(f"plan ({case} fusion): rc={r.returncode}, thinking block={shown}, {(r.stderr.strip().splitlines() or [''])[-1][:120]}")
+        except Exception as e:
+            bad.append(f"plan + fusion test: {type(e).__name__}: {str(e)[:160]}")
         if (ROOT / "agents").is_dir():          # v2.15: subagent files must stay valid
             r = subprocess.run([sys.executable, "-X", "utf8", str(ROOT / "scripts" / "rd_agents.py"), "check"], capture_output=True, text=True, encoding="utf-8", errors="replace")
             if r.returncode:

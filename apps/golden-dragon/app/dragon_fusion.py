@@ -8,6 +8,9 @@
            proves it worked. Every id a recipe names was checked when the index was built (forge/build_fusion.py).
   route    a request (Arabic or English) -> the best recipe(s) + the strongest single units, approvals and warnings.
   doctor   live check of this PC now: programs, homes, skills added or removed since the index was built.
+  discover walk the folders the owner works in (gd_discover.py) and add what is there NOW to the same index as pc-*
+           units: skills outside ~/.claude/skills, Claude plugins, MCP servers, programs and shortcuts, scripts, tool
+           folders, repos and skill archives. The list and the folders to walk live in %APPDATA%\\GoldenDragon only.
 
   brief    before a task: the request as understood (Red Dragon decoding), its depth (L0-L3), the intent sheet to fill,
            three real alternatives, a pre-mortem from the owner's own lessons, the gates, and 2-3 thinking tools from
@@ -19,6 +22,9 @@
 CLI (the subscription mode runs commands instead of app tools):
   python -X utf8 dragon_fusion.py brief "..." | route "..." | find "..." [--kind K] [--limit N] | show ID | recipes
                                   | doctor | stats | lessons "..." | check --request "..." --draft FILE|-
+                                  | discover | local [KIND] | think ["سبيل"]
+  think    «سبل التفكير» (من كتب Kahneman وGreetham وJaynes والمسرحية والـ IFRS): الخيال، العميق، الإبداعي، المنطق والاحتمال،
+           خطوة بخطوة، التحليل، القرار. بدون كلمة = خريطة السبل؛ بكلمة = خطوات أدوات السبيل وسؤال الناقد بتاعها.
 Standard library only. Data: .\\fusion\\index.json, recipes.json, lessons.json (made by forge\\build_fusion.py).
 """
 import bisect
@@ -37,10 +43,18 @@ SKILLS_DIR = Path(os.environ.get("GOLDEN_SKILLS_DIR") or (Path.home() / ".claude
 K1, B = 1.4, 0.72
 KIND_AR = {"skill": "مهارة", "tool": "أداة في التطبيق", "engine": "محرك تنين", "studio": "برنامج استوديو", "lib": "مكتبة",
            "program": "برنامج على الجهاز", "local-ai": "موديل محلي", "re": "أداة تحليل", "mcp": "خادم MCP", "repo": "مستودع",
-           "playbook": "playbook التنين الأحمر", "cmd": "أمر التنين الأحمر", "power": "أداة سوبر باور"}
+           "playbook": "playbook التنين الأحمر", "cmd": "أمر التنين الأحمر", "power": "أداة سوبر باور",
+           "pc-skill": "مهارة على الجهاز", "pc-plugin": "إضافة Claude", "pc-mcp": "خادم MCP على الجهاز", "pc-app": "برنامج/اختصار",
+           "pc-script": "سكربت", "pc-tool": "فولدر أداة", "pc-repo": "مستودع على الجهاز", "pc-pack": "أرشيف مهارة"}
 STATUS_AR = {"ok": "✓", "older": "إصدار أقدم", "partial": "ناقصها ملفات", "missing": "مش موجود", "reference": "مرجع",
-             "needs-setup": "يحتاج تجهيز"}
-PENALTY = {"older": 0.15, "missing": 0.6, "partial": 0.85}
+             "needs-setup": "يحتاج تجهيز", "local": "على الجهاز", "copy": "نسخة برّه المتثبّت", "archive": "مضغوط/مش متثبّت"}
+PENALTY = {"older": 0.15, "missing": 0.6, "partial": 0.85, "local": 0.9, "copy": 0.5, "archive": 0.45}
+PC_KINDS = ("pc-skill", "pc-plugin", "pc-mcp", "pc-app", "pc-tool", "pc-script", "pc-repo", "pc-pack")
+
+try:                                          # «discover»: what this PC has beyond the build-time index (local catalog)
+    import gd_discover as _gdd
+except Exception:
+    _gdd = None
 
 try:                                          # the Golden Bird's Arabic-aware tokens (normalisation, synonyms, «ال» prefixes)
     import golden_tools as _gt
@@ -168,8 +182,33 @@ def index():
     return _cache["index"]
 
 
+def local():
+    """The local catalog (gd_discover): {"units": [...], "generated": ...}. Off with GOLDEN_NO_LOCAL=1 (the tests)."""
+    if "local" not in _cache:
+        if _gdd is None or os.environ.get("GOLDEN_NO_LOCAL"):
+            _cache["local"] = {"units": [], "generated": "", "off": True}
+        else:
+            _cache["local"] = _gdd.load([u["name"] for u in index()["units"] if u["kind"] == "skill"])
+    return _cache["local"]
+
+
 def units():
-    return index()["units"]
+    """The build-time index, then every pc-* unit the last discover found (never one that shadows an index id)."""
+    if "units" not in _cache:
+        base = index()["units"]
+        ids = {u["id"] for u in base}
+        _cache["units"] = base + [u for u in local().get("units") or [] if u.get("id") not in ids]
+    return _cache["units"]
+
+
+def discover():
+    """Walk the PC again now and reload: -> the new local catalog."""
+    if _gdd is None:
+        raise FileNotFoundError("gd_discover.py مش موجود جنب dragon_fusion.py")
+    data = _gdd.scan([u["name"] for u in index()["units"] if u["kind"] == "skill"])
+    for k in ("local", "units", "by_id", "uix"):
+        _cache.pop(k, None)
+    return data
 
 
 def recipes():
@@ -216,7 +255,7 @@ def resolve(ident):
     if key in m:
         return m[key]
     low = key.lower()
-    for kind in ("skill", "tool", "engine", "studio", "lib", "program", "local-ai", "re", "mcp", "repo", "playbook", "cmd", "power"):
+    for kind in ("skill", "tool", "engine", "studio", "lib", "program", "local-ai", "re", "mcp", "repo", "playbook", "cmd", "power") + PC_KINDS:
         if f"{kind}:{low}" in m:
             return m[f"{kind}:{low}"]
     for u in units():
@@ -231,15 +270,17 @@ def find(query, kind=None, limit=10, min_hits=1):
     shared generic word («كشف», «ملف») pulled scenedetect and the RE tools into a bank-reconciliation answer."""
     q = query_tokens(query)
     pool = units()
+    def kind_ok(u):
+        return not kind or u["kind"] == kind or (kind == "pc" and u["kind"].startswith("pc-"))
     if not q:
-        return [u for u in pool if not kind or u["kind"] == kind][:limit]
+        return [u for u in pool if kind_ok(u)][:limit]
     ix = _unit_index()
     sc = ix.scores(q)
     hits = ix.hits(q) if min_hits > 1 else None
     ranked = []
     for i, s in enumerate(sc):
         u = pool[i]
-        if s <= 0 or (kind and u["kind"] != kind) or (hits and hits[i] < min(min_hits, len(q))):
+        if s <= 0 or not kind_ok(u) or (hits and hits[i] < min(min_hits, len(q))):
             continue
         ranked.append((s * PENALTY.get(u.get("status"), 1.0), u))
     ranked.sort(key=lambda x: -x[0])
@@ -514,6 +555,8 @@ def md_brief(request):
         risks.append(f"البوابة الأضعف: «{top['steps'][-1].get('gate_ar', '')}». اتأكد إنها هتتقاس فعلًا مش هتتوصف بس")
     out.append("- **تشريح قبل الفشل (أرجح أسباب الرفض، اقفل كل واحد بخطوة):**\n" + "\n".join(f"  - {x}" for x in risks[:5]))
     tools = thinking_for(request, top)
+    for p in thinking_paths(request)[:2]:
+        out.append(f"- 🧭 **{p['name_ar']}:** {p.get('hint_ar', '')} (`fusion think {p['id']}` للسبيل كله)")
     if tools:
         out.append("- **أدوات تفكير للطلب ده (من كتب العلماء والتفكير):**\n" + "\n".join(
             f"  - **{t.get('name_ar', t['id'])}** ({_src_label(t)}): " + " ← ".join(t.get("steps_ar", [])[:3])
@@ -572,6 +615,20 @@ TOOL_PRIORITY = {
 }
 
 
+def thinking_paths(request):
+    """The Arabic «سبل التفكير» (thinking.json paths: الخيال، العميق، الإبداعي، المنطق، خطوة بخطوة، التحليل، القرار) whose
+    trigger words appear in the request, best first. Lets «تخيّل…» or «فكّر بعمق» pull that path's tools to the top."""
+    words = set(query_tokens(request))
+    norm = _norm(request)
+    hits = []
+    for p in thinking().get("paths") or []:
+        trig = p.get("trigger_words") or []
+        n = len(words & set(query_tokens(" ".join(trig)))) + sum(1 for w in trig if " " in w and _norm(w) in norm)
+        if n:
+            hits.append((n, p))
+    return [p for _, p in sorted(hits, key=lambda x: -x[0])]
+
+
 def thinking_for(request, top, limit=3):
     """2-3 thinking tools for this request: one for understanding, then the rest. Score = the task type's priority
     order (TOOL_PRIORITY) + whether use_when has the task type + the request's own trigger words (capped, so one long
@@ -582,11 +639,17 @@ def thinking_for(request, top, limit=3):
     ttype = TASK_TYPE.get(top["id"], "create") if top else "plan"
     pri = TOOL_PRIORITY.get(ttype, [])
     words = set(query_tokens(request))
+    paths = thinking_paths(request)
+    on_path = {}
+    for p in paths[:2]:                       # the request's own «سبيل»: its tools in order, the first path weighs more
+        for i, tid in enumerate(p.get("tools") or []):
+            on_path.setdefault(tid, (3.0 if p is paths[0] else 2.0) - i * 0.3)
 
     def score(t):
         trig = set(query_tokens(" ".join(t.get("trigger_words") or [])))
         rank = len(pri) - pri.index(t["id"]) if t["id"] in pri else 0
-        return rank + (ttype in (t.get("use_when") or [])) * 0.5 + min(len(words & trig), 2) * 2.5
+        return (rank + (ttype in (t.get("use_when") or [])) * 0.5 + min(len(words & trig), 2) * 2.5
+                + on_path.get(t["id"], 0))
     first = next((t for t in sorted(tools, key=score, reverse=True) if "understand" in (t.get("use_when") or [])), None)
     rest = [t for t in sorted(tools, key=score, reverse=True) if t is not first and score(t) > 0]
     return ([first] if first else []) + rest[: limit - (1 if first else 0)]
@@ -715,6 +778,33 @@ def md_check(request, draft):
     return "\n".join(out)
 
 
+def md_think(query=""):
+    """«سبل التفكير»: one path with its tools' steps and critic question (by id, Arabic name or trigger word), or the map
+    of all paths when nothing matches. Easy recall: «سبيل الخيال»، «التفكير العميق»، «الإبداعي»، «المنطق»، «خطوة بخطوة»."""
+    paths = thinking().get("paths") or []
+    if not paths:
+        return "✗ مفيش سبل تفكير في fusion\\thinking.json (ابني تاني بـ build_fusion.py)."
+    by = {t["id"]: t for t in thinking().get("tools") or []}
+    q = _norm(query)
+    pick = [p for p in paths if q and (q == p["id"] or q in _norm(p["name_ar"]))] or (thinking_paths(query) if q else [])
+    if not pick:
+        out = ["## 🧭 سبل التفكير (اكتب `fusion think <السبيل>` عشان خطواته):"]
+        for p in paths:
+            names = "، ".join(by[x].get("name_ar", x).split(":")[0] for x in p["tools"] if x in by)
+            out.append(f"- **{p['name_ar']}** (`{p['id']}`): {p.get('hint_ar', '')}\n  - {names}")
+        return "\n".join(out)
+    p = pick[0]
+    out = [f"## 🧭 {p['name_ar']}: {p.get('hint_ar', '')}"]
+    for x in p["tools"]:
+        t = by.get(x)
+        if not t:
+            continue
+        out.append(f"- **{t.get('name_ar', x)}** ({_src_label(t)}):\n" + "\n".join(f"  {i}. {st}" for i, st in
+                                                                                 enumerate(t.get("steps_ar") or [], 1))
+                   + (f"\n  - ✔ {t['check_ar']}" if t.get("check_ar") else ""))
+    return "\n".join(out)
+
+
 def md_show(ident):
     u = resolve(ident)
     keys = [("النوع", KIND_AR.get(u["kind"], u["kind"])), ("الحالة", STATUS_AR.get(u.get("status"), u.get("status"))),
@@ -757,7 +847,52 @@ def md_doctor():
         lines.append("- مسارات قديمة اتنقلت (التطبيق بيدوّر على المكان الجديد لوحده): " + "، ".join(f"{a} ({b})" for a, b in d["moved"]))
     if s["new"] or s["gone"]:
         lines.append("- لو المهارات اتغيّرت كتير: أعد بناء الفهرس (forge\\build_fusion.py) وبعدين ابني التطبيق.")
+    lines.append(_local_line())
     return "\n".join(lines)
+
+
+def _local_line():
+    loc = local()
+    if loc.get("off"):
+        return "- كتالوج الجهاز: مقفول (GOLDEN_NO_LOCAL)."
+    n = len(loc.get("units") or [])
+    if not loc.get("generated"):
+        return "- كتالوج الجهاز: لسه ماتعملش. شغّل `fusion discover`."
+    age = _gdd.age_days(loc)
+    try:
+        limit = float(_gdd.load_config().get("max_age_days", 7))
+    except (TypeError, ValueError):
+        limit = 7.0
+    kinds = _gdd.summary(loc)
+    parts = "، ".join(f"{KIND_AR.get(k, k)} {v}" for k, v in sorted(kinds.items(), key=lambda x: -x[1]))
+    return (f"- كتالوج الجهاز: {n} حاجة ({parts})، اتعمل {loc.get('generated')}"
+            + (f". **قديم ({age:.0f} يوم): شغّل `fusion discover`**" if age is not None and age > limit else "") + ".")
+
+
+def md_discover():
+    d = discover()
+    kinds = _gdd.summary(d)
+    rows = ["## 🔭 اكتشاف الجهاز", f"- لقيت {len(d['units'])} حاجة في {d['seconds']} ث"
+            + (f" (وقفت بدري: حد {d['cut']})" if d.get("cut") else "") + ":"]
+    rows += [f"  - {KIND_AR.get(k, k)}: {v}" for k, v in sorted(kinds.items(), key=lambda x: -x[1])]
+    rows.append("- الأماكن: " + "، ".join(f"{k} ({v})" for k, v in sorted(d["per_root"].items(), key=lambda x: -x[1])))
+    rows.append(f"- الكتالوج والإعدادات على الجهاز بس: `{_gdd.CONFIG}` (ضيف فولدرات في roots أو استبعد بـ exclude).")
+    rows.append("- دلوقتي `find` و`show` و`route` بيشوفوهم (النوع `pc` في find = كل اللي على الجهاز).")
+    return "\n".join(rows)
+
+
+def md_local(kind=None, limit=40):
+    loc = local()
+    us = [u for u in loc.get("units") or [] if not kind or u["kind"] == kind or (kind == "pc" and u["kind"].startswith("pc-"))]
+    if not us:
+        return _local_line()
+    rows = [_local_line(), "", "| id | النوع | الحالة | بيعمل إيه |", "|---|---|---|---|"]
+    for u in us[:limit]:
+        rows.append(f"| `{u['id']}` | {KIND_AR.get(u['kind'], u['kind'])} | {STATUS_AR.get(u.get('status'), '')} | "
+                    f"{_short(u, 80) or u['name']} |")
+    if len(us) > limit:
+        rows.append(f"\n… و{len(us) - limit} كمان. ضيّق بـ `find \"كلمة\" --kind pc-app` مثلًا.")
+    return "\n".join(rows)
 
 
 def md_lessons(query, limit=8):
@@ -780,7 +915,8 @@ def stats():
     c = Counter(u["kind"] for u in units())
     st = Counter(u.get("status") for u in units())
     return {"units": len(units()), "kinds": dict(c), "status": dict(st), "recipes": len(recipes()), "lessons": len(lessons()),
-            "generated": index().get("generated")}
+            "generated": index().get("generated"), "local": len(local().get("units") or []),
+            "local_generated": local().get("generated")}
 
 
 # ---------------------------------------------------------------- CLI
@@ -809,10 +945,16 @@ def main(argv):
             print(md_recipes())
         elif act == "doctor":
             print(md_doctor())
+        elif act == "discover":
+            print(md_discover())
+        elif act == "local":
+            print(md_local(rest[0] if rest else None))
         elif act == "stats":
             print(json.dumps(stats(), ensure_ascii=False))
         elif act == "lessons":
             print(md_lessons(" ".join(rest)))
+        elif act == "think":
+            print(md_think(" ".join(rest)))
         elif act == "brief" and rest:
             print(md_brief(" ".join(rest)))
         elif act == "check" and "--request" in rest and "--draft" in rest:

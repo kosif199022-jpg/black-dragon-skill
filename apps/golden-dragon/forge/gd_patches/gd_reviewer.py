@@ -36,6 +36,13 @@ APP_MODULE = r'''
 
 # ===================== التنين الذهبي: 🧐 مراجع التفكير =====================
 RV_MIN_CHARS, RV_GAP_SECS, RV_MAX_PER_TURN = 400, 45, 6
+# A model's safety filter sometimes stops a normal review by mistake: then ask one other model, once.
+RV_FALLBACK = {"claude-sonnet-5-5": "claude-opus-5-5", "claude-opus-5-5": "claude-sonnet-5-5", "claude-haiku-5-5": "claude-sonnet-5-5"}
+
+
+def _rv_flagged(e):
+    t = str(e).lower()
+    return any(k in t for k in ("safeguards", "usage policy", "/aup", "flagged this message"))
 RV_SYSTEM = (
     "You are the independent REVIEWER of another AI agent (the Golden Dragon). You read its written reasoning while it works, "
     "before it acts. Your job: catch real mistakes early and point out a clearly better approach.\n"
@@ -52,15 +59,24 @@ RV_SYSTEM = (
 
 
 def _rv_user_request(s):
+    """The user's own words only. The app glues «[...]» context blocks before them (computer control, the 547-skill index,
+    tools, team, work folder: ~80k chars). The old code sent the FIRST 3000 chars of that = the computer-control block only:
+    the reviewer never saw the request, and the model's safety filter stopped it («safeguards flagged this message»)."""
+    raw = (getattr(s, "last_sent", None) or ("",))[0]
+    if raw and raw.strip():
+        return raw.strip()[-3000:]
     for m in reversed(s.messages or []):
         if m.get("role") != "user":
             continue
         c = m.get("content")
         parts = [c] if isinstance(c, str) else [b.get("text", "") for b in (c or []) if isinstance(b, dict) and b.get("type") == "text"]
-        own = [p for p in parts if p and not p.startswith("[")]
+        parts = [p for p in parts if p and p.strip() and not p.lstrip().startswith("[🧐")]
+        if not parts:
+            continue
+        own = [p for p in parts if not p.lstrip().startswith("[")]
         txt = "\n".join(own or parts).strip()
-        if txt:
-            return txt[:3000]
+        tail = txt.rsplit("]\n", 1)[-1].strip() if txt.startswith("[") else txt   # after the last context block
+        return (tail or txt)[-3000:]
     return ""
 
 
@@ -140,7 +156,21 @@ def _rv_run(s, rid, model, seg, acts):
         prompt = ("[USER REQUEST]\n" + (req or "(unknown)") + "\n\n[WORKING FOLDER]\n" + (s.workdir or "-") +
                   ("\n\n[ACTIONS SO FAR THIS TURN]\n" + "\n".join(acts) if acts else "") +
                   "\n\n[AGENT'S REASONING TO REVIEW]\n" + seg)
-        res = _rv_parse(_rv_ask(s, model, prompt))
+        try:
+            raw = _rv_ask(s, model, prompt)
+        except Exception as e1:
+            if not _rv_flagged(e1):
+                raise
+            alt = RV_FALLBACK.get(model, "claude-opus-5-5")
+            try:
+                raw, model = _rv_ask(s, alt, prompt), alt
+            except Exception as e2:
+                if not _rv_flagged(e2):
+                    raise
+                s.emit("review", id=rid, model=alt, ok=False, skipped=True, secs=round(time.time() - t0),
+                       error="فلتر الأمان عند الموديلين وقّف المراجعة دي بالغلط")
+                return
+        res = _rv_parse(raw)
         if res is None:
             s.emit("review", id=rid, model=model, ok=False, error="المراجع ردّ بشكل مش مفهوم", secs=round(time.time() - t0))
             return

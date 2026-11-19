@@ -15,8 +15,9 @@ sys.stdin.reconfigure(encoding="utf-8")
 
 HOME = Path.home()
 REPO = Path(os.environ.get("BLACK_DRAGON_HOME", HOME / "OneDrive" / "Desktop" / "التنين الأسود"))
-if not REPO.exists():
-    REPO = HOME / "Desktop" / "التنين الأسود"
+if not REPO.exists():                    # the folder moved into «مهارات» on 2026-11-15
+    REPO = next((c for c in (HOME / "OneDrive" / "Desktop" / "مهارات" / "التنين الأسود", HOME / "Desktop" / "التنين الأسود",
+                             HOME / "Desktop" / "مهارات" / "التنين الأسود") if c.exists()), HOME / "Desktop" / "التنين الأسود")
 ULTRA_SCRIPT = HOME / ".claude" / "skills" / "black-dragon" / "scripts" / "dragon.py"
 SUPERPOWERS_HUB = HOME / "kosif-tool" / ".claude" / "skills" / "kosif-superpowers" / "scripts" / "hub.py"
 RETOOL = HOME / "re-tools" / "retool.py"
