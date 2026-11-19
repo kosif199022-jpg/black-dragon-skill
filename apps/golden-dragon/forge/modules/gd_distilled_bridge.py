@@ -21,8 +21,14 @@ def distilled_search(query, limit=5, index_path=None):
             index = json.load(handle)
         if index.get("schema_version") != 1:
             return {"enabled": False, "results": [], "reason": "unsupported_schema"}
-        from query_distilled import search
-        results = search(index, str(query), limit=max(1, min(int(limit), 20)))
+        import importlib.util
+        query_file = Path(__file__).resolve().parents[1] / 'query_distilled.py'
+        spec = importlib.util.spec_from_file_location('gd_query_distilled', query_file)
+        if spec is None or spec.loader is None:
+            raise ImportError('query module unavailable')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        results = module.search(index, str(query), limit=max(1, min(int(limit), 20)))
     except (OSError, ValueError, TypeError, KeyError, ImportError) as exc:
         return {"enabled": False, "results": [], "reason": "read_or_index_error", "error_type": type(exc).__name__}
     return {"enabled": True, "results": results, "mode": "read_only_lexical",
