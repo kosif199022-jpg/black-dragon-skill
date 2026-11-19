@@ -1,4 +1,4 @@
-﻿"""Render and verify a vertical MP4 using the local Golden Dragon media tools."""
+"""Render and verify a vertical MP4 using the local Golden Dragon media tools."""
 import argparse
 import json
 import os
@@ -26,7 +26,7 @@ def render(source, destination):
         if (stream["width"], stream["height"], stream["avg_frame_rate"]) != (1080, 1920, "30/1") or int(stream["nb_frames"]) < 1:
             raise ValueError("Output verification failed")
         os.link(staged, destination)
-        print(json.dumps({"output": str(destination), **stream}, ensure_ascii=False))
+        return {"output": str(destination), **stream}
 
 
 if __name__ == "__main__":
@@ -34,4 +34,4 @@ if __name__ == "__main__":
     parser.add_argument("source", type=Path)
     parser.add_argument("destination", type=Path)
     args = parser.parse_args()
-    render(args.source, args.destination)
+    print(json.dumps(render(args.source, args.destination), ensure_ascii=False))

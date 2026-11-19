@@ -1,4 +1,4 @@
-﻿"""Run an installed fusion workflow and report its observed result."""
+"""Run an installed fusion workflow and report its observed result."""
 import argparse
 import hashlib
 import json
@@ -29,7 +29,7 @@ def main():
     if args.action == "inspect-windows":
         print(json.dumps(inspect_windows(args.source), ensure_ascii=False))
     else:
-        render(args.source, args.output)
+        print(json.dumps(render(args.source, args.output), ensure_ascii=False))
 
 
 if __name__ == "__main__":
