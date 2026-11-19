@@ -959,6 +959,8 @@ def main(argv):
             print(md_discover())
         elif act == "local":
             print(md_local(rest[0] if rest else None))
+        elif act == "knowledge" and rest:
+            print(json.dumps(distilled_knowledge(" ".join(rest)), ensure_ascii=False, indent=2))
         elif act == "stats":
             print(json.dumps(stats(), ensure_ascii=False))
         elif act == "lessons":
