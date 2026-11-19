@@ -27,6 +27,28 @@ class DistillationTests(unittest.TestCase):
             self.assertTrue(any(x["heading"] == "Full document" for x in result["knowledge"]))
             self.assertTrue((root / "alpha" / "SKILL.md").exists())
 
+    def test_preamble_is_preserved(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "SKILL.md").write_text("Important setup instructions\n\n# Usage\n\nRun safely", encoding="utf-8")
+            result = module.distill(root)
+            self.assertEqual(result["statistics"]["unique_sections"], 2)
+            self.assertEqual(result["knowledge"][0]["heading"], "Preamble")
+            self.assertIn("Important setup", result["knowledge"][0]["body"])
+
+    def test_source_symlink_is_skipped(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target = root / "original.txt"
+            target.write_text("# Secret\n\nDo not index", encoding="utf-8")
+            link = root / "SKILL.md"
+            try:
+                link.symlink_to(target)
+            except (OSError, NotImplementedError):
+                self.skipTest("symlinks unavailable")
+            result = module.distill(root)
+            self.assertEqual(result["statistics"]["skills"], 0)
+
     def test_oversized_file_skipped(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
