@@ -20,3 +20,5 @@ It accepts a vertical-video conversion, Windows binary inspection, both in one r
 Deliver the requested artifact and its observed verification. For a video, verify dimensions, frame rate, duration and relevant content; for a reconciliation, check row identity and totals; for a package, exercise a clean copy. Report the result in the user's language.
 
 Runtime prerequisites are Python 3.11+, pefile for Windows inspection, Pillow 10.1+ for inventory cards, and FFmpeg and FFprobe for media. The output filesystem must support hard links. The Python application can be copied independently of the source tree. The catalog and coverage files are development evidence and are optional for using this skill.
+
+Convert a numbered UTF-8 SRT subtitle file by requesting WebVTT and supplying a new .vtt output. The bundled parser comes from engine/skills/library/ai-motion-graphics/scripts/srt_words.py. For local source analysis, scripts/codebook.py REPOSITORY OUTPUT.html builds an offline navigable book of capability-to-file links, imports, definitions and duplicated function bodies.

@@ -12,6 +12,9 @@ def execute(request, sources, output):
     words = request.casefold()
     vertical = re.search(r"vertical|portrait|9:16|رأسي|راسي|عمودي|طولي", words)
     inspect = re.search(r"inspect|fingerprint|بصم|افحص|فحص", words)
+    if len(sources)==1 and sources[0].suffix.lower()==".srt" and re.search(r"vtt|webvtt",words):
+        from captions import convert
+        return convert(sources[0],output)
     sheets = [p for p in sources if p.suffix.lower() == ".csv"]
     if sheets:
         if len(sources) != 1 or not vertical or not output or not re.search(r"inventory|stock|جرد|مخزون", words):
