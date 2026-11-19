@@ -19,6 +19,8 @@ jobs:
         with:
           python-version: '3.12'
       - name: Run isolated distillation tests
-        run: python -m unittest discover -s apps/golden-dragon/tests -p 'test_*.py' -v
+        run: |
+          python -m unittest discover -s apps/golden-dragon/tests -p 'test_distill_skills.py' -v
+          python -m unittest discover -s apps/golden-dragon/tests -p 'test_query_distilled.py' -v
       - name: Compile source files
         run: python -m py_compile apps/golden-dragon/forge/distill_skills.py apps/golden-dragon/forge/query_distilled.py
