@@ -22,6 +22,9 @@ def extract(path, root):
     raw = path.read_text(encoding="utf-8", errors="replace")
     matches = list(HEAD.finditer(raw))
     sections = []
+    if not matches and raw.strip():
+        sections.append({"heading": "Full document", "body": raw.strip(),
+                         "fingerprint": hashlib.sha256(normalize(raw).encode()).hexdigest()})
     for i, match in enumerate(matches):
         end = matches[i + 1].start() if i + 1 < len(matches) else len(raw)
         body = raw[match.end():end].strip()
