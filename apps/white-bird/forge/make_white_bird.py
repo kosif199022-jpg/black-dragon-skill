@@ -64,24 +64,6 @@ def write(p, text):
     Path(p).write_text(text, encoding="utf-8", newline="")
 
 
-
-# Safety guard for the two bird apps generated from the desktop source.
-def enforce_approval_gate(text):
-    old = 'self.auto = bool(api._settings.get("auto_approve", True))'
-    new = 'self.auto = bool(api._settings.get("auto_approve", False))'
-    if old in text:
-        text = text.replace(old, new)
-    if new not in text:
-        raise SystemExit("approval gate: missing safe auto_approve default")
-    old_gate = 'if need and not self.auto and not self.ask(cid, name, args):'
-    new_gate = 'if need and not self.ask(cid, name, args):'
-    if old_gate in text:
-        text = text.replace(old_gate, new_gate)
-    if new_gate not in text:
-        raise SystemExit("approval gate: mandatory confirmation missing")
-    return text
-
-
 # ---------------------------------------------------------------- app.py
 SYSTEM_PROTOCOL = """
 ## بروتوكول الطائر الأبيض (الذكاء الفائق)
@@ -163,6 +145,23 @@ WB_START_NEW = '''    api._window = win
         _wb_life(f"crashed: {e!r}")
         raise'''
 
+
+
+# Safety guard for the two bird apps generated from the desktop source (Red Dragon security hotfix, 2026-11-14).
+def enforce_approval_gate(text):
+    old = 'self.auto = bool(api._settings.get("auto_approve", True))'
+    new = 'self.auto = bool(api._settings.get("auto_approve", False))'
+    if old in text:
+        text = text.replace(old, new)
+    if new not in text:
+        raise SystemExit("approval gate: missing safe auto_approve default")
+    old_gate = 'if need and not self.auto and not self.ask(cid, name, args):'
+    new_gate = 'if need and not self.ask(cid, name, args):'
+    if old_gate in text:
+        text = text.replace(old_gate, new_gate)
+    if new_gate not in text:
+        raise SystemExit("approval gate: mandatory confirmation missing")
+    return text
 
 def patch_app(t):
     t = sub(t, '"""التنين الأسود — Windows desktop app.',
@@ -264,8 +263,19 @@ def patch_ui(t):
 
 
 # ---------------------------------------------------------------- chrome extension
+# The White Bird's own extension upgrade (v1.4.0, made 2026-11-14 directly in app\chrome_extension: watchdog, per-command
+# timeout, offscreen keep-alive, tab group, «controlled» frame). Moved into the forge on 2026-11-15 so a regeneration keeps
+# it and the Golden Bird / Golden Dragon (which reuse this function) get it too. Copied BEFORE the rebrand below.
+EXT_OV = OV / "chrome_extension"
+
+
 def patch_extension(root):
     from PIL import Image
+    if EXT_OV.is_dir():
+        for f in sorted(EXT_OV.iterdir()):
+            if f.is_file():
+                shutil.copy2(f, root / f.name)
+                log.append(f"  extension {f.name}: White Bird v1.4 file")
     big = Image.open(OV / "icon" / "wb-1024.png").convert("RGBA")
     for f in sorted(root.rglob("*")):
         if f.suffix.lower() in (".js", ".json", ".html", ".css", ".txt"):

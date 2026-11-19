@@ -1,4 +1,4 @@
-# مكتبة المهارات — أشهر 570 مهارة Claude (2026-11-12)
+# مكتبة المهارات — أشهر 590 مهارة Claude (2026-11-12)
 
 الاختيار: نجوم مستودع المصدر على GitHub يوم القياس، بالدور على المستودعات (14 بالكتير من كل مستودع) عشان مستودع واحد مايملاش القايمة. اتشالت: المهارات الهجومية، واللي من غير رخصة، والمكررة، واللي متثبتة أصلًا.
 اللي اتشال: {'offensive': 94, 'installed': 19, 'no_license': 23, 'no_description': 98, 'duplicate': 675, 'too_big': 18}
@@ -82,6 +82,7 @@
 | 72 | `replica-entrepreneur` | 9,033 | Jakeschincariol/replica-skill | mit | — | Researches the app being cloned and reads what its real users say in public reviews (App Store, Google Play, G2, Capterra, Trustpilot, Reddit, Hacker  |
 | 73 | `replica-launch` | 9,033 | Jakeschincariol/replica-skill | mit | — | Writes the launch for an app clone: the landing page built on the positioning angle, pricing set against the original's public pricing and its users'  |
 | 74 | `replica-recon` | 9,033 | Jakeschincariol/replica-skill | mit | — | Reverse-engineers any app into a recon map: screen inventory, user flows, component list, inferred data model and a feature matrix, from public pages, |
+| 590 | `replica-test` | 9,711 | Jakeschincariol/replica-skill | mit | — | Clicks through every flow of an app clone and tests it for bugs: a test plan generated from the recon flows with happy paths and edge cases, Playwright end-to-end tests where possi |
 | 75 | `android-reverse-engineering` | 8,703 | SimoneAvogadro/android-reverse-engineering-skill | apache-2.0 | exec، network | Decompile Android APK, XAPK, JAR, and AAR files using jadx or Fernflower/Vineflower. Reverse engineer Android apps, extract HTTP API endpoints (Retrof |
 | 76 | `agentic-actions-auditor` | 8,155 | trailofbits/skills | cc-by-sa-4.0 | — | Audits GitHub Actions workflows for security vulnerabilities in AI agent integrations including Claude Code Action, Gemini CLI, OpenAI Codex, and GitH |
 | 77 | `algorand-vulnerability-scanner` | 8,155 | trailofbits/skills | cc-by-sa-4.0 | — | Scans Algorand smart contracts for 11 common vulnerabilities including rekeying attacks, unchecked transaction fees, missing field validations, and ac |
@@ -578,3 +579,22 @@
 | 568 | `ai-visibility` | 9,771 | Ryze-AI-Adgent/open-seo-mcp-skills | mit | — | Measure real AI-engine visibility — traffic from ChatGPT, Perplexity, Claude, Gemini and which pages they cite — from actual GA4 referral data, not pr |
 | 569 | `competitor-gap` | 9,771 | Ryze-AI-Adgent/open-seo-mcp-skills | mit | — | Find keywords a competitor ranks for that the user's site doesn't — the content gap, prioritized by volume and winnability. Use when asked "what does  |
 | 570 | `seo-audit` | 9,771 | Ryze-AI-Adgent/open-seo-mcp-skills | mit | — | Full SEO audit of a site from its real Search Console + GA4 data — indexation health, CTR anomalies, decaying pages, striking-distance keywords, quick |
+| 571 | `cut-the-curve` | 83,354 | heygen-com/hyperframes | apache-2.0 | — | The technique catalog: five velocity-matched SEAMS (zoom-through, INVERSE zoom-through, cut-the-curve, waterfall cut, rack-focus blur-cut) plus the tw |
+| 572 | `motion-doctrine` | 83,354 | heygen-com/hyperframes | apache-2.0 | exec، network | GATEWAY — load FIRST before composing any HyperFrames animation or video. The high-level motion law that makes a multi-scene video feel like ONE conti |
+| 573 | `seam-craft` | 83,354 | heygen-com/hyperframes | apache-2.0 | — | Render-correctness doctrine for scene-to-scene seams in HyperFrames launch videos — the prerequisites that make transitions composite correctly on the |
+| 574 | `taste` | 300,945 | affaan-m/ECC | mit | exec، network | Creative-direction layer for music videos and short-form edits in the angelcore / cloud-trance / hyperpop family — a named-genre aesthetic vocabulary, |
+| 575 | `taste-application` | 300,945 | affaan-m/ECC | mit | exec، network | Generate new video against a distilled style pack and cut it into a finished piece - plan takes from the reference's cut rhythm, generate on fal, grad |
+| 576 | `taste-distillation` | 300,945 | affaan-m/ECC | mit | exec، network | Measure a set of reference videos into a reusable style pack - colour grade as a 3D LUT, cut rhythm as a shot-length distribution, hero stills, screen |
+| 577 | `tasteforge-video` | 300,945 | affaan-m/ECC | mit | exec، network | Use for file-driven multimodal image, video, and 3D-asset discovery; taste interviews; distill or apply workflows; style-pack validation; editable EDL |
+| 578 | `video-template-frame-decision-tree` | 107,083 | nexu-io/open-design | apache-2.0 | — | Use this plugin when the user wants a "Decision Tree" HyperFrames motion video — Animated flowchart with branching paths |
+| 579 | `video-template-frame-kinetic-type` | 107,083 | nexu-io/open-design | apache-2.0 | — | Use this plugin when the user wants a "Kinetic Type" HyperFrames motion video — Bold kinetic typography promo |
+| 580 | `video-template-frame-logo-outro` | 107,083 | nexu-io/open-design | apache-2.0 | — | Use this plugin when the user wants a "Logo Outro Frame" HyperFrames motion video — Segmented logo assembly, glow bloom, and tagline reveal for video  |
+| 581 | `video-template-frame-nyt-graph` | 107,083 | nexu-io/open-design | apache-2.0 | — | Use this plugin when the user wants a "NYT Graph" HyperFrames motion video — Animated data chart in print editorial style |
+| 582 | `video-template-frame-pentagram-stat` | 107,083 | nexu-io/open-design | apache-2.0 | — | Use this plugin when the user wants a "Pentagram Stat Frame" HyperFrames motion video — Swiss-grid statistic anchor — giant number, red accent, growin |
+| 583 | `video-template-frame-play-mode` | 107,083 | nexu-io/open-design | apache-2.0 | — | Use this plugin when the user wants a "Play Mode" HyperFrames motion video — Playful elastic animations |
+| 584 | `video-template-frame-product-promo` | 107,083 | nexu-io/open-design | apache-2.0 | — | Use this plugin when the user wants a "Product Promo" HyperFrames motion video — Multi-scene product showcase with SVG assets |
+| 585 | `video-template-frame-swiss-grid` | 107,083 | nexu-io/open-design | apache-2.0 | — | Use this plugin when the user wants a "Swiss Grid" HyperFrames motion video — Structured grid layout |
+| 586 | `video-template-frame-takram-organic` | 107,083 | nexu-io/open-design | apache-2.0 | — | Use this plugin when the user wants a "Takram Organic Frame" HyperFrames motion video — Soft-tech radial node graph as art — frosted rounded card, cur |
+| 587 | `video-template-frame-vignelli` | 107,083 | nexu-io/open-design | apache-2.0 | — | Use this plugin when the user wants a "Vignelli" HyperFrames motion video — Bold typography with red accents |
+| 588 | `video-template-frame-warm-grain` | 107,083 | nexu-io/open-design | apache-2.0 | — | Use this plugin when the user wants a "Warm Grain" HyperFrames motion video — Cream aesthetic with grain texture |
+| 589 | `video-template-vfx-text-cursor` | 107,083 | nexu-io/open-design | apache-2.0 | — | Use this plugin when the user wants a "VFX Text Cursor" HyperFrames motion video — Cursor light trail, chromatic rays, and directional flares for word |

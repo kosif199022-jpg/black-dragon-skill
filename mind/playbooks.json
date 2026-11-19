@@ -694,8 +694,9 @@
    "domain": "docs",
    "ar": "مستندات: Word، PDF، PowerPoint، Excel",
    "en": "documents and spreadsheets",
-   "triggers": "وورد word docx pdf بي دي اف باوربوينت عرض تقديمي pptx اكسل excel xlsx جدول فاتوره تقرير مستند csv",
+   "triggers": "وورد word docx pdf بي دي اف باوربوينت عرض تقديمي pptx اكسل excel xlsx جدول فاتوره تقرير مستند csv ماركداون markdown markitdown epub",
    "steps": [
+    "لو بعتلك مستند تقراه (PDF، Word، PowerPoint، Excel، HTML، EPUB…): $R md convert FILE --out <مجلد الشغل>/_md الأول، واقرا الـ .md (أرخص وأدق من قراية الملف كصور). PDF عربي مقلوب بيتعدل لوحده. نص فاضي = PDF ممسوح: اقراه كصور.",
     "حمّل المهارة المطابقة: anthropic-skills:docx / pdf / pptx / xlsx.",
     "العربي: اتجاه RTL وخط فيه عربي (Cairo، Amiri، Noto Naskh).",
     "[pc] مكتبات موجودة: python-docx، python-pptx، openpyxl، pymupdf، pandoc.",
@@ -703,6 +704,7 @@
     "مستند حي للمشاركة: Claude Docs (بس لو طلب مستند)."
    ],
    "skills": [
+    "doc-reader",
     "anthropic-skills:docx",
     "anthropic-skills:pdf",
     "anthropic-skills:pptx",

@@ -36,10 +36,13 @@
 | `hypit` | hypit-run: doctor, setup, example, check, plan, render, cli, selftest (the real Hypit SVML video engine, local and free; paid Providers blocked without --allow-paid) |
 | `krita` | krita-draw: render scene.json | layers file.kra | info (draw with code inside the real Krita) |
 | `sync` | sync-guard: words, check, fix, onsets, script, grid, selftest (captions and motion on the spoken word) |
+| `md` | doc-reader (v3.3): convert, batch, doctor, exts, install, selftest (any PDF, Word, PowerPoint, Excel, HTML, EPUB… → Markdown with Microsoft MarkItDown, MIT) |
 | `arena` | arena-gate (v2.19): size, start, jobs, next, collect, advance, winner, skip, gate, selftest (the arena is a required step: competing copies, bracket, judge) |
 | `consent` | consent gate: which outward actions this message explicitly approves or forbids («كمل» approves none) |
 | `gold` | Golden Bird: studio list/show/install/cmd · lib find/show/kit/stats · sync · protocol · where · selftest |
 | `think` | think & plan: start, revise, check, time, mistake, mistakes, pipeline-selftest · planning-mind: card, gate, workflow, learn, lessons, types, selftest |
+| `fuse` | v3.4 fusion brain: brief, route, check, tools, protocol, find, show, recipes, lessons, doctor, stats, selftest |
+| `check` | v3.4 critic gate before sending an answer (= fuse check) |
 | `understand` | يفهم الطلب (صوت، كيبورد إنجليزي، غلطات) |
 | `brief` | ملخص JSON: الطريق والمهارات والقدرات للطلب |
 | `plan` | الخطة كاملة للطلب: الطريق والخطوات والمهارات |
@@ -47,20 +50,23 @@
 | `recall` | يفتكر من المحادثات القديمة |
 | `intel` | مستودعات ومعلومات تخص الطلب |
 
-## مهارات المحرك (41)
+## مهارات المحرك (46)
 
 | المسار | بيعمل إيه |
 |---|---|
 | `engine/skills/absolute-creativity` | الإبداع المطلق — محرك ابتكار وإخراج فني كامل بيطلّع أفكار أصلية مش كليشيه، وبيحوّلها لشغل حقيقي في المونتاج والتصوير السينمائي والفوتوغرافي والحبكة ال… |
+| `engine/skills/arabic-captions-khatt` | حرق كابشن عربي صح على الفيديو (حروف متوصّلة، من اليمين للشمال، تشكيل، لام-ألف) بمكتبة khatt (HarfBuzz + FreeType) وffmpeg، من غير Raqm ولا moviepy. |
 | `engine/skills/arena-gate` | الحلبة شرط أساسي في شغل التنين: أي مهمة فيها ذوق أو قرار (تصميم، كتابة، مونتاج، خطة، كود فيه أكتر من حل) تتعمل كحلبة. |
 | `engine/skills/atlas-picks` | Build Awwwards-quality web experiences with spring physics, GLSL shaders, R3F, post-processing, particles, Framer Motion, and interactive 3D. |
 | `engine/skills/black-dragon-cinema` | التنين الأسود — سينما الفوتيج. |
 | `engine/skills/blackdragon-desktop-bridge` | جسر اختياري آمن لتشخيص القدرات الموجودة في تطبيق BlackDragon على ويندوز وقراءة معلومات أو التقاط صورة للشاشة بموافقة صريحة. |
 | `engine/skills/blender-pro` | Headless Blender 5.2 control for 3D, drawing and video through JSON recipes or raw bpy scripts. |
+| `engine/skills/camera-director` | مدير التصوير — makes Claude shoot like a cinematographer whenever it composes a video, whatever the engine. |
 | `engine/skills/character-memory` | Dragon Character Memory & Auto Rotoscope — بياخد فيديو لشخصية كرتون واحدة (ألوان مسطحة وخط خارجي واحد، من قدّام، خلفية ثابتة)، ويتتبّع أجزاءها ومفاصله… |
 | `engine/skills/chroma-motion` | كروما موشن — بيحوّل أي صورة (طير، وردة، فراشة، منظر، لوحة، منتج) لهوية بصرية كاملة بألوانها وحركتها. |
 | `engine/skills/claude-mind` | عقل Claude: الطريقة اللي Claude بيفكّر ويشتغل بيها فعلًا، مكتوبة عشان أي موديل في التطبيق يمشي عليها. |
 | `engine/skills/creative-studio` | التنين الأسود — استوديو Blender وPhotoshop وAfter Effects. |
+| `engine/skills/doc-reader` | أي مستند يتحوّل لـ Markdown قبل ما يتقري، بـ Microsoft MarkItDown (MIT): PDF، Word (docx)، PowerPoint (pptx)، Excel (xlsx/xls)، HTML، CSV، JSON، XML، … |
 | `engine/skills/dragon-character-memory` | ذاكرة الشخصية والروتوسكوب الآلي — بيحلل فيديو لشخصية كرتونية واحدة فريم بفريم، يعيد رسم كل فريم كأشكال متجهة (SVG) ويقيس الفرق عن الأصل، ويتتبع الرأس … |
 | `engine/skills/dragon-genius` | عبقرية التنين — نظام تشغيل لـ Claude مستخلص من تحليل 100 مستودع GitHub (55 تفكير ووكلاء وذاكرة ومهارات، 45 مونتاج وصوت وأنيميشن وتحسين صورة). |
 | `engine/skills/expert-council` | مجلس الخبراء — بيجمع مجلس شخصيات خبراء عالميين لأي مجال (عدسات مستوحاة من مبادئ الأساتذة)، كل واحد يدي رأي مستقل، بعدين يتناقشوا ويتحقق المتشكك، والرئ… |
@@ -91,6 +97,7 @@
 | `engine/skills/theme-factory` | Toolkit for styling artifacts with a theme. |
 | `engine/skills/ultra-mind` | العقل الفائق — بروتوكول تفكير مبني على خلاصة كتب التفكير العالمية (Polya، Kahneman، Tetlock، Heuer، Popper، Pearl، Meadows، TRIZ، de Bono) وأبحاث الاس… |
 | `engine/skills/video-grabber` | نزّل فيديو من أي موقع بأمر واحد وبأعلى جودة — تحميل فيديو، حمّل من يوتيوب / تيك توك / انستجرام / فيسبوك / تويتر (X) / فيميو / أي موقع، رابط فيديو، است… |
+| `engine/skills/visible-thinking` | التفكير المرئي — المهارة اللي مستخرجة من التنين الأسود والتنين الذهبي، وبتخلّي Claude يكتب هو بيفكّر في إيه وهو شغال، بالعربي المصري، زي «💭 بيفكّر دلو… |
 | `engine/skills/visual-forge` | مصنع الصورة — بيعمل صور احترافية بـ ChatGPT وفيديوهات حركة بـ Kling بطريقة مبنية على خطة وخطوات: بريف ← 3 كونسبتات ← كتاب لوك ← قايمة لقطات ← برومنتات… |
 | `engine/skills/windows-commands` | فهم ويندوز للأوامر — إزاي PowerShell 5.1 وcmd وGit Bash (MSYS2) والبرنامج نفسه بيقروا الأمر فعلًا، مقاس على الجهاز بالتجربة والهندسة العكسية (ILSpy وG… |
 
@@ -112,15 +119,16 @@
 | `engine/skills/library/saas-animation` | Make short, high-end SaaS, app, product and brand animations (about 8–20s) with Claude, built as code and rendered to 4K video, without any AI video o… |
 | `engine/skills/library/talking-head-reels` | Turn a talking-head recording into a finished vertical 9:16 Instagram Reel / TikTok / YouTube Short in a bold editorial style - tightened pauses, kine… |
 
-## الأدوات (3)
+## الأدوات (4)
 
 | المسار | بيعمل إيه |
 |---|---|
-| `tools/cinema-c` | Cinema-C V35 للآيفون: أمر c لتحميل الفيديو بالجودة اللي تختارها (yt-dlp + ffmpeg)، والتثبيت بـ --install، مع فرق V34 واختبارات بـ stubs |
+| `tools/cinema-c` | Cinema-C V36 للآيفون: أمر c لتحميل الفيديو بالجودة اللي تختارها (yt-dlp + ffmpeg)، وبوستات صور وكاروسيل إنستجرام بـ gallery-dl (--smart، --gallery، --setup)، والتثبيت بـ --install، مع فرق V35 واختبارات بـ stubs |
 | `tools/draw-math` | Precise geometry, measurement and proportion calculator for drawing and animating people and scenes (shadow-puppet films, 3D silhouette films, 2D figu… |
 | `tools/link-collector` | collect-links.js: يجمع الروابط من صفحة بمتصفح Chromium حقيقي (--filter، --same-site، --json) |
+| `tools/video-page` | video_page.py: صفحة تحميل لكل فيديو (زر أعلى جودة بايت ببايت، نسخة خفيفة، كابشن) ومكتبة «فيديوهات الكوسف» (build، hub-add، check) |
 
-## مكتبة المهارات الخارجية: `library/` (570 مهارة)
+## مكتبة المهارات الخارجية: `library/` (589 مهارة)
 
 بتتدوّر بـ `rd.py skills find …` وبتتثبت بـ `rd.py skills install NAME --yes`. القايمة كاملة: `references/RD_LIBRARY.md`.
 
