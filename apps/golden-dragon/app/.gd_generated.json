@@ -21,9 +21,9 @@
  "recipes": 42,
  "lessons": 65,
  "files": {
-  "app.py": "0ca61549a6dc89601ecadb474804b64b855c69e2f0e1ac56fbdc4109f05d9cae",
+  "app.py": "57804d6eb4d9d77988e3e4d2545985bc2cd3e4fe5a63da36376a5e1cb9987b1e",
   "brain.py": "86e4da9e55cedf9ecf1dd4d1f8347bcb87f8eb6fb40879c757d4b0d383900b9b",
-  "build.ps1": "1c1647803521876f1740513f7dbc80c46596c8ff825ae6038131446f80bc95d3",
+  "build.ps1": "2f487da2fa7484b20d8c0b09b934e2c3a3f7b55ca5745f36335c811cb2305ce8",
   "control.py": "34c163d7948818b069a318e4c524d1f45ce8fff1a13d828120fb15b0e38dfd18",
   "dragon_fusion.py": "46586ab7523a7d876a7e4135046b44f40e4c9d90521a6c9304b85ca07de86be9",
   "golden_steer.py": "bea19dfac1156baa6960e848f91df5cba9e2f5d09bb20a60a273d35d7949b1dd",
@@ -49,10 +49,21 @@
   "golden/studio.json": "d92ed5bb30fbd7aaa015e4de0c96fa579ea0bd27224d94fcab679bd1e10ce18f",
   "ui/golden-dragon.ico": "32622b128b548aa53ae9167f38cbef34ed19157b7b1c590d33283cf84701da91",
   "ui/golden-dragon.png": "4bbf6cee7f4d05f4d26f112b25cbf128b1de4c233a856d20f0f70b9a56c7e761",
-  "ui/index.html": "e1336097fe8a6ee563bbf4c9e8e787b216f1a9afb52cf27d95180fbe03050b23",
+  "ui/index.html": "b02699539338dccebe9f84f87f5af0d3a9a9b7eb8b07bc35286de3d30f5042de",
   "ui/fonts/inter-latin-wght.woff2": "3100e775e8616cd2611beecfa23a4263d7037586789b43f035236a2e6fbd4c62",
   "ui/fonts/noto-sans-arabic-wght.woff2": "ce85091f020920b65762b387b194ef59457ea5b25b760f2dcc35240a94bb8669",
   "ui/fonts/OFL-inter.txt": "3b0a5fca3d17942cde889069889dedbbbd075e9b599968c82a95f4d944e9b345",
-  "ui/fonts/OFL-noto.txt": "91053c23e8a0fe5fc9b5fdbe5ff74ceffd66f6f996c123f1a6ca4c23487c1fff"
+  "ui/fonts/OFL-noto.txt": "91053c23e8a0fe5fc9b5fdbe5ff74ceffd66f6f996c123f1a6ca4c23487c1fff",
+  "golden_knowledge_bridge.py": "a3dea5d8c417d83b7d21ab8c35aed706eef00610d27bdf8f2fcfe81c1ba3095e",
+  "golden_dragon_runtime.py": "bede87d13769ab241960d23ea4dcf75296ce420c0665ef11a51197e3cf070784"
+ },
+ "knowledge_integration": {
+  "method": "direct patch of generated app while legacy analysis input is missing",
+  "bridge": "golden_knowledge_bridge.py",
+  "runtime": "golden_dragon_runtime.py",
+  "bundle": "apps/golden-dragon/knowledge/golden-dragon-runtime.zip",
+  "bundle_sha256": "66ffb5db94f7283a8a55b02c2e1b921a327ce266be7ee44e9ee6ccc40689f8ed",
+  "backups_saved": "C:\\Users\\cinde\\gd-repo-work\\apps\\golden-dragon\\forge\\data\\knowledge-app-integration-backup",
+  "rebuild_note": "forge/make_golden_dragon.py also includes this integration for future regeneration"
  }
 }

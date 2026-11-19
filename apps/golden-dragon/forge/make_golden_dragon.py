@@ -449,6 +449,17 @@ def main():
     _rv_spec.loader.exec_module(rv)
     write(tmp / "app.py", rv.patch_app(read(tmp / "app.py"), sub))
     write(tmp / "ui/index.html", rv.patch_ui(read(tmp / "ui/index.html"), sub))
+    # 2026-11-19: independent, verified, read-only knowledge runtime.
+    _kk_spec = importlib.util.spec_from_file_location("gd_knowledge", FORGE / "gd_patches" / "gd_knowledge.py")
+    kk = importlib.util.module_from_spec(_kk_spec)
+    _kk_spec.loader.exec_module(kk)
+    if not (GD / "knowledge" / "golden-dragon-runtime.zip").is_file():
+        raise SystemExit("Missing verified independent knowledge bundle in GD/knowledge")
+    write(tmp / "app.py", kk.patch_app(read(tmp / "app.py")))
+    write(tmp / "ui/index.html", kk.patch_ui(read(tmp / "ui/index.html")))
+    shutil.copy2(OV / "golden_knowledge_bridge.py", tmp / "golden_knowledge_bridge.py")
+    shutil.copy2(FORGE / "golden_dragon_runtime.py", tmp / "golden_dragon_runtime.py")
+    log.append("  Knowledge: bundled read-only bridge + pywebview API + tool + search panel")
     patch_extension(tmp / "chrome_extension")
     for mod in sorted(gb.MODULES.glob("golden_*.py")):                # the Golden Bird modules, renamed (studio home etc.)
         write(tmp / mod.name, rename(read(mod), mod.name))
@@ -482,7 +493,7 @@ def main():
     for old in ("red-dragon.ico", "red-dragon.png", "white-bird.ico", "white-bird.png", "golden-bird.ico", "golden-bird.png"):
         (tmp / "ui" / old).unlink(missing_ok=True)
     build = gb.steer.patch_build(gb.patch_build(wb.patch_build(wb.build_ps1())), gb.sub)
-    (tmp / "build.ps1").write_text(patch_build(build), encoding="utf-8-sig")
+    (tmp / "build.ps1").write_text(kk.patch_build(patch_build(build)), encoding="utf-8-sig")
     (tmp / "README.md").write_text(
         f"# {NAME_GD}: كود التطبيق\n\nالمجلد ده **متولّد**: كود التنين الأسود ← تعديلات `..\\..\\الطائر الأبيض\\forge\\make_white_bird.py` ← "
         "تعديلات `..\\..\\الطائر الذهبي\\forge\\make_golden_bird.py` ← طبقة `..\\forge\\make_golden_dragon.py`. أي تعديل دايم يتحط في "
