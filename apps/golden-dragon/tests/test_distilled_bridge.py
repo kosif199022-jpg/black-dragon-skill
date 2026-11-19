@@ -23,11 +23,7 @@ class BridgeTests(unittest.TestCase):
                  "source": "animation/SKILL.md", "fingerprint": "123"}]}
             path.write_text(json.dumps(index), encoding="utf-8")
             before = path.read_bytes()
-            sys.path.insert(0, str(FORGE))
-            try:
-                result = bridge.distilled_search("animation", index_path=path)
-            finally:
-                sys.path.remove(str(FORGE))
+            result = bridge.distilled_search("animation", index_path=path)
             self.assertTrue(result["enabled"])
             self.assertEqual(result["results"][0]["source"], "animation/SKILL.md")
             self.assertEqual(path.read_bytes(), before)
