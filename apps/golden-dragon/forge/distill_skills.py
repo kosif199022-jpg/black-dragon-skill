@@ -10,11 +10,11 @@ import json
 import re
 from pathlib import Path
 
-HEAD = re.compile(r"^(#{1,6})\\s+(.+?)\\s*$", re.M)
+HEAD = re.compile(r"^(#{1,6})\s+(.+?)\s*$", re.M)
 MAX_FILE_BYTES = 2_000_000
 
 def normalize(value):
-    return re.sub(r"\\s+", " ", re.sub(r"[^\\w\\s]", " ", value.casefold())).strip()
+    return re.sub(r"\s+", " ", re.sub(r"[^\w\s]", " ", value.casefold())).strip()
 
 def extract(path, root):
     if path.stat().st_size > MAX_FILE_BYTES:
