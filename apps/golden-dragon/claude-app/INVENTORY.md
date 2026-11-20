@@ -1,7 +1,7 @@
 # جرد التنين الذهبي: إيه اللي ينتقل لـ Claude Code
 
 **التاريخ:** 2026-11-17
-**المصدر:** `C:\Users\cinde\.claude\skills\golden-dragon\apps\golden-dragon\app` (نفس main على GitHub، commit a51cd8e)
+**المصدر:** `%USERPROFILE%\.claude\skills\golden-dragon\apps\golden-dragon\app` (نفس main على GitHub، commit a51cd8e)
 
 **أهم حاجة لقيتها:** التطبيق في وضع «⭐ اشتراك Claude» هو أصلًا Claude Code. بيشغّل `claude -p` وبيضيف عليه 4 حاجات:
 - تعليمات التنين: `SYSTEM` حوالي 40 ألف حرف، ومعاها `CC_NOTE`، وبتتبعت بـ `--append-system-prompt-file`.
