@@ -10,15 +10,28 @@ description: >-
 
 # maven-toon-bridge — Maven Toon جوه التنين الذهبي
 
-**الفكرة في سطر:** المحرك محرك Maven (على جهاز صاحب الشغل، برّه المستودع)، والقرار والفحص والتسليم بتوع التنين.
+**الفكرة في سطر:** المحرك محرك Maven (جوه المستودع في `engine/skills/maven-toon`)، والقرار والفحص والتسليم والسرعة بتوع التنين.
 
-## ليه مش منسوخة جوه المستودع
-`rights/MAVEN-RIGHTS.txt` بيقول إن أجزاء Maven (التعليمات، طريقة السكربت العربي، الشخصيات، الديكورات، فاحص السكربت،
-المكتبة، الأمثلة) **ممنوع تتنشر أو تتشارك غير من لينك Maven نفسه**، والمستودع ده عام. عشان كده:
-- الـ zip بيتفك على الجهاز بس (`~/dragon-tools/maven-toon` أو `MTOON_HOME`)، و`install` بيرفض أي مكان جوه المستودع.
-- الكود هنا (`scripts/mtoon.py`) كود التنين، مابيستورد ولا بينسخ سطر من Maven؛ بيشغّل `toon.py` بتاع النسخة المتثبتة.
-- الفيديوهات اللي تطلع ملك صاحب الشغل، وينفع تتعمل منها فلوس (البند 2 في الحقوق).
-- ماتبعتش الـ zip لحد، وماتشيلش اسم Maven من النسخة.
+## مكانها في المستودع (v3.5.6)
+صاحب الشغل هو صاحب الأداة (Maven)، واتفق في 2026-11-20 إنها تندمج بالكامل. فـ Maven Toon بقت جوه المستودع في
+`engine/skills/maven-toon/` زي ما هي، بحقوقها (`rights/`) واسم Maven عليها.
+- **الخطوط بس برّه** (قاعدة المستودع: مفيش `*.ttf` يترفع): `rd.py mtoon fonts` بيجيب Lalezar وPoppins ExtraBold
+  (رخصة OFL) من google/fonts للمجلد `engine/fonts`، وهو متسجل في `.gitignore`.
+- `install ZIP` لسه موجود لما تطلع نسخة أحدث: `--dest engine/skills/maven-toon --replace` (القديمة بتتعمل zip الأول).
+- `MTOON_HOME` بيختار نسخة تانية للتجربة، و`MTOON_PY` بيختار البايثون (venv فيه skia).
+
+## السرعة: فين نرندر
+| المكان | إزاي | المقاس (مثال chai-ar، 15 ث) |
+|---|---|---|
+| السحابة دي (4 أنوية) | `rd.py mtoon render P` (كل الأنوية تلقائي) | **16 ث** مقابل 22 ث بإعداد Maven (عاملين) |
+| اللابتوب (Core 5 120U) | نفس الأمر؛ بيسيب نواة فاضية لو فيه أكتر من 4 | ماتقاسش لسه |
+| جهازك من الجلسة دي | Remote Control لفولدر على جهازك، وبعدها نفس الأوامر هناك | محتاج تفعّله من تطبيق Claude |
+| سحابة Higgsfield `sandbox_exec` | نواة واحدة والأمر بيتقطع عند 60 ث: `render --budget 40` كذا مرة (بيكمّل من مكان ما وقف) | أبطأ من هنا؛ احتياطي بس |
+| موبايل Claude | `--budget 90 --workers 2` وكرّر لحد DONE | أبطأ |
+
+المتصفح مابيسرّعش الرندر (المحرك بايثون وskia على المعالج). اللي بيسرّع فعلًا: أنوية أكتر، و`--budget` أكبر،
+ومعاينة `stills` قبل الرندر الكامل. الكاش (`.cache` بتاع الديكورات) بيتعمل مرة واحدة بس.
+لو skia بتقول `libEGL.so.1` ناقصة على لينكس: `apt-get install -y libegl1 libgl1`.
 
 ## الأوامر
 ```bash
@@ -30,7 +43,8 @@ $R mtoon script-eg PROJECT --seconds 20     # فحص السكربت المصري
 $R mtoon run silent PROJECT --duration 15   # كابشن بس من غير صوت
 $R mtoon run words PROJECT                  # توقيت الكلمات من voice.wav (أو: $R sync words)
 $R mtoon run plan PROJECT && $R mtoon run stills PROJECT
-$R mtoon run render PROJECT --workers 2     # كرّر لحد DONE (قابل للاستكمال)
+$R mtoon fonts                              # الخطوط (OFL) مرة واحدة
+$R mtoon render PROJECT                     # كل الأنوية، كرّر لحد DONE (قابل للاستكمال)
 $R mtoon run join PROJECT && $R mtoon run check PROJECT
 $R mtoon credit PROJECT                     # final.mp4 ← final_credit.mp4 بالكريدت + كارت النهاية
 $R mtoon gate PROJECT/final_credit.mp4      # 1080×1920، 30 fps، H.264، صوت، faststart
@@ -63,7 +77,7 @@ $R mtoon selftest
 الحاجة المهمة في أول ثانية، الرندر قابل للاستكمال في جلسات قصيرة، ونسخة كابشن بس من غير صوت.
 
 ## حدود
-- السحابة: الرندر بيحتاج skia-python (pip). في جلسة من غير نت أو من غير موافقة: اكتب السكربت والـ storyboard بس، وقول كده.
+- الرندر بيحتاج skia-python (`pip install -r engine/skills/maven-toon/requirements.txt`، يُفضّل في venv). من غير نت: اكتب السكربت والـ storyboard بس، وقول كده.
 - الموسيقى: بس اللي صاحب الشغل حطها بنفسه في المشروع؛ مفيش تنزيل موسيقى. أغنية جديدة = Suno بعد «أيوه».
 - ميار: مفيش وش أو صوت AI ليها. ولا تقليد لأي شخصية أو قناة أو براند موجود.
 - الحقايق في السكربت لازم تبقى صح، والمصادر تحت السكربت.

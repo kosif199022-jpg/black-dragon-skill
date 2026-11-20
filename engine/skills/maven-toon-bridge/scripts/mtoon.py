@@ -10,9 +10,12 @@ Golden Dragon layer on top of it: an Egyptian script check, the owner's mandator
     rd.py mtoon gate VIDEO                       owner's export standard: 1080x1920, 30 fps, H.264, audio, faststart
     rd.py mtoon selftest                         offline checks (no Maven copy needed)
 
-Rights: the Maven parts (instructions, Arabic method, cast, sets, script checker, library, examples) belong to Maven and
-may not be re-shared except through Maven's link. NOTHING from the zip is ever written inside this repository; this file
-is the Golden Dragon's own code and only calls the installed copy.
+v3.5.6: the owner (who states he is Maven, the tool's author) granted full integration on 2026-11-20, so Maven Toon now
+lives in the repo at engine/skills/maven-toon (fonts excluded by the repo rule: `rd.py mtoon fonts` fetches the two OFL
+fonts from google/fonts). `install` still updates from a newer zip, into the repo copy (--dest) or ~/dragon-tools.
+
+    rd.py mtoon fonts                            fetch Lalezar + Poppins ExtraBold (OFL) into the skill's engine/fonts
+    rd.py mtoon render PROJECT [--budget 200]     render with every CPU core (Maven's default is 2), repeat until DONE
 """
 from __future__ import annotations
 
@@ -32,6 +35,9 @@ SCHEMA = "golden-dragon.mtoon.v1"
 HERE = Path(__file__).resolve()
 REPO = HERE.parents[4]                                    # .../black-dragon-skill
 HOME = Path(os.environ.get("MTOON_HOME", Path.home() / "dragon-tools" / "maven-toon"))
+VENDORED = REPO / "engine" / "skills" / "maven-toon"
+FONTS = {"Lalezar-Regular.ttf": "https://raw.githubusercontent.com/google/fonts/main/ofl/lalezar/Lalezar-Regular.ttf",
+         "Poppins-ExtraBold.ttf": "https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/Poppins-ExtraBold.ttf"}
 MAX_UNPACKED = 200 * 1024 * 1024                          # the real zip unpacks to ~3 MB; anything near this is wrong
 
 CREDIT = "© Mahmoud Elkosif"
@@ -62,14 +68,20 @@ def inside(child: Path, parent: Path) -> bool:
 
 
 def skill_dir() -> Path | None:
-    for c in (HOME, *HOME.glob("*")):
+    if os.environ.get("MTOON_HOME"):                       # an explicit copy wins (e.g. a newer zip being tried)
+        cands = (HOME, *HOME.glob("*"), VENDORED)
+    else:
+        cands = (VENDORED, HOME, *HOME.glob("*"))
+    for c in cands:
         if (c / "toon.py").is_file() and (c / "SKILL.md").is_file():
             return c
     return None
 
 
 def python_for(sd: Path) -> str:
-    """The copy's own venv if the owner made one there, else this interpreter."""
+    """MTOON_PY, else the copy's own venv if the owner made one there, else this interpreter."""
+    if os.environ.get("MTOON_PY"):
+        return os.environ["MTOON_PY"]
     for v in (sd / ".venv" / "Scripts" / "python.exe", sd / ".venv" / "bin" / "python"):
         if v.is_file():
             return str(v)
@@ -99,8 +111,8 @@ def cmd_install(a):
     if not z.is_file():
         return out({"ok": False, "error": f"zip not found: {z}"}, 2)
     dest = Path(a.dest).expanduser() if a.dest else HOME
-    if inside(dest, REPO):
-        return out({"ok": False, "error": "refused: the Maven copy may not live inside the Golden Dragon repo (rights)"}, 2)
+    if inside(dest, REPO) and dest.resolve() != VENDORED.resolve():
+        return out({"ok": False, "error": f"inside the repo only the vendored folder is allowed: {VENDORED}"}, 2)
     with zipfile.ZipFile(z) as zf:
         bad, names, total = safe_members(zf)
         if bad:
@@ -129,7 +141,7 @@ def cmd_install(a):
         ver = m.group(1) if m else ""
     rec = {"schema": SCHEMA, "zip": z.name, "zip_sha256": sha256(z), "files": len(names), "bytes": total,
            "version": ver, "installed_at": str(dest), "backup": bak,
-           "rights": "Maven parts: personal use, no re-sharing except Maven's link (rights/MAVEN-RIGHTS.txt)"}
+           "rights": "Maven parts: rights/MAVEN-RIGHTS.txt; repo integration granted by the owner (Maven) 2026-11-20"}
     (dest / ".golden-dragon-install.json").write_text(json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
     rec["ok"] = True
     rec["next"] = "rd.py mtoon doctor  (then: pip install -r requirements.txt, only after the owner says yes)"
@@ -156,6 +168,36 @@ def cmd_run(args):
         if p.exists() and p.is_dir() and inside(p, sd) and p.resolve() != sd.resolve() and "examples" not in p.parts:
             return out({"ok": False, "error": f"project {p} is inside the skill folder; copy it outside first"}, 2)
     return subprocess.call([python_for(sd), "toon.py", *args], cwd=str(sd))
+
+
+def cmd_fonts(a):
+    sd = skill_dir()
+    if not sd:
+        return out({"ok": False, "error": "no Maven Toon copy"}, 1)
+    fd = sd / "engine" / "fonts"
+    fd.mkdir(parents=True, exist_ok=True)
+    import urllib.request
+    got = {}
+    for name, url in FONTS.items():
+        f = fd / name
+        if f.is_file() and f.stat().st_size > 10000 and not a.force:
+            got[name] = "present"
+            continue
+        with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "golden-dragon-fonts"}), timeout=60) as r:
+            data = r.read()
+        if not data.startswith((b"\x00\x01\x00\x00", b"OTTO", b"true")):
+            return out({"ok": False, "error": f"{name}: not a font file"}, 1)
+        f.write_bytes(data)
+        got[name] = f"downloaded {len(data)} B sha256 {hashlib.sha256(data).hexdigest()[:16]}"
+    return out({"ok": True, "dir": str(fd), "fonts": got, "licence": "SIL OFL 1.1 (OFL-*.txt next to them)"})
+
+
+def cmd_render(args):
+    """Maven renders on 2 workers by default; the dragon uses every core it has (leave one free on the laptop)."""
+    if "--workers" not in args:
+        n = os.cpu_count() or 2
+        args = [*args, "--workers", str(max(1, n - 1) if n > 4 else n)]
+    return cmd_run(["render", *args])
 
 
 # ---------------------------------------------------------------- Egyptian script check (Golden Dragon's own rules)
@@ -253,7 +295,7 @@ def write_ass(path: Path, dur: float, w=1080, h=1920, font="Lalezar"):
         "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, "
         "StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"
         f"Style: Credit,{font},34,&H50FFFFFF,&H000000FF,&H64000000,&H00000000,0,0,0,0,100,100,0,0,1,2,0,8,40,40,70,1\n"
-        f"Style: End,{font},62,&H00FFFFFF,&H000000FF,&H00000000,&H64000000,0,0,0,0,100,100,0,0,1,4,2,2,60,60,300,1\n\n"
+        f"Style: End,{font},62,&H00FFFFFF,&H000000FF,&H00000000,&H64000000,0,0,0,0,100,100,0,0,1,4,2,2,60,60,170,1\n\n"
         "[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" + "\n".join(ev) + "\n",
         encoding="utf-8")
 
@@ -326,6 +368,10 @@ def cmd_gate(a):
 
 def cmd_selftest(_a):
     bad = []
+    if not (VENDORED / "toon.py").is_file() or not (VENDORED / "rights" / "MAVEN-RIGHTS.txt").is_file():
+        bad.append("vendored maven-toon missing (toon.py or rights)")
+    if list((VENDORED / "engine" / "fonts").glob("*.ttf")) and not (REPO / ".gitignore").read_text(encoding="utf-8").count("maven-toon/engine/fonts"):
+        bad.append("fonts present but not gitignored")
     good = "\n".join(["القهوجي مابياخدش فلوس على أول كوباية.",
                       "في قهوة صغيرة في شبرا، عم حسن بيصب الشاي من الفجر.",
                       "وبعدين ييجي الزبون التاني ويدفع عادي.",
@@ -373,12 +419,16 @@ def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     if argv and argv[0] == "run":
         return cmd_run(argv[1:])
+    if argv and argv[0] == "render":
+        return cmd_render(argv[1:])
     ap = argparse.ArgumentParser(prog="rd.py mtoon", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("install"); s.add_argument("zip"); s.add_argument("--dest"); s.add_argument("--replace", action="store_true")
     sub.add_parser("where")
     sub.add_parser("doctor")
     sub.add_parser("run")
+    sub.add_parser("render")
+    s = sub.add_parser("fonts"); s.add_argument("--force", action="store_true")
     s = sub.add_parser("script-eg"); s.add_argument("project"); s.add_argument("--seconds", type=float, default=15)
     s.add_argument("--register", choices=["eg", "any"], default="eg")
     s = sub.add_parser("credit"); s.add_argument("project"); s.add_argument("--out"); s.add_argument("--fonts")
@@ -388,7 +438,7 @@ def main(argv=None):
     a = ap.parse_args(argv)
     if a.cmd == "doctor":
         return cmd_run(["doctor"])
-    return {"install": cmd_install, "where": cmd_where, "script-eg": cmd_script_eg, "credit": cmd_credit,
+    return {"install": cmd_install, "fonts": cmd_fonts, "where": cmd_where, "script-eg": cmd_script_eg, "credit": cmd_credit,
             "gate": cmd_gate, "selftest": cmd_selftest}[a.cmd](a)
 
 

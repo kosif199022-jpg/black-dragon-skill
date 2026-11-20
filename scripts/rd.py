@@ -26,7 +26,7 @@ It reads and advises; it never installs, publishes, spends or deletes."""
 import argparse, datetime, hashlib, json, math, os, re, shutil, subprocess, sys, types
 from pathlib import Path
 
-VERSION = "3.5.5"
+VERSION = "3.5.6"
 ROOT = Path(__file__).resolve().parent.parent
 ENGINE = ROOT / "engine"
 MIND = ROOT / "mind"
@@ -1705,7 +1705,7 @@ def main():
     s = sub.add_parser("krita", help="krita-draw: render scene.json | layers file.kra | info (draw with code inside the real Krita)"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("sync", help="sync-guard: words, check, fix, onsets, script, grid, selftest (captions and motion on the spoken word)"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("md", help="doc-reader (v3.3): convert, batch, doctor, exts, install, selftest (any PDF, Word, PowerPoint, Excel, HTML, EPUB… → Markdown with Microsoft MarkItDown, MIT)"); s.add_argument("args", nargs=argparse.REMAINDER)
-    s = sub.add_parser("mtoon", help="maven-toon-bridge (v3.5.5): install, where, doctor, run, script-eg, credit, gate, selftest (the owner's private Maven Toon copy + Egyptian script check, credit, export gate)"); s.add_argument("args", nargs=argparse.REMAINDER)
+    s = sub.add_parser("mtoon", help="maven-toon-bridge (v3.5.6): install, where, doctor, fonts, render, run, script-eg, credit, gate, selftest (the owner's private Maven Toon copy + Egyptian script check, credit, export gate)"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("arena", help="arena-gate (v2.19): size, start, jobs, next, collect, advance, winner, skip, gate, selftest (the arena is a required step: competing copies, bracket, judge)"); s.add_argument("args", nargs=argparse.REMAINDER)
     s = sub.add_parser("consent", help="consent gate: which outward actions this message explicitly approves or forbids («كمل» approves none)"); s.add_argument("q")
     s = sub.add_parser("gold", help="Golden Bird: studio list/show/install/cmd · lib find/show/kit/stats · sync · protocol · where · selftest"); s.add_argument("args", nargs=argparse.REMAINDER)
