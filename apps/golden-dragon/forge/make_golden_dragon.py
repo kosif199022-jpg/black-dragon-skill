@@ -558,6 +558,12 @@ def main():
     an = importlib.util.module_from_spec(_an_spec)
     _an_spec.loader.exec_module(an)
     write(tmp / "app.py", an.patch_app(read(tmp / "app.py"), sub))
+    # 2026-11-19 (before the knowledge patch, which adds a second </style>) gd_patches\gd_custom_api.py: 🔌 API مخصص (OpenRouter or any OpenAI-compatible site); key in the Windows keyring
+    _cx_spec = importlib.util.spec_from_file_location("gd_custom_api", FORGE / "gd_patches" / "gd_custom_api.py")
+    cx = importlib.util.module_from_spec(_cx_spec)
+    _cx_spec.loader.exec_module(cx)
+    write(tmp / "app.py", cx.patch_app(read(tmp / "app.py"), sub))
+    write(tmp / "ui/index.html", cx.patch_ui(read(tmp / "ui/index.html"), sub))
     # Independent verified read-only knowledge runtime (committed source + bundle).
     _kk_spec = importlib.util.spec_from_file_location("gd_knowledge", FORGE / "gd_patches" / "gd_knowledge.py")
     kk = importlib.util.module_from_spec(_kk_spec)

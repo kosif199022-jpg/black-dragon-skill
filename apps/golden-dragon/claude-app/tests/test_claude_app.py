@@ -71,6 +71,29 @@ def test_mcp_protocol_and_tools():
     assert "error" in out[3]
 
 
+def test_tool_answers_while_stdin_stays_open():
+    """Regression: Claude Code keeps the server's stdin open. A child that inherited it hung `fusion doctor` for 600 s."""
+    import threading, time
+    p = subprocess.Popen([sys.executable, "-X", "utf8", str(HERE / "golden_mcp.py")], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                         text=True, encoding="utf-8")
+    try:
+        def send(m):
+            p.stdin.write(json.dumps(m) + "\n")
+            p.stdin.flush()
+        send({"jsonrpc": "2.0", "id": 0, "method": "initialize", "params": {"protocolVersion": "2025-06-18"}})
+        p.stdout.readline()
+        send({"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": "fusion", "arguments": {"args": ["doctor"]}}})
+        got = []
+        threading.Thread(target=lambda: got.append(p.stdout.readline()), daemon=True).start()
+        t0 = time.time()
+        while not got and time.time() - t0 < 60:
+            time.sleep(0.2)
+        assert got, "fusion doctor didn't answer within 60 s with stdin open"
+        assert "فحص التنين الذهبي" in json.loads(got[0])["result"]["content"][0]["text"]
+    finally:
+        p.kill()
+
+
 @pytest.fixture
 def skills(tmp_path, monkeypatch):
     d = tmp_path / "skills"

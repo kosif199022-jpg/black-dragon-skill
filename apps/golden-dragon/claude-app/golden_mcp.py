@@ -58,7 +58,10 @@ def py():
 def run(cmd, cwd=None, timeout=900, stdin=None):
     env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONUTF8="1")
     try:
-        r = subprocess.run(cmd, cwd=str(cwd or APP), input=stdin, capture_output=True, text=True, encoding="utf-8",
+        # never let a child inherit our stdin: it is Claude Code's JSON-RPC pipe and stays open, so a child that touches
+        # stdin would wait on it forever (fusion doctor hung 600 s this way). mcp_dragon.py does the same.
+        io = {"input": stdin} if stdin is not None else {"stdin": subprocess.DEVNULL}
+        r = subprocess.run(cmd, cwd=str(cwd or APP), **io, capture_output=True, text=True, encoding="utf-8",
                            errors="replace", timeout=timeout, env=env, creationflags=NO_WINDOW)
         out = (r.stdout or "") + (("\n[stderr]\n" + r.stderr[-3000:]) if r.returncode and r.stderr else "")
         return out.strip()[:60000] or f"(exit {r.returncode}, no output)", r.returncode != 0
@@ -462,7 +465,8 @@ def t_compare(a):
             if not cmd:
                 res[m] = "مش متثبت على الجهاز"
                 return
-            r = subprocess.run(cmd, input=prompt if m not in ("codex", "gemini") else None, capture_output=True, text=True,
+            io = {"input": prompt} if m not in ("codex", "gemini") else {"stdin": subprocess.DEVNULL}
+            r = subprocess.run(cmd, **io, capture_output=True, text=True,
                                encoding="utf-8", errors="replace", timeout=600, env=env, cwd=str(HOME), creationflags=NO_WINDOW)
             out = r.stdout
             if m not in ("codex", "gemini"):
