@@ -928,8 +928,10 @@ def info_one(url: str, a) -> dict:
 # yt-dlp breaks whenever a site changes; an old copy is the most common cause of a failed download
 # (2026-11-16: an Instagram link failed only because yt-dlp was months old). So before the first
 # yt-dlp attempt an old copy is refreshed, and after a failure yt-dlp is refreshed once and the
-# attempt repeated if the version really changed. Only an already installed yt-dlp is upgraded;
-# turn it off with --no-auto-update or VG_NO_AUTOUPDATE=1 / KOSIF_NO_AUTOINSTALL=1.
+# attempt repeated if the version really changed. Only an already installed yt-dlp is upgraded.
+# Dragon rule §2: installing needs the owner's explicit yes, so this is OFF by default and runs only
+# with --auto-update or VG_AUTOUPDATE=1 (and never with --no-auto-update / VG_NO_AUTOUPDATE / KOSIF_NO_AUTOINSTALL).
+# Without it the grabber only says that yt-dlp is old and prints the update command.
 STALE_DAYS = 30
 RETRY_AFTER_UPDATE = {"failed", "unsupported", "forbidden", "login_required"}
 _refresh_state = {"done": False}
@@ -956,9 +958,20 @@ def ytdlp_age_days(version: str, today: _dt.date | None = None) -> int | None:
 
 
 def auto_update_allowed(a) -> bool:
-    if getattr(a, "no_auto_update", False):
+    if getattr(a, "no_auto_update", False) or os.environ.get("VG_NO_AUTOUPDATE") or os.environ.get("KOSIF_NO_AUTOINSTALL"):
         return False
-    return not (os.environ.get("VG_NO_AUTOUPDATE") or os.environ.get("KOSIF_NO_AUTOINSTALL"))
+    return bool(getattr(a, "auto_update", False) or os.environ.get("VG_AUTOUPDATE") == "1")
+
+
+_hinted = {"done": False}
+
+
+def update_hint(reason: str) -> None:
+    """Opt-in is off: say it once, with the exact command, and change nothing."""
+    if not _hinted["done"]:
+        _hinted["done"] = True
+        log(f"[update] yt-dlp {reason}: an update may fix it. With the owner's yes: grab.py --update "
+            "(or rerun with --auto-update)")
 
 
 def _upgrade_ytdlp() -> None:
@@ -984,7 +997,10 @@ def _upgrade_ytdlp() -> None:
 
 def refresh_ytdlp(a, reason: str) -> bool:
     """Upgrade yt-dlp at most once per run. True only when the version actually changed."""
-    if _refresh_state["done"] or not auto_update_allowed(a):
+    if _refresh_state["done"]:
+        return False
+    if not auto_update_allowed(a):
+        update_hint(reason)
         return False
     _refresh_state["done"] = True
     old = ytdlp_version()
@@ -996,7 +1012,7 @@ def refresh_ytdlp(a, reason: str) -> bool:
 
 
 def maybe_refresh_stale(a) -> None:
-    if _refresh_state["done"] or not auto_update_allowed(a):
+    if _refresh_state["done"]:
         return
     age = ytdlp_age_days(ytdlp_version())
     if age is not None and age > STALE_DAYS:
@@ -1044,8 +1060,9 @@ def parse_args(argv=None):
     ap.add_argument("--info", action="store_true", help="only show metadata, no download")
     ap.add_argument("--json", action="store_true", help="stdout carries only the JSON summary")
     ap.add_argument("--update", action="store_true", help="pip install -U yt-dlp and exit")
-    ap.add_argument("--no-auto-update", action="store_true",
-                    help="never refresh yt-dlp on its own (default: refresh when older than 30 days or after a failure)")
+    ap.add_argument("--auto-update", action="store_true",
+                    help="with the owner's yes: refresh yt-dlp when older than 30 days or once after a failure (off by default)")
+    ap.add_argument("--no-auto-update", action="store_true", help="never refresh yt-dlp on its own (wins over --auto-update)")
     a = ap.parse_args(argv)
     if a.proxy == "none":
         a.proxy = "none"
