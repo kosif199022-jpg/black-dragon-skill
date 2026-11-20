@@ -6,3 +6,6 @@ engine/skills/maven-toon/engine/fonts/*.ttf
 engine/skills/maven-toon/**/.cache/
 engine/skills/maven-toon/**/.models/
 engine/skills/maven-toon/.venv/
+
+# rd.py arena runtime state (per-session, not source)
+.arena/
