@@ -90,6 +90,7 @@ def _fake_file(tmp_path, name="v.mp4"):
 def no_real_update(monkeypatch):
     """Unit tests must never pip-install: the yt-dlp version and the upgrade itself are faked."""
     grab._refresh_state["done"] = False
+    grab._hinted["done"] = False
     monkeypatch.setattr(grab, "ytdlp_version", lambda: "")
     monkeypatch.setattr(grab, "_upgrade_ytdlp", lambda: None)  # never a real pip run
 
@@ -239,7 +240,7 @@ def test_failure_updates_once_and_retries(tmp_path, monkeypatch, no_probe):
     monkeypatch.setattr(grab, "try_ytdlp", fake_try)
     monkeypatch.delenv("VG_NO_AUTOUPDATE", raising=False)
     monkeypatch.delenv("KOSIF_NO_AUTOINSTALL", raising=False)
-    r = grab.grab_one("http://site/v", args("--proxy", "none", "--no-browser"), tmp_path, {})
+    r = grab.grab_one("http://site/v", args("--proxy", "none", "--no-browser", "--auto-update"), tmp_path, {})
     assert r["ok"] and len(calls) == 2 and upgrades == [1]
     assert [x["step"] for x in r["attempts"]] == ["yt-dlp", "yt-dlp after update"]
 
@@ -250,7 +251,7 @@ def test_no_retry_when_version_unchanged_or_disabled(tmp_path, monkeypatch, no_p
     monkeypatch.setattr(grab, "_upgrade_ytdlp", lambda: upgrades.append(1))
     monkeypatch.setattr(grab, "try_ytdlp", lambda *a, **k: calls.append(1) or {"kind": "failed", "files": [], "error": "x"})
     monkeypatch.setattr(grab, "sniff", lambda *a, **k: None)
-    grab.grab_one("http://site/v", args("--proxy", "none", "--no-browser"), tmp_path, {})
+    grab.grab_one("http://site/v", args("--proxy", "none", "--no-browser", "--auto-update"), tmp_path, {})
     assert len(calls) == 1 and len(upgrades) <= 1
     grab._refresh_state["done"] = False
     upgrades.clear()
@@ -266,5 +267,19 @@ def test_stale_copy_is_refreshed_before_first_try(tmp_path, monkeypatch, no_prob
     monkeypatch.setattr(grab, "try_ytdlp", lambda *a, **k: {"kind": "ok", "files": [f], "error": ""})
     monkeypatch.delenv("VG_NO_AUTOUPDATE", raising=False)
     monkeypatch.delenv("KOSIF_NO_AUTOINSTALL", raising=False)
-    r = grab.grab_one("http://site/v", args("--proxy", "none"), tmp_path, {})
+    r = grab.grab_one("http://site/v", args("--proxy", "none", "--auto-update"), tmp_path, {})
     assert r["ok"] and upgrades == [1]
+
+
+def test_default_never_installs_only_hints(tmp_path, monkeypatch, no_probe, capsys):
+    """Dragon rule §2: without --auto-update an old or failing yt-dlp is never upgraded."""
+    f = _fake_file(tmp_path)
+    upgrades = []
+    _versions(monkeypatch, ["2025.01.01"])
+    monkeypatch.setattr(grab, "_upgrade_ytdlp", lambda: upgrades.append(1))
+    monkeypatch.setattr(grab, "try_ytdlp", lambda *a, **k: {"kind": "ok", "files": [f], "error": ""})
+    for k in ("VG_NO_AUTOUPDATE", "KOSIF_NO_AUTOINSTALL", "VG_AUTOUPDATE"):
+        monkeypatch.delenv(k, raising=False)
+    r = grab.grab_one("http://site/v", args("--proxy", "none"), tmp_path, {})
+    assert r["ok"] and upgrades == []
+    assert "--update" in capsys.readouterr().err
