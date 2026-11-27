@@ -49,6 +49,15 @@ def probe(path):
             "dur": float(j["format"]["duration"])}
 
 
+def audio_kbps(path):
+    out = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "a:0", "-show_entries", "stream=bit_rate",
+                          "-of", "csv=p=0", path], capture_output=True, text=True).stdout.strip()
+    try:
+        return max(32, int(out) // 1000)
+    except ValueError:
+        return 330   # unknown: keep the old, safe allowance
+
+
 def build(a):
     src = os.path.abspath(a.video)
     out = os.path.abspath(a.out)
@@ -62,12 +71,21 @@ def build(a):
     if size <= PART:
         shutil.copyfile(src, light)
     else:
-        kbps = int(min(4300, (13_000_000 * 8 / info["dur"]) / 1000 - 330))
-        subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", src, "-c:v", "libx264", "-profile:v", "high",
+        # budget the picture from the real audio bitrate (the audio is stream-copied), and lower the
+        # resolution when the budget is small: a 5-minute film at 1080x1920 left ~17 kb/s and played as blocks.
+        akbps = audio_kbps(src)
+        kbps = int(min(4300, (13_000_000 * 8 / info["dur"]) / 1000 - akbps - 8))
+        if kbps < 150:
+            sys.exit(f"light copy would get only {kbps} kb/s of video for {info['dur']:.0f} s; "
+                     "use --direct-url for playback of a video this long")
+        width = info["w"] if kbps >= 1800 else 720 if kbps >= 700 else 540
+        vf = [] if width >= info["w"] else ["-vf", f"scale={width}:-2:flags=lanczos"]
+        subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", src, *vf, "-c:v", "libx264", "-profile:v", "high",
                         "-preset", "slow", "-b:v", f"{kbps}k", "-maxrate", f"{int(kbps*1.15)}k",
                         "-bufsize", f"{kbps*2}k", "-pix_fmt", "yuv420p", "-colorspace", "bt709",
                         "-color_primaries", "bt709", "-color_trc", "bt709", "-c:a", "copy",
                         "-movflags", "+faststart", light], check=True)
+        print(f"light copy: {width} px wide, {kbps} kb/s video + {akbps} kb/s audio (copied)")
         if os.path.getsize(light) > 15_000_000:
             sys.exit("light copy is over 15 MB; lower the bitrate")
     subprocess.run(["ffmpeg", "-y", "-v", "error", "-ss", str(min(a.poster_at, info["dur"] / 2)), "-i", src,
